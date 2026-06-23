@@ -2,18 +2,19 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BioMatch — Blood Management System",
-  description: "Incentivized blood donation and hospital inventory marketplace.",
+	title: "BioMatch — Blood Management System",
+	description:
+		"Incentivized blood donation and hospital inventory marketplace.",
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body className="antialiased text-gray-900">{children}</body>
-    </html>
-  );
+	return (
+		<html lang="en">
+			<body className="antialiased text-gray-900">{children}</body>
+		</html>
+	);
 }

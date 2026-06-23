@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  donor
+  hospital
+  admin
+}
+
+enum IncentiveType {
+  hmo_voucher
+  gym_discount
+}
+
+enum ClaimStatus {
+  pending
+  approved
+  redeemed
+}
+
+enum BloodGroup {
+  A_PLUS
+  A_MINUS
+  B_PLUS
+  B_MINUS
+  AB_PLUS
+  AB_MINUS
+  O_PLUS
+  O_MINUS
+}
+
+model Profile {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullName          String
+  bloodGroup        BloodGroup?
+  genotype          String?
+  role              Role        @default(donor)
+  updatedHealthInfo Json        @default("{}")
+  lastDonationDate  DateTime?   @db.Timestamptz(6)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
+
+  wallet       Wallet?
+  managedBanks HospitalBank[]
+  claims       IncentiveClaim[]
+
+  @@index([role])
+  @@index([bloodGroup])
+  @@index([lastDonationDate])
+  @@map("profiles")
+}
+
+model HospitalBank {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hospitalName String
+  location     String
+  inventory    Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
+  managedById  String?  @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  managedBy Profile? @relation(fields: [managedById], references: [id], onDelete: SetNull)
+
+  @@map("hospital_banks")
+}
+
+model Wallet {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String   @unique @db.Uuid
+  points            Int      @default(0)
+  lifetimeDonations Int      @default(0)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model IncentiveClaim {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String        @db.Uuid
+  type      IncentiveType
+  status    ClaimStatus   @default(pending)
+  metadata  Json          @default("{}")
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("incentives_claims")
+}
