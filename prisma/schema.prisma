@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -34,27 +35,6 @@ enum BloodGroup {
   O_MINUS
 }
 
-model Profile {
-  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  fullName          String
-  bloodGroup        BloodGroup?
-  genotype          String?
-  role              Role        @default(donor)
-  updatedHealthInfo Json        @default("{}")
-  lastDonationDate  DateTime?   @db.Timestamptz(6)
-  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
-
-  wallet       Wallet?
-  managedBanks HospitalBank[]
-  claims       IncentiveClaim[]
-
-  @@index([role])
-  @@index([bloodGroup])
-  @@index([lastDonationDate])
-  @@map("profiles")
-}
-
 model HospitalBank {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   hospitalName String
@@ -64,7 +44,7 @@ model HospitalBank {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 
-  managedBy Profile? @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  managedBy User? @relation(fields: [managedById], references: [id], onDelete: SetNull)
 
   @@map("hospital_banks")
 }
@@ -77,7 +57,7 @@ model Wallet {
   createdAt         DateTime @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime @updatedAt @db.Timestamptz(6)
 
-  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("wallets")
 }
@@ -91,9 +71,85 @@ model IncentiveClaim {
   createdAt DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt DateTime      @updatedAt @db.Timestamptz(6)
 
-  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@map("incentives_claims")
+}
+
+model User {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  email             String
+  emailVerified     Boolean     @default(false)
+  image             String?
+  bloodGroup        BloodGroup?
+  genotype          String?
+  role              Role        @default(donor)
+  updatedHealthInfo Json        @default("{}")
+  lastDonationDate  DateTime?   @db.Timestamptz(6)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
+
+  sessions     Session[]
+  accounts     Account[]
+  wallet       Wallet?
+  managedBanks HospitalBank[]
+  claims       IncentiveClaim[]
+
+  @@unique([email])
+  @@index([role])
+  @@index([bloodGroup])
+  @@index([lastDonationDate])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([identifier])
+  @@map("verification")
 }
