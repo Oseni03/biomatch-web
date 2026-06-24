@@ -5,10 +5,25 @@ const config: Config = {
 	content: [
 		"./app/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
+		"./hooks/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
 	],
 	theme: {
 		extend: {
+			keyframes: {
+				"fade-in": {
+					from: { opacity: "0" },
+					to: { opacity: "1" },
+				},
+				"fade-in-up": {
+					from: { opacity: "0", transform: "translateY(30px)" },
+					to: { opacity: "1", transform: "translateY(0)" },
+				},
+			},
+			animation: {
+				"fade-in": "fade-in 0.8s ease-out forwards",
+				"fade-in-up": "fade-in-up 0.8s ease-out forwards",
+			},
 			colors: {
 				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",

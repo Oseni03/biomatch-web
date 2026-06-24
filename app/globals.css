@@ -1,11 +1,14 @@
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  background-color: #f9fafb;
+html {
+  scroll-behavior: smooth;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 @layer base {

@@ -122,7 +122,7 @@ export default function DonorDashboardPage() {
 	}
 
 	if (!session?.user) {
-		return router.push("/auth/login");
+		return <p>Sign in to view the donor dashboard</p>;
 	}
 
 	return (

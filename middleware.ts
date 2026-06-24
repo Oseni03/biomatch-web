@@ -1,9 +1,5 @@
 // middleware.ts
-import { betterFetch } from "@better-fetch/fetch";
-import type { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-
-type Session = typeof auth.$Infer.Session;
 
 export async function middleware(request: NextRequest) {
 	const { nextUrl } = request;
@@ -23,16 +19,16 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// Fetch session
-	const { data: session } = await betterFetch<Session>(
-		"/api/auth/get-session",
-		{
-			baseURL: request.nextUrl.origin,
-			headers: {
-				cookie: request.headers.get("cookie") || "",
-			},
+	// Fetch session from auth API (avoids importing Prisma in Edge Runtime)
+	const baseUrl = `${nextUrl.protocol}//${nextUrl.host}`;
+	const sessionUrl = `${baseUrl}/api/auth/get-session`;
+
+	const response = await fetch(sessionUrl, {
+		headers: {
+			cookie: request.headers.get("cookie") || "",
 		},
-	);
+	});
+	const session = await response.json();
 
 	console.log("Middleware user session: ", session);
 
