@@ -15,13 +15,13 @@ biomatch/
 │   │   └── signup/page.tsx         # Registration form (donor/hospital toggle)
 │   ├── donor/                      # Donor section (role=donor)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="donor"
-│   │   ├── page.tsx                #   Dashboard — React Query, uses useDonorDashboard
+│   │   ├── page.tsx                #   Dashboard — rich UI: deferral meter, HMO card, settings, emergency feed, supply chart, donation history, arrival modal. React Query + local state for simulation
 │   │   ├── health-profile/page.tsx #   Health/medical form — Tailwind classes, React Query initial load
 │   │   └── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
 │   ├── hospital/                   # Hospital section (role=hospital)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="hospital"
-│   │   ├── page.tsx                #   (redirects to /hospital/inventory)
 │   │   ├── inventory/page.tsx      #   Live inventory grid — React Query auto-refetch
+│   │   ├── emergency/page.tsx      #   Emergency request creation form — blood group, units, urgency, radius; shows matched donor count
 │   │   ├── donor-finder/page.tsx   #   Donor Finder — search/filter with blood group, location, name, eligibility toggle, pagination
 │   │   └── blood-drive/page.tsx    #   STUB - Blood drive request form
 │   ├── favicon.ico
@@ -93,11 +93,14 @@ biomatch/
 │   ├── use-donor-dashboard.ts      # React Query: wraps getUserById (incl. wallet)
 │   ├── use-wallet.ts               # React Query: wraps getWalletByUserId
 │   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
-│   └── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
+│   ├── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
+│   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts() — auto-refetch 15s
 │
 ├── lib/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
 │   ├── auth-client.ts              # createAuthClient() for browser
+│   ├── blood-compatibility.ts      # Blood group compatibility matrix (universal donor/recipient)
+│   ├── donor-types.ts             # UI types: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest
 │   ├── eligibility.ts              # getEligibility() + ELIGIBILITY_DAYS (extracted from donor page)
 │   ├── prisma.ts                   # Singleton PrismaClient
 │   ├── supabase.ts                 # Legacy — unused, @ts-ignore
@@ -105,6 +108,7 @@ biomatch/
 │
 ├── servers/                        # Server Actions ("use server")
 │   ├── auth.ts                     # signUpWithProfile() (incl. location, availability, isActive), loginWithRole()
+│   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
 │   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter)
@@ -146,6 +150,7 @@ const { data, isLoading, error } = useDonorDashboard();
 ```
 
 Shared patterns:
+
 - `useQuery` with server action as `queryFn`
 - `staleTime: 60s`, `gcTime: 5min` (from root layout defaults)
 - `QueryClientProvider` wraps root layout with SSR-safe `makeQueryClient()`
@@ -153,38 +158,38 @@ Shared patterns:
 
 ## Resolved Issues
 
-| Issue | Severity | Status |
-|---|---|---|
-| React Query unused — manual fetch boilerplate everywhere | High | ✅ Replaced with hooks |
-| Inventory + donor list conflated in one page | Medium | ✅ Extracted into `EligibleDonorsList` |
-| `getUserById` fetches everything every time | Medium | ✅ Added `getUserBasicById` lean query |
-| `listDonors()` has no pagination | Medium | ✅ Added skip/take pagination + filters |
-| `<style jsx global>` in health profile | Low | ✅ Replaced with Tailwind classes |
-| Dead public routes in middleware | Low | ✅ Removed `/sign-in`, `/sign-up` |
-| Hardcoded 10s polling — no pause on background tab | Medium | ✅ Now uses React Query `refetchInterval` |
-| No shared dashboard components | Low | ✅ Extracted StatCard, SectionCard |
-| No error boundaries or toast on action failures | Low | ✅ Sonner `toast` wired in all pages |
+| Issue                                                    | Severity | Status                                    |
+| -------------------------------------------------------- | -------- | ----------------------------------------- |
+| React Query unused — manual fetch boilerplate everywhere | High     | ✅ Replaced with hooks                    |
+| Inventory + donor list conflated in one page             | Medium   | ✅ Extracted into `EligibleDonorsList`    |
+| `getUserById` fetches everything every time              | Medium   | ✅ Added `getUserBasicById` lean query    |
+| `listDonors()` has no pagination                         | Medium   | ✅ Added skip/take pagination + filters   |
+| `<style jsx global>` in health profile                   | Low      | ✅ Replaced with Tailwind classes         |
+| Dead public routes in middleware                         | Low      | ✅ Removed `/sign-in`, `/sign-up`         |
+| Hardcoded 10s polling — no pause on background tab       | Medium   | ✅ Now uses React Query `refetchInterval` |
+| No shared dashboard components                           | Low      | ✅ Extracted StatCard, SectionCard        |
+| No error boundaries or toast on action failures          | Low      | ✅ Sonner `toast` wired in all pages      |
 
 ## Resolved in Phase 2
 
-| Issue | Severity | Status |
-|---|---|---|
-| Donor Finder is a stub | High | ✅ Full page with filters, table, pagination |
-| No donor location field → can't search by location | Medium | ✅ Added `location` to User schema |
-| Broken Prisma migrations (type mismatch in shadow DB) | Medium | ✅ Removed unapplied broken migrations |
+| Issue                                                 | Severity | Status                                       |
+| ----------------------------------------------------- | -------- | -------------------------------------------- |
+| Donor Finder is a stub                                | High     | ✅ Full page with filters, table, pagination |
+| No donor location field → can't search by location    | Medium   | ✅ Added `location` to User schema           |
+| Broken Prisma migrations (type mismatch in shadow DB) | Medium   | ✅ Removed unapplied broken migrations       |
 
 ## Resolved in Issue 08
 
-| Issue | Severity | Status |
-|---|---|---|
-| No availability or alert opt-in for donors | High | ✅ Added `availability`, `isActive` to User schema, signup form, health profile |
-| Signup lacks location field | Medium | ✅ Location field added to signup form (required for donors) |
-| Health profile can't manage alert preferences | Low | ✅ Added emergency preferences section with location, availability, pause toggle |
+| Issue                                         | Severity | Status                                                                           |
+| --------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| No availability or alert opt-in for donors    | High     | ✅ Added `availability`, `isActive` to User schema, signup form, health profile  |
+| Signup lacks location field                   | Medium   | ✅ Location field added to signup form (required for donors)                     |
+| Health profile can't manage alert preferences | Low      | ✅ Added emergency preferences section with location, availability, pause toggle |
 
 ## Remaining Issues
 
-| Issue | Severity | File(s) |
-|---|---|---|
-| `inventory` JSON blob — no type safety, can't query | Medium | `prisma/schema.prisma` |
-| Sidebar `userName` prop never passed by layouts | Low | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
-| Static nav links — no badge counts | Low | `components/layout/sidebar.tsx` |
+| Issue                                               | Severity | File(s)                                           |
+| --------------------------------------------------- | -------- | ------------------------------------------------- |
+| `inventory` JSON blob — no type safety, can't query | Medium   | `prisma/schema.prisma`                            |
+| Sidebar `userName` prop never passed by layouts     | Low      | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
+| Static nav links — no badge counts                  | Low      | `components/layout/sidebar.tsx`                   |

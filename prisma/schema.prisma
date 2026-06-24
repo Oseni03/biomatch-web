@@ -24,6 +24,29 @@ enum ClaimStatus {
   redeemed
 }
 
+enum UrgencyLevel {
+  standard
+  critical
+}
+
+enum RequestStatus {
+  pending
+  matched
+  expired
+  cancelled
+  fulfilled
+}
+
+enum AlertStatus {
+  alerted
+  opened
+  accepted
+  declined
+  en_route
+  arrived
+  completed
+}
+
 enum BloodGroup {
   A_PLUS
   A_MINUS
@@ -62,6 +85,45 @@ model Wallet {
   @@map("wallets")
 }
 
+model EmergencyRequest {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hospitalId   String        @db.Uuid
+  bloodGroup   BloodGroup
+  unitsNeeded  Int
+  urgencyLevel UrgencyLevel  @default(standard)
+  status       RequestStatus @default(pending)
+  searchRadius Int           @default(15)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
+
+  hospital User               @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
+  alerts   EmergencyAlert[]
+
+  @@index([hospitalId])
+  @@index([bloodGroup])
+  @@index([status])
+  @@index([createdAt])
+  @@map("emergency_requests")
+}
+
+model EmergencyAlert {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId   String       @db.Uuid
+  donorId     String       @db.Uuid
+  status      AlertStatus  @default(alerted)
+  respondedAt DateTime?    @db.Timestamptz(6)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+
+  request EmergencyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donor   User             @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([donorId])
+  @@index([status])
+  @@map("emergency_alerts")
+}
+
 model IncentiveClaim {
   id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String        @db.Uuid
@@ -98,8 +160,10 @@ model User {
   sessions     Session[]
   accounts     Account[]
   wallet       Wallet?
-  managedBanks HospitalBank[]
-  claims       IncentiveClaim[]
+  managedBanks      HospitalBank[]
+  claims            IncentiveClaim[]
+  emergencyRequests EmergencyRequest[]  @relation("HospitalRequests")
+  emergencyAlerts   EmergencyAlert[]    @relation("DonorAlerts")
 
   @@unique([email])
   @@index([role])

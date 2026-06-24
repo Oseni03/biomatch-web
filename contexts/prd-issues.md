@@ -4,19 +4,19 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 
 ## Issue Map
 
-| # | Type | Title | Blocked By | HITL/AFK |
-|---|---|---|---|---|
-| 01 | AFK | Emergency Request + Matching Engine | — | AFK |
-| 02 | AFK | Donor Alert & Response (In-App) | 01 | AFK |
-| 03 | AFK | Radius Expansion | 02 | AFK |
-| 04 | AFK | Hospital Live Request Status Panel | 02 | AFK |
-| 05 | HITL | Notification Delivery (Push + SMS) | 01 | HITL |
-| 06 | AFK | Donation Confirmation | 02 | AFK |
-| 07 | HITL | HMO Incentive Integration | 06 | HITL |
-| 08 | AFK | Donor Registration Enhancements | — | AFK |
-| 09 | AFK | Donor History & Impact Dashboard | 06, 08 | AFK |
-| 10 | HITL | Hospital Admin Features | 04, 06 | HITL |
-| 11 | HITL | Institutional Partner Management | 08 | HITL |
+| # | Type | Title | Blocked By | HITL/AFK | Status |
+|---|---|---|---|---|---|---|
+| 01 | AFK | Emergency Request + Matching Engine | — | AFK | ✅ |
+| 02 | AFK | Donor Alert & Response (In-App) | 01 | AFK | |
+| 03 | AFK | Radius Expansion | 02 | AFK | |
+| 04 | AFK | Hospital Live Request Status Panel | 02 | AFK | |
+| 05 | HITL | Notification Delivery (Push + SMS) | 01 | HITL | |
+| 06 | AFK | Donation Confirmation | 02 | AFK | |
+| 07 | HITL | HMO Incentive Integration | 06 | HITL | |
+| 08 | AFK | Donor Registration Enhancements | — | AFK | ✅ |
+| 09 | AFK | Donor History & Impact Dashboard | 06, 08 | AFK | |
+| 10 | HITL | Hospital Admin Features | 04, 06 | HITL | |
+| 11 | HITL | Institutional Partner Management | 08 | HITL | |
 
 ## HITL Decisions Required
 
@@ -73,8 +73,8 @@ These issues require human input before an AFK agent can implement:
 
 Recommended implementation order:
 
-1. Issue 08 (no blockers, enables location matching)
-2. Issue 01 (foundation of emergency flow)
+1. ~~Issue 08~~ ✅ (no blockers, enables location matching)
+2. ~~Issue 01~~ ✅ (foundation of emergency flow)
 3. Issue 02 (donor response — unlocks all downstream)
 4. Issue 03 (radius expansion — depends on 02)
 5. Issue 04 (status panel — depends on 02)

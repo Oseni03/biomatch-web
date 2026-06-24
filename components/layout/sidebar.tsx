@@ -16,6 +16,7 @@ import {
   FileSignature,
   Menu,
   X,
+  AlertTriangle,
 } from "lucide-react";
 
 type Role = "donor" | "hospital" | "admin";
@@ -34,6 +35,7 @@ const NAV_LINKS: Record<Role, NavLink[]> = {
   ],
   hospital: [
     { label: "Live Inventory Grid", href: "/hospital/inventory", icon: Building2 },
+    { label: "Emergency Request", href: "/hospital/emergency", icon: AlertTriangle },
     { label: "BioMatch Donor Finder", href: "/hospital/donor-finder", icon: Search },
     { label: "Request Blood Drive", href: "/hospital/blood-drive", icon: ClipboardPlus },
   ],
