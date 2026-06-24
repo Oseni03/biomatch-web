@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { AlertTriangle, Droplet, Users, RefreshCw } from "lucide-react";
+import { AlertTriangle, Droplet, RefreshCw } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { listDonors } from "@/servers/user";
-import { getAllHospitalBanks } from "@/servers/hospital";
-import { useRouter } from "next/navigation";
+import { useInventory } from "@/hooks/use-inventory";
+import { useEligibleDonors } from "@/hooks/use-eligible-donors";
+import { EligibleDonorsList } from "@/components/donor/eligible-donors-list";
+import type { EligibleDonor } from "@/components/donor/eligible-donors-list";
 
 const BLOOD_GROUPS = [
 	"A+",
@@ -18,100 +18,35 @@ const BLOOD_GROUPS = [
 	"O-",
 ] as const;
 const CRITICAL_THRESHOLD = 5;
-const ELIGIBILITY_DAYS = 56;
-
-interface HospitalBank {
-	id: string;
-	hospital_name: string;
-	location: string;
-	inventory: Record<string, number>;
-	updated_at: string;
-}
-
-interface EligibleDonor {
-	id: string;
-	full_name: string;
-	blood_group: string | null;
-	last_donation_date: string | null;
-}
 
 export default function HospitalInventoryPage() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
-	const router = useRouter();
 
-	const [banks, setBanks] = useState<HospitalBank[]>([]);
-	const [donors, setDonors] = useState<EligibleDonor[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [lastSync, setLastSync] = useState<Date | null>(null);
+	const {
+		data: banks,
+		isLoading: banksLoading,
+		dataUpdatedAt,
+	} = useInventory();
 
-	const fetchBanks = useCallback(async () => {
-		try {
-			const data = await getAllHospitalBanks();
-			setBanks(
-				data.map((bank) => ({
-					id: bank.id,
-					hospital_name: bank.hospitalName,
-					location: bank.location,
-					inventory: bank.inventory as Record<string, number>,
-					updated_at: bank.updatedAt.toISOString(),
-				})),
-			);
-			setLastSync(new Date());
-		} catch (err) {
-			console.error("Failed to fetch banks:", err);
-		}
-	}, []);
-
-	const fetchEligibleDonors = useCallback(async () => {
-		try {
-			const cutoff = new Date();
-			cutoff.setDate(cutoff.getDate() - ELIGIBILITY_DAYS);
-
-			// Use existing service or extend UserService for eligible donors
-			const allDonors = await listDonors();
-
-			const eligible = allDonors
-				.filter((donor) => {
-					if (!donor.lastDonationDate) return true;
-					const last = new Date(donor.lastDonationDate);
-					return last < cutoff;
-				})
-				.slice(0, 20)
-				.map((donor) => ({
-					id: donor.id,
-					full_name: donor.name,
-					blood_group: donor.bloodGroup,
-					last_donation_date:
-						donor.lastDonationDate?.toISOString() ?? null,
-				}));
-
-			setDonors(eligible);
-		} catch (err) {
-			console.error("Failed to fetch eligible donors:", err);
-		}
-	}, []);
-
-	useEffect(() => {
-		if (sessionLoading) return;
-
-		setLoading(true);
-		Promise.all([fetchBanks(), fetchEligibleDonors()]).finally(() =>
-			setLoading(false),
-		);
-
-		// Optional: Polling as fallback since Supabase realtime is being phased out
-		const interval = setInterval(() => {
-			fetchBanks();
-		}, 10000); // Refresh every 10s
-
-		return () => clearInterval(interval);
-	}, [fetchBanks, fetchEligibleDonors, sessionLoading]);
+	const { data: donors } = useEligibleDonors();
 
 	const aggregateInventory = (group: string) =>
-		banks.reduce((sum, bank) => sum + (bank.inventory?.[group] ?? 0), 0);
+		(banks ?? []).reduce(
+			(sum, bank) => sum + ((bank.inventory as Record<string, number>)?.[group] ?? 0),
+			0,
+		);
 
-	if (sessionLoading || loading) {
+	const eligibleDonors: EligibleDonor[] = (donors ?? []).map((d) => ({
+		id: d.id,
+		name: d.name,
+		bloodGroup: d.bloodGroup,
+		lastDonationDate: d.lastDonationDate?.toISOString() ?? null,
+	}));
+
+	const loading = sessionLoading || banksLoading;
+
+	if (loading) {
 		return (
 			<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
 				{BLOOD_GROUPS.map((g) => (
@@ -125,7 +60,11 @@ export default function HospitalInventoryPage() {
 	}
 
 	if (!session?.user) {
-		return router.push("/auth/login");
+		return (
+			<div className="flex h-64 items-center justify-center">
+				<p>Sign in to view inventory</p>
+			</div>
+		);
 	}
 
 	return (
@@ -141,8 +80,8 @@ export default function HospitalInventoryPage() {
 				</div>
 				<div className="flex items-center gap-2 text-xs text-gray-400">
 					<RefreshCw className="h-3.5 w-3.5" />
-					{lastSync
-						? `Synced ${lastSync.toLocaleTimeString()}`
+					{dataUpdatedAt
+						? `Synced ${new Date(dataUpdatedAt).toLocaleTimeString()}`
 						: "Syncing..."}
 				</div>
 			</header>
@@ -188,45 +127,7 @@ export default function HospitalInventoryPage() {
 				})}
 			</div>
 
-			<section className="rounded-xl border border-gray-200 bg-white">
-				<div className="flex items-center gap-2 border-b px-5 py-4">
-					<Users className="h-4.5 w-4.5 text-rose-600" />
-					<h2 className="text-sm font-semibold text-gray-900">
-						Eligible BioMatch Donors
-					</h2>
-					<span className="ml-auto text-xs text-gray-400">
-						Last donation 56+ days ago or never donated
-					</span>
-				</div>
-				<div className="divide-y">
-					{donors.length === 0 ? (
-						<p className="px-5 py-6 text-sm text-gray-400">
-							No eligible donors found right now.
-						</p>
-					) : (
-						donors.map((donor) => (
-							<div
-								key={donor.id}
-								className="flex items-center justify-between px-5 py-3"
-							>
-								<div>
-									<p className="text-sm font-medium text-gray-900">
-										{donor.full_name}
-									</p>
-									<p className="text-xs text-gray-400">
-										{donor.last_donation_date
-											? `Last donated ${new Date(donor.last_donation_date).toLocaleDateString()}`
-											: "No prior donation on record"}
-									</p>
-								</div>
-								<span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
-									{donor.blood_group ?? "Unknown"}
-								</span>
-							</div>
-						))
-					)}
-				</div>
-			</section>
+			<EligibleDonorsList donors={eligibleDonors} />
 		</div>
 	);
 }

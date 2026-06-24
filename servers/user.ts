@@ -1,7 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { BloodGroup, Role } from "@prisma/client";
+import type { BloodGroup, Role } from "@/generated/prisma/enums";
+
+const ELIGIBILITY_DAYS = 56;
 
 export async function getUserById(id: string) {
 	return prisma.user.findUnique({
@@ -10,6 +12,21 @@ export async function getUserById(id: string) {
 			wallet: true,
 			managedBanks: true,
 			claims: true,
+		},
+	});
+}
+
+export async function getUserBasicById(id: string) {
+	return prisma.user.findUnique({
+		where: { id },
+		select: {
+			id: true,
+			name: true,
+			email: true,
+			bloodGroup: true,
+			genotype: true,
+			role: true,
+			lastDonationDate: true,
 		},
 	});
 }
@@ -45,13 +62,45 @@ export async function updateUserRole(id: string, role: Role) {
 	});
 }
 
-export async function listDonors(filters?: { bloodGroup?: BloodGroup }) {
+export interface ListDonorsFilters {
+	bloodGroup?: BloodGroup;
+	eligibleOnly?: boolean;
+	search?: string;
+	page?: number;
+	pageSize?: number;
+}
+
+export async function listDonors(filters?: ListDonorsFilters) {
+	const page = filters?.page ?? 1;
+	const pageSize = filters?.pageSize ?? 50;
+	const skip = (page - 1) * pageSize;
+
+	const where: Record<string, unknown> = {
+		role: "donor",
+	};
+
+	if (filters?.bloodGroup) {
+		where.bloodGroup = filters.bloodGroup;
+	}
+
+	if (filters?.eligibleOnly) {
+		const cutoff = new Date();
+		cutoff.setDate(cutoff.getDate() - ELIGIBILITY_DAYS);
+		where.OR = [
+			{ lastDonationDate: null },
+			{ lastDonationDate: { lt: cutoff } },
+		];
+	}
+
+	if (filters?.search) {
+		where.name = { contains: filters.search, mode: "insensitive" };
+	}
+
 	return prisma.user.findMany({
-		where: {
-			role: "donor",
-			...(filters?.bloodGroup && { bloodGroup: filters.bloodGroup }),
-		},
+		where,
 		include: { wallet: true },
 		orderBy: { createdAt: "desc" },
+		skip,
+		take: pageSize,
 	});
 }

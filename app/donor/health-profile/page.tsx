@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import {
-	HeartPulse,
 	Droplet,
 	Ruler,
 	Weight,
@@ -16,7 +15,9 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { getUserById, updateUserProfile } from "@/servers/user";
-import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { SectionCard } from "@/components/dashboard/section-card";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const GENOTYPES = ["AA", "AS", "SS", "AC", "SC"];
@@ -64,7 +65,6 @@ const EMPTY_HEALTH: HealthInfo = {
 export default function HealthProfilePage() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
-	const router = useRouter();
 	const [form, setForm] = useState<ProfileFormState>({
 		full_name: "",
 		blood_group: "",
@@ -73,24 +73,17 @@ export default function HealthProfilePage() {
 		health: EMPTY_HEALTH,
 	});
 
-	const [loading, setLoading] = useState(true);
+	const [formReady, setFormReady] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [saved, setSaved] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 
-	const fetchProfile = useCallback(async () => {
-		if (!session?.user?.id) {
-			setLoading(false);
-			return;
-		}
-
-		try {
-			const user = await getUserById(session.user.id);
-
+	const { isLoading: profileLoading } = useQuery({
+		queryKey: ["health-profile", session?.user?.id],
+		queryFn: async () => {
+			const user = await getUserById(session!.user!.id);
 			if (user) {
 				const existingHealth = (user.updatedHealthInfo ??
 					{}) as Partial<HealthInfo>;
-
 				setForm({
 					full_name: user.name ?? "",
 					blood_group: user.bloodGroup ?? "",
@@ -100,19 +93,12 @@ export default function HealthProfilePage() {
 						: "",
 					health: { ...EMPTY_HEALTH, ...existingHealth },
 				});
+				setFormReady(true);
 			}
-		} catch (err: any) {
-			setError(err.message ?? "Failed to load profile");
-		} finally {
-			setLoading(false);
-		}
-	}, [session?.user?.id]);
-
-	useEffect(() => {
-		if (!sessionLoading) {
-			fetchProfile();
-		}
-	}, [fetchProfile, sessionLoading]);
+			return user;
+		},
+		enabled: !!session?.user?.id && !formReady,
+	});
 
 	const updateHealth = <K extends keyof HealthInfo>(
 		key: K,
@@ -130,7 +116,6 @@ export default function HealthProfilePage() {
 
 		setSaving(true);
 		setSaved(false);
-		setError(null);
 
 		try {
 			await updateUserProfile(session.user.id, {
@@ -144,15 +129,18 @@ export default function HealthProfilePage() {
 			});
 
 			setSaved(true);
+			toast.success("Health profile saved");
 			setTimeout(() => setSaved(false), 3000);
-		} catch (err: any) {
-			setError(err.message ?? "Failed to save profile");
+		} catch {
+			toast.error("Failed to save profile");
 		} finally {
 			setSaving(false);
 		}
 	};
 
-	if (sessionLoading || loading) {
+	const loading = sessionLoading || profileLoading;
+
+	if (loading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -161,8 +149,15 @@ export default function HealthProfilePage() {
 	}
 
 	if (!session?.user) {
-		return router.push("/auth/login");
+		return (
+			<div className="flex h-64 items-center justify-center">
+				<p>Sign in to view your health profile</p>
+			</div>
+		);
 	}
+
+	const inputClass =
+		"mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-rose-400";
 
 	return (
 		<div className="max-w-3xl space-y-8">
@@ -177,8 +172,7 @@ export default function HealthProfilePage() {
 			</header>
 
 			<form onSubmit={handleSave} className="space-y-6">
-				{/* Identity & blood type */}
-				<Section icon={Droplet} title="Identity & Blood Type">
+				<SectionCard icon={Droplet} title="Identity & Blood Type">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field label="Full name">
 							<input
@@ -190,7 +184,7 @@ export default function HealthProfilePage() {
 										full_name: e.target.value,
 									})
 								}
-								className="input"
+								className={inputClass}
 							/>
 						</Field>
 						<Field label="Blood group">
@@ -202,7 +196,7 @@ export default function HealthProfilePage() {
 										blood_group: e.target.value,
 									})
 								}
-								className="input"
+								className={inputClass}
 							>
 								<option value="">Unknown / not tested</option>
 								{BLOOD_GROUPS.map((g) => (
@@ -221,7 +215,7 @@ export default function HealthProfilePage() {
 										genotype: e.target.value,
 									})
 								}
-								className="input"
+								className={inputClass}
 							>
 								<option value="">Unknown / not tested</option>
 								{GENOTYPES.map((g) => (
@@ -241,14 +235,13 @@ export default function HealthProfilePage() {
 										last_donation_date: e.target.value,
 									})
 								}
-								className="input"
+								className={inputClass}
 							/>
 						</Field>
 					</div>
-				</Section>
+				</SectionCard>
 
-				{/* Vitals, Medical History, Eligibility, etc. remain unchanged */}
-				<Section icon={Activity} title="Vitals">
+				<SectionCard icon={Activity} title="Vitals">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field label="Height (cm)" icon={Ruler}>
 							<input
@@ -258,7 +251,7 @@ export default function HealthProfilePage() {
 								onChange={(e) =>
 									updateHealth("height_cm", e.target.value)
 								}
-								className="input"
+								className={inputClass}
 							/>
 						</Field>
 						<Field label="Weight (kg)" icon={Weight}>
@@ -269,7 +262,7 @@ export default function HealthProfilePage() {
 								onChange={(e) =>
 									updateHealth("weight_kg", e.target.value)
 								}
-								className="input"
+								className={inputClass}
 							/>
 						</Field>
 						<Field label="Blood pressure (e.g. 120/80)">
@@ -281,7 +274,7 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input"
+								className={inputClass}
 								placeholder="120/80"
 							/>
 						</Field>
@@ -296,13 +289,13 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input"
+								className={inputClass}
 							/>
 						</Field>
 					</div>
-				</Section>
+				</SectionCard>
 
-				<Section icon={Pill} title="Medical History">
+				<SectionCard icon={Pill} title="Medical History">
 					<div className="grid gap-4">
 						<Field label="Chronic conditions">
 							<textarea
@@ -313,7 +306,7 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input min-h-[72px]"
+								className={`${inputClass} min-h-[72px]`}
 								placeholder="e.g. hypertension, diabetes — leave blank if none"
 							/>
 						</Field>
@@ -323,7 +316,7 @@ export default function HealthProfilePage() {
 								onChange={(e) =>
 									updateHealth("allergies", e.target.value)
 								}
-								className="input min-h-[72px]"
+								className={`${inputClass} min-h-[72px]`}
 								placeholder="e.g. penicillin, latex — leave blank if none"
 							/>
 						</Field>
@@ -336,7 +329,7 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input min-h-[72px]"
+								className={`${inputClass} min-h-[72px]`}
 								placeholder="Leave blank if none"
 							/>
 						</Field>
@@ -349,14 +342,14 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input min-h-[72px]"
+								className={`${inputClass} min-h-[72px]`}
 								placeholder="Leave blank if none"
 							/>
 						</Field>
 					</div>
-				</Section>
+				</SectionCard>
 
-				<Section icon={AlertTriangle} title="Eligibility Screening">
+				<SectionCard icon={AlertTriangle} title="Eligibility Screening">
 					<div className="space-y-3">
 						<Checkbox
 							label="Currently pregnant or nursing"
@@ -380,9 +373,9 @@ export default function HealthProfilePage() {
 							}
 						/>
 					</div>
-				</Section>
+				</SectionCard>
 
-				<Section icon={CalendarClock} title="Last Medical Screening">
+				<SectionCard icon={CalendarClock} title="Last Medical Screening">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field label="Screening date">
 							<input
@@ -394,7 +387,7 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input"
+								className={inputClass}
 							/>
 						</Field>
 						<Field
@@ -409,18 +402,12 @@ export default function HealthProfilePage() {
 										e.target.value,
 									)
 								}
-								className="input min-h-[72px]"
+								className={`${inputClass} min-h-[72px]`}
 								placeholder="Any notes from your last checkup or blood screening"
 							/>
 						</Field>
 					</div>
-				</Section>
-
-				{error && (
-					<p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">
-						{error}
-					</p>
-				)}
+				</SectionCard>
 
 				<div className="flex items-center gap-3">
 					<button
@@ -443,43 +430,7 @@ export default function HealthProfilePage() {
 					)}
 				</div>
 			</form>
-
-			<style jsx global>{`
-				.input {
-					margin-top: 0.25rem;
-					width: 100%;
-					border-radius: 0.5rem;
-					border: 1px solid #e5e7eb;
-					padding: 0.5rem 0.75rem;
-					font-size: 0.875rem;
-					outline: none;
-				}
-				.input:focus {
-					border-color: #fb7185;
-				}
-			`}</style>
 		</div>
-	);
-}
-
-/* Section, Field, Checkbox components remain unchanged */
-function Section({
-	icon: Icon,
-	title,
-	children,
-}: {
-	icon: React.ElementType;
-	title: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<section className="rounded-xl border border-gray-200 bg-white p-6">
-			<div className="flex items-center gap-2">
-				<Icon className="h-4.5 w-4.5 text-rose-600" />
-				<h2 className="text-sm font-semibold text-gray-900">{title}</h2>
-			</div>
-			<div className="mt-4">{children}</div>
-		</section>
 	);
 }
 

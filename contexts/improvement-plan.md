@@ -2,21 +2,21 @@
 
 ## Phases
 
-### Phase 1 — Foundation (React Query + shared components + cleanup)
-*No schema changes. No breaking changes.*
+### Phase 1 — Foundation (React Query + shared components + cleanup) ✅
+*No schema changes. No breaking changes. **Complete**.*
 
-| # | Task | Expected files |
+| # | Task | Status |
 |---|---|---|
-| 1 | Create React Query hooks for all data queries | `hooks/use-donor-dashboard.ts`, `hooks/use-wallet.ts`, `hooks/use-inventory.ts`, `hooks/use-eligible-donors.ts` |
-| 2 | Add `QueryClientProvider` to root layout | `app/layout.tsx` |
-| 3 | Extract shared dashboard components (StatCard, SectionCard, PerkCard) | `components/dashboard/` (3 files) |
-| 4 | Extract `getEligibility()` into reusable lib | `lib/eligibility.ts` |
-| 5 | Split eligible donors list out of inventory page | `components/donor/eligible-donors-list.tsx` |
-| 6 | Add server-side pagination to `listDonors()` | `servers/user.ts` |
-| 7 | Clean up middleware public routes | `middleware.ts` |
-| 8 | Replace `<style jsx global>` with Tailwind | `app/donor/health-profile/page.tsx` |
-| 9 | Wire sonner toast for error feedback | All dashboard pages |
-| 10 | Add selective server actions (lean queries) | `servers/user.ts` |
+| 1 | Create React Query hooks for all data queries | ✅ |
+| 2 | Add `QueryClientProvider` to root layout | ✅ |
+| 3 | Extract shared dashboard components (StatCard, SectionCard) | ✅ |
+| 4 | Extract `getEligibility()` into reusable lib | ✅ |
+| 5 | Split eligible donors list out of inventory page | ✅ |
+| 6 | Add server-side pagination to `listDonors()` | ✅ |
+| 7 | Clean up middleware public routes | ✅ |
+| 8 | Replace `<style jsx global>` with Tailwind | ✅ |
+| 9 | Wire sonner toast for error feedback | ✅ |
+| 10 | Add selective server actions (lean queries) | ✅ |
 
 ### Phase 2 — Directory (Donor Finder)
 *Minor schema addition: `location` field on User.*

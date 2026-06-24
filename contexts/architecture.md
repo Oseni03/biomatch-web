@@ -93,13 +93,15 @@
 
 1. **Signup** → `servers/auth.ts:signUpWithProfile()` calls `better-auth` API, creates Wallet for donors
 2. **Login** → `servers/auth.ts:loginWithRole()` calls `better-auth` API, redirects to role dashboard
-3. **Middleware** → `middleware.ts` fetches session from `/api/auth/get-session`, enforces role-based access, redirects unauthenticated users to `/auth/login`
+3. **Proxy** → `proxy.ts` checks session via `auth.api.getSession(request.headers)`, enforces role-based access, redirects unauthenticated users to `/auth/login`
 4. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
 
 ## Key Patterns
 
 - **Layout**: Each role section (`/donor`, `/hospital`, `/admin`) has a `layout.tsx` that wraps children in `<SidebarLayout role="...">`
 - **Server Actions**: All DB logic in `servers/*.ts` with `"use server"` directive. Pages import and call directly.
-- **Data Fetching**: Currently `useState` + `useEffect` + `useCallback` in every page (pending migration to React Query).
-- **Styling**: Tailwind utility classes throughout. One exception: `app/donor/health-profile/page.tsx` uses `<style jsx global>`.
+- **Data Fetching**: React Query hooks in `hooks/` wrap server actions. Pages use `useQuery`/`useMutation` directly. `QueryClientProvider` in root layout with SSR-safe `makeQueryClient()`.
+- **Styling**: Tailwind utility classes throughout. All global style blocks removed.
 - **Sidebar**: `components/layout/sidebar.tsx` renders role-specific nav links from `NAV_LINKS` record. Mobile-responsive with hamburger toggle.
+- **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
+- **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.

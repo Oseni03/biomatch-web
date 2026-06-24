@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import {
 	Wallet,
 	Award,
@@ -10,18 +9,15 @@ import {
 	CheckCircle2,
 	Ticket,
 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { createIncentiveClaim, getClaimsByUserId } from "@/servers/incentive";
-import { getWalletByUserId } from "@/servers/wallet";
-import { useRouter } from "next/navigation";
+import { useWallet } from "@/hooks/use-wallet";
+import { toast } from "sonner";
+import { useState } from "react";
 
 const HMO_POINTS_REQUIRED = 300;
 const GYM_POINTS_REQUIRED = 150;
-
-interface WalletData {
-	points: number;
-	lifetime_donations: number;
-}
 
 interface Claim {
 	id: string;
@@ -32,46 +28,27 @@ interface Claim {
 export default function DonorWalletPage() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
-	const router = useRouter();
+	const queryClient = useQueryClient();
 
-	const [wallet, setWallet] = useState<WalletData | null>(null);
-	const [claims, setClaims] = useState<Claim[]>([]);
-	const [loading, setLoading] = useState(true);
+	const {
+		data: wallet,
+		isLoading: walletLoading,
+		error: walletError,
+	} = useWallet();
+
+	const { data: claimsData } = useQuery({
+		queryKey: ["claims", session?.user?.id],
+		queryFn: () => getClaimsByUserId(session!.user!.id),
+		enabled: !!session?.user?.id,
+	});
+
 	const [redeeming, setRedeeming] = useState<string | null>(null);
 
-	const fetchWallet = useCallback(async () => {
-		if (!session?.user?.id) return;
-
-		try {
-			// Fetch wallet
-			const walletData = await getWalletByUserId(session.user.id);
-			if (walletData) {
-				setWallet({
-					points: walletData.points,
-					lifetime_donations: walletData.lifetimeDonations,
-				});
-			}
-
-			// Fetch claims
-			const claimData = await getClaimsByUserId(session.user.id);
-			setClaims(
-				claimData.map((c) => ({
-					id: c.id,
-					type: c.type,
-					status: c.status,
-				})),
-			);
-		} catch (err) {
-			console.error("Failed to fetch wallet data:", err);
-		}
-	}, [session?.user?.id]);
-
-	useEffect(() => {
-		if (!sessionLoading) {
-			setLoading(true);
-			fetchWallet().finally(() => setLoading(false));
-		}
-	}, [fetchWallet, sessionLoading]);
+	const claims: Claim[] = (claimsData ?? []).map((c) => ({
+		id: c.id,
+		type: c.type,
+		status: c.status,
+	}));
 
 	const hasActiveClaim = (type: Claim["type"]) =>
 		claims.some(
@@ -87,24 +64,32 @@ export default function DonorWalletPage() {
 
 		try {
 			await createIncentiveClaim(session.user.id, type);
-			await fetchWallet(); // Refresh data
-		} catch (err) {
-			console.error("Failed to create claim:", err);
-			// Optional: show toast/error
+			queryClient.invalidateQueries({ queryKey: ["claims"] });
+			queryClient.invalidateQueries({ queryKey: ["wallet"] });
+			toast.success("Voucher claimed successfully");
+		} catch {
+			toast.error("Failed to create claim");
 		} finally {
 			setRedeeming(null);
 		}
 	};
 
+	if (walletError) {
+		toast.error("Failed to load wallet data");
+	}
+
 	const points = wallet?.points ?? 0;
 
 	if (!session?.user) {
-		return router.push("/auth/login");
+		return (
+			<div className="flex h-64 items-center justify-center">
+				<p>Sign in to view your wallet</p>
+			</div>
+		);
 	}
 
 	return (
 		<div className="space-y-8">
-			{/* Wallet Header */}
 			<div className="rounded-2xl bg-gradient-to-br from-rose-600 to-rose-500 p-6 text-white shadow-lg">
 				<div className="flex items-center gap-2 text-rose-100">
 					<Wallet className="h-4.5 w-4.5" />
@@ -116,7 +101,7 @@ export default function DonorWalletPage() {
 					<div>
 						<p className="text-xs text-rose-100">Loyalty Points</p>
 						<p className="text-4xl font-bold">
-							{loading ? "—" : points}
+							{walletLoading ? "—" : points}
 						</p>
 					</div>
 					<div>
@@ -124,7 +109,9 @@ export default function DonorWalletPage() {
 							Lifetime Donations
 						</p>
 						<p className="text-2xl font-semibold">
-							{loading ? "—" : (wallet?.lifetime_donations ?? 0)}
+							{walletLoading
+								? "—"
+								: (wallet?.lifetimeDonations ?? 0)}
 						</p>
 					</div>
 				</div>
@@ -134,7 +121,6 @@ export default function DonorWalletPage() {
 				</p>
 			</div>
 
-			{/* Perks Grid */}
 			<section>
 				<h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
 					<Award className="h-4 w-4 text-rose-600" />

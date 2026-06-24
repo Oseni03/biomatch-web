@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
 	Droplet,
@@ -13,107 +12,74 @@ import {
 	MapPin,
 	Loader2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
-import { getUserById } from "@/servers/user";
 import { getAllHospitalBanks } from "@/servers/hospital";
-import { getWalletByUserId } from "@/servers/wallet";
-import { useRouter } from "next/navigation";
+import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
+import { StatCard } from "@/components/dashboard/stat-card";
+import { getEligibility, ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { toast } from "sonner";
 
-const ELIGIBILITY_DAYS = 56;
 const CRITICAL_THRESHOLD = 5;
-
-interface Profile {
-	full_name: string;
-	blood_group: string | null;
-	genotype: string | null;
-	last_donation_date: string | null;
-}
-
-interface WalletData {
-	points: number;
-	lifetime_donations: number;
-}
-
-interface CriticalBank {
-	hospital_name: string;
-	location: string;
-	units: number;
-}
 
 export default function DonorDashboardPage() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
-	const router = useRouter();
 
-	const [profile, setProfile] = useState<Profile | null>(null);
-	const [wallet, setWallet] = useState<WalletData | null>(null);
-	const [criticalMatches, setCriticalMatches] = useState<CriticalBank[]>([]);
-	const [loading, setLoading] = useState(true);
+	const {
+		data: user,
+		isLoading: userLoading,
+		error: userError,
+	} = useDonorDashboard();
 
-	const fetchAll = useCallback(async () => {
-		if (!session?.user?.id) {
-			setLoading(false);
-			return;
-		}
+	const { data: banks } = useQuery({
+		queryKey: ["hospital-banks"],
+		queryFn: () => getAllHospitalBanks(),
+	});
 
-		try {
-			// Fetch user profile
-			const user = await getUserById(session.user.id);
-			if (user) {
-				setProfile({
-					full_name: user.name ?? "",
-					blood_group: user.bloodGroup ?? null,
-					genotype: user.genotype ?? null,
-					last_donation_date: user.lastDonationDate
-						? user.lastDonationDate.toISOString().slice(0, 10)
-						: null,
-				});
+	const profile = user
+		? {
+				full_name: user.name ?? "",
+				blood_group: user.bloodGroup ?? null,
+				genotype: user.genotype ?? null,
+				last_donation_date: user.lastDonationDate
+					? user.lastDonationDate.toISOString().slice(0, 10)
+					: null,
 			}
+		: null;
 
-			// Fetch wallet
-			const walletData = await getWalletByUserId(session.user.id);
-			if (walletData) {
-				setWallet({
-					points: walletData.points,
-					lifetime_donations: walletData.lifetimeDonations,
-				});
+	const walletData = user?.wallet
+		? {
+				points: user.wallet.points,
+				lifetime_donations: user.wallet.lifetimeDonations,
 			}
+		: null;
 
-			// Fetch critical blood bank matches
-			if (user?.bloodGroup) {
-				const banks = await getAllHospitalBanks();
-
-				const matches: CriticalBank[] = banks
-					.map((bank) => ({
-						hospital_name: bank.hospitalName,
-						location: bank.location,
-						units:
-							(bank.inventory as Record<string, number>)?.[
-								user.bloodGroup!
-							] ?? 0,
-					}))
-					.filter((b) => b.units < CRITICAL_THRESHOLD)
-					.slice(0, 3);
-
-				setCriticalMatches(matches);
-			}
-		} catch (err: any) {
-			console.error("Failed to fetch dashboard data:", err);
-		} finally {
-			setLoading(false);
-		}
-	}, [session?.user?.id]);
-
-	useEffect(() => {
-		if (!sessionLoading) {
-			fetchAll();
-		}
-	}, [fetchAll, sessionLoading]);
+	const criticalMatches = (banks ?? [])
+		.filter((bank) => {
+			const units = (bank.inventory as Record<string, number>)?.[
+				user?.bloodGroup ?? ""
+			] ?? 0;
+			return units < CRITICAL_THRESHOLD;
+		})
+		.slice(0, 3)
+		.map((bank) => ({
+			hospital_name: bank.hospitalName,
+			location: bank.location,
+			units:
+				(bank.inventory as Record<string, number>)?.[
+					user?.bloodGroup ?? ""
+				] ?? 0,
+		}));
 
 	const eligibility = getEligibility(profile?.last_donation_date ?? null);
 	const profileComplete = Boolean(profile?.blood_group && profile?.genotype);
 
-	if (sessionLoading || loading) {
+	if (userError) {
+		toast.error("Failed to load dashboard data");
+	}
+
+	if (sessionLoading || userLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -139,7 +105,6 @@ export default function DonorDashboardPage() {
 				</p>
 			</header>
 
-			{/* Top stat row */}
 			<div className="grid gap-4 sm:grid-cols-3">
 				<StatCard
 					icon={Droplet}
@@ -150,17 +115,16 @@ export default function DonorDashboardPage() {
 				<StatCard
 					icon={Wallet}
 					label="Loyalty Points"
-					value={String(wallet?.points ?? 0)}
+					value={String(walletData?.points ?? 0)}
 				/>
 				<StatCard
 					icon={HeartPulse}
 					label="Lifetime Donations"
-					value={String(wallet?.lifetime_donations ?? 0)}
+					value={String(walletData?.lifetime_donations ?? 0)}
 				/>
 			</div>
 
 			<div className="grid gap-6 lg:grid-cols-3">
-				{/* Eligibility card */}
 				<div className="rounded-xl border border-gray-200 bg-white p-6 lg:col-span-2">
 					<div className="flex items-center gap-2">
 						<CalendarClock className="h-4.5 w-4.5 text-rose-600" />
@@ -214,7 +178,6 @@ export default function DonorDashboardPage() {
 					)}
 				</div>
 
-				{/* Points / perks teaser */}
 				<div className="rounded-xl border border-gray-200 bg-white p-6">
 					<div className="flex items-center gap-2">
 						<Wallet className="h-4.5 w-4.5 text-rose-600" />
@@ -223,7 +186,7 @@ export default function DonorDashboardPage() {
 						</h2>
 					</div>
 					<p className="mt-3 text-3xl font-bold text-gray-900">
-						{wallet?.points ?? 0}
+						{walletData?.points ?? 0}
 					</p>
 					<p className="text-xs text-gray-400">points available</p>
 					<Link
@@ -236,7 +199,6 @@ export default function DonorDashboardPage() {
 				</div>
 			</div>
 
-			{/* Critical need nearby */}
 			{criticalMatches.length > 0 && (
 				<section className="rounded-xl border border-red-200 bg-red-50 p-6">
 					<div className="flex items-center gap-2">
@@ -273,55 +235,4 @@ export default function DonorDashboardPage() {
 			)}
 		</div>
 	);
-}
-
-function StatCard({
-	icon: Icon,
-	label,
-	value,
-	tone = "default",
-}: {
-	icon: React.ElementType;
-	label: string;
-	value: string;
-	tone?: "default" | "warning";
-}) {
-	return (
-		<div className="rounded-xl border border-gray-200 bg-white p-5">
-			<div className="flex items-center gap-2 text-gray-400">
-				<Icon className="h-4 w-4" />
-				<span className="text-xs font-medium">{label}</span>
-			</div>
-			<p
-				className={`mt-2 text-2xl font-bold ${tone === "warning" ? "text-amber-600" : "text-gray-900"}`}
-			>
-				{value}
-			</p>
-		</div>
-	);
-}
-
-function getEligibility(lastDonationDate: string | null) {
-	if (!lastDonationDate) {
-		return {
-			eligible: true,
-			lastDonation: false,
-			daysSince: 0,
-			daysRemaining: 0,
-		};
-	}
-
-	const last = new Date(lastDonationDate);
-	const now = new Date();
-	const daysSince = Math.floor(
-		(now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24),
-	);
-	const daysRemaining = Math.max(0, ELIGIBILITY_DAYS - daysSince);
-
-	return {
-		eligible: daysSince >= ELIGIBILITY_DAYS,
-		lastDonation: true,
-		daysSince,
-		daysRemaining,
-	};
 }

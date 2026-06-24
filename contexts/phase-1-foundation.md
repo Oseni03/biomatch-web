@@ -1,103 +1,69 @@
-# Phase 1 — Foundation
+# Phase 1 — Foundation ✅
 
 **Goal**: Eliminate data-fetching boilerplate, extract reusable components, clean up inconsistencies.
 
+**Status**: ✅ Complete
+
 ## Steps
 
-### 1. Add `QueryClientProvider` to root layout
+### 1. Add `QueryClientProvider` to root layout ✅
 **File**: `app/layout.tsx`
 
-Wrap children with `<QueryClientProvider>` from `@tanstack/react-query`. Create a `makeQueryClient()` function for SSR safety (Next.js App Router pattern).
+Wrap children with `<QueryClientProvider>` from `@tanstack/react-query`. Created `makeQueryClient()` function for SSR safety. Added `<Toaster>` from sonner.
 
-### 2. Create React Query hooks
+### 2. Create React Query hooks ✅
 **New files**: `hooks/use-donor-dashboard.ts`, `hooks/use-wallet.ts`, `hooks/use-inventory.ts`, `hooks/use-eligible-donors.ts`
 
 Each hook wraps a server action with `useQuery`:
 - Handles session dependency internally
 - Returns `{ data, isLoading, error, refetch }`
-- Sets appropriate `staleTime` / `gcTime`
 
-Example:
-```typescript
-// hooks/use-donor-dashboard.ts
-export function useDonorDashboard() {
-  const { data: session } = authClient.useSession();
-  return useQuery({
-    queryKey: ["donor-dashboard", session?.user?.id],
-    queryFn: () => getUserById(session!.user!.id),
-    enabled: !!session?.user?.id,
-  });
-}
-```
-
-### 3. Replace all `useState`+`useEffect`+`useCallback` with query hooks
+### 3. Replace all `useState`+`useEffect`+`useCallback` with query hooks ✅
 **Files**: `app/donor/page.tsx`, `app/donor/wallet/page.tsx`, `app/donor/health-profile/page.tsx`, `app/hospital/inventory/page.tsx`
 
-Remove ~15 lines of boilerplate per page. Replace with:
-```typescript
-const { data, isLoading } = useDonorDashboard();
-```
+Replaced manual fetch boilerplate with React Query hooks.
 
-### 4. Extract eligibility utility
+### 4. Extract eligibility utility ✅
 **New file**: `lib/eligibility.ts`
 
-Move `getEligibility()` from `app/donor/page.tsx`. Accept a `lastDonationDate: string | null` param. Keep `ELIGIBILITY_DAYS` as a named export constant.
+Moved `getEligibility()` from `app/donor/page.tsx` into reusable lib with `ELIGIBILITY_DAYS` constant.
 
-### 5. Extract shared dashboard components
+### 5. Extract shared dashboard components ✅
 **New files**: `components/dashboard/stat-card.tsx`, `components/dashboard/section-card.tsx`
 
-- **StatCard**: From `app/donor/page.tsx` — icon, label, value, optional warning tone
-- **SectionCard**: Collapsible card with icon header — reused in health profile, blood drive, admin pages
-- **PerkCard**: From `app/donor/wallet/page.tsx` — progress bar, points, redeem button
+- **StatCard**: Icon, label, value, optional warning tone
+- **SectionCard**: Collapsible card with icon header (uses shadcn/ui Collapsible)
+- PerkCard kept inline in wallet page (not extracted in this phase)
 
-### 6. Extract eligible donors list into reusable component
+### 6. Extract eligible donors list into reusable component ✅
 **New file**: `components/donor/eligible-donors-list.tsx`
 
-Move the eligible donors table from `app/hospital/inventory/page.tsx` into a standalone component. Accept `donors: EligibleDonor[]` as props. Make it usable by both the inventory page and the donor finder page.
+Moved eligible donors table into standalone component. Accepts `EligibleDonor[]` as props. Used by inventory page.
 
-### 7. Add server-side pagination to `listDonors()`
+### 7. Add server-side pagination to `listDonors()` ✅
 **File**: `servers/user.ts`
 
-```typescript
-export async function listDonors(filters?: {
-  bloodGroup?: BloodGroup;
-  eligibleOnly?: boolean;
-  search?: string;
-  page?: number;
-  pageSize?: number;
-}) {
-  // Prisma skip/take pagination
-  // eligibleOnly: filter users where lastDonationDate > ELIGIBILITY_DAYS ago OR null
-}
-```
+Extended with `page`, `pageSize`, `eligibleOnly`, `search` filters. Uses Prisma skip/take pagination.
 
-### 8. Clean up middleware
+### 8. Clean up middleware ✅
 **File**: `middleware.ts`
 
-Remove `/sign-in` and `/sign-up` from the `publicRoutes` array — these paths don't exist.
+Removed `/sign-in` and `/sign-up` from `publicRoutes`. Fixed fallback redirect to `/auth/login`.
 
-### 9. Replace `<style jsx global>` in health profile
+### 9. Replace `<style jsx global>` in health profile ✅
 **File**: `app/donor/health-profile/page.tsx`
 
-Replace the global style block with Tailwind utility classes directly on the form elements. The `.input` class translates to `mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-rose-400`.
+Replaced global style block with Tailwind utility classes. Used `SectionCard` from dashboard components.
 
-### 10. Wire sonner toast for error feedback
+### 10. Wire sonner toast for error feedback ✅
 **Files**: All dashboard pages
 
-Wrap server action calls in try/catch and call `toast.error()` on failure. Import from `sonner`.
+Wired `toast.error()` / `toast.success()` in try/catch blocks. Added `<Toaster />` to root layout.
 
-### 11. Add selective server actions
+### 11. Add selective server actions ✅
 **File**: `servers/user.ts`
 
-Add lightweight queries to avoid fetching heavy relations:
-```typescript
-export async function getUserBasicById(id: string) {
-  return prisma.user.findUnique({
-    where: { id },
-    select: { id: true, name: true, email: true, bloodGroup: true, genotype: true, role: true },
-  });
-}
-```
+Added `getUserBasicById()` lean query with minimal field selection.
 
 ## Files Changed / Created
 
@@ -109,7 +75,9 @@ export async function getUserBasicById(id: string) {
 | Modify | `app/donor/health-profile/page.tsx` |
 | Modify | `app/hospital/inventory/page.tsx` |
 | Modify | `servers/user.ts` |
+| Modify | `servers/incentive.ts` |
 | Modify | `middleware.ts` |
+| Modify | `lib/supabase.ts` |
 | Create | `hooks/use-donor-dashboard.ts` |
 | Create | `hooks/use-wallet.ts` |
 | Create | `hooks/use-inventory.ts` |

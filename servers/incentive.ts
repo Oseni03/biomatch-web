@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { IncentiveType, ClaimStatus } from "@prisma/client";
+import type { IncentiveType, ClaimStatus } from "@/generated/prisma/enums";
 
 export async function createIncentiveClaim(
 	userId: string,

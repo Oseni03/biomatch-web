@@ -1,3 +1,5 @@
+// legacy — unused, will be removed
+// @ts-ignore
 import { createClient } from "@supabase/supabase-js";
 
 export const supabase = createClient(
