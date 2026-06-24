@@ -1,6 +1,6 @@
-# Phase 2 — Donor Finder / Directory
+# Phase 2 — Donor Finder / Directory ✅
 
-**Goal**: Build the full Donor Finder page at `/hospital/donor-finder` and support location-based search.
+**Goal**: Build the full Donor Finder page at `/hospital/donor-finder` and support location-based search. **Complete**.
 
 ## Steps
 

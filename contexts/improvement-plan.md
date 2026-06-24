@@ -18,14 +18,14 @@
 | 9 | Wire sonner toast for error feedback | ✅ |
 | 10 | Add selective server actions (lean queries) | ✅ |
 
-### Phase 2 — Directory (Donor Finder)
-*Minor schema addition: `location` field on User.*
+### Phase 2 — Directory (Donor Finder) ✅
+*Minor schema addition: `location` field on User. **Complete**.*
 
-| # | Task | Expected files |
+| # | Task | Status |
 |---|---|---|
-| 11 | Add `location` string field to User + migration | `prisma/schema.prisma` + migration |
-| 12 | Extend `listDonors()` with location search + pagination | `servers/user.ts` |
-| 13 | Build full Donor Finder page | `app/hospital/donor-finder/page.tsx` |
+| 11 | Add `location` string field to User + migration | ✅ |
+| 12 | Extend `listDonors()` with location search + pagination | ✅ |
+| 13 | Build full Donor Finder page | ✅ |
 
 ### Phase 3 — Real-time Inventory
 *No schema changes.*

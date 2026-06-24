@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import type { BloodGroup, Role } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
 
 const ELIGIBILITY_DAYS = 56;
 
@@ -66,6 +67,7 @@ export interface ListDonorsFilters {
 	bloodGroup?: BloodGroup;
 	eligibleOnly?: boolean;
 	search?: string;
+	location?: string;
 	page?: number;
 	pageSize?: number;
 }
@@ -75,12 +77,16 @@ export async function listDonors(filters?: ListDonorsFilters) {
 	const pageSize = filters?.pageSize ?? 50;
 	const skip = (page - 1) * pageSize;
 
-	const where: Record<string, unknown> = {
+	const where: Prisma.UserWhereInput = {
 		role: "donor",
 	};
 
 	if (filters?.bloodGroup) {
 		where.bloodGroup = filters.bloodGroup;
+	}
+
+	if (filters?.location) {
+		where.location = { contains: filters.location, mode: "insensitive" };
 	}
 
 	if (filters?.eligibleOnly) {
@@ -96,11 +102,24 @@ export async function listDonors(filters?: ListDonorsFilters) {
 		where.name = { contains: filters.search, mode: "insensitive" };
 	}
 
-	return prisma.user.findMany({
-		where,
-		include: { wallet: true },
-		orderBy: { createdAt: "desc" },
-		skip,
-		take: pageSize,
-	});
+	const [donors, total] = await Promise.all([
+		prisma.user.findMany({
+			where,
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				bloodGroup: true,
+				genotype: true,
+				lastDonationDate: true,
+				location: true,
+			},
+			orderBy: { createdAt: "desc" },
+			skip,
+			take: pageSize,
+		}),
+		prisma.user.count({ where }),
+	]);
+
+	return { donors, total, page, pageSize };
 }

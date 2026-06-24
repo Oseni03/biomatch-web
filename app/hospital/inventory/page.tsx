@@ -29,7 +29,7 @@ export default function HospitalInventoryPage() {
 		dataUpdatedAt,
 	} = useInventory();
 
-	const { data: donors } = useEligibleDonors();
+	const { data: donorsData } = useEligibleDonors({ eligibleOnly: true });
 
 	const aggregateInventory = (group: string) =>
 		(banks ?? []).reduce(
@@ -37,7 +37,7 @@ export default function HospitalInventoryPage() {
 			0,
 		);
 
-	const eligibleDonors: EligibleDonor[] = (donors ?? []).map((d) => ({
+	const eligibleDonors: EligibleDonor[] = (donorsData?.donors ?? []).map((d) => ({
 		id: d.id,
 		name: d.name,
 		bloodGroup: d.bloodGroup,

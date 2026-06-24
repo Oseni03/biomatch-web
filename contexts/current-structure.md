@@ -22,7 +22,7 @@ biomatch/
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="hospital"
 │   │   ├── page.tsx                #   (redirects to /hospital/inventory)
 │   │   ├── inventory/page.tsx      #   Live inventory grid — React Query auto-refetch
-│   │   ├── donor-finder/page.tsx   #   STUB - Donor search/filter
+│   │   ├── donor-finder/page.tsx   #   Donor Finder — search/filter with blood group, location, name, eligibility toggle, pagination
 │   │   └── blood-drive/page.tsx    #   STUB - Blood drive request form
 │   ├── favicon.ico
 │   ├── globals.css                 # Tailwind directives + theme variables
@@ -34,7 +34,7 @@ biomatch/
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
 │   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
 │   ├── donor/                      # Donor-specific components
-│   │   └── eligible-donors-list.tsx #   Eligible donors table — reusable by inventory + donor-finder
+│   │   └── eligible-donors-list.tsx #   Donor table — blood group, genotype, location, eligibility badge; reusable by inventory + donor-finder
 │   ├── landing/                    # Landing page sections (8 files)
 │   │   ├── navbar.tsx
 │   │   ├── hero.tsx
@@ -93,7 +93,7 @@ biomatch/
 │   ├── use-donor-dashboard.ts      # React Query: wraps getUserById (incl. wallet)
 │   ├── use-wallet.ts               # React Query: wraps getWalletByUserId
 │   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
-│   └── use-eligible-donors.ts      # React Query: wraps listDonors({ eligibleOnly: true })
+│   └── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
 │
 ├── lib/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
@@ -107,7 +107,7 @@ biomatch/
 │   ├── auth.ts                     # signUpWithProfile(), loginWithRole()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
-│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile(), updateUserRole(), listDonors() (paginated)
+│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile(), updateUserRole(), listDonors() (paginated, location filter)
 │   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
 │
 ├── generated/
@@ -120,8 +120,8 @@ biomatch/
 │       └── internal/
 │
 ├── prisma/
-│   ├── schema.prisma               # Data model (User, HospitalBank, Wallet, IncentiveClaim, Session, Account, Verification)
-│   └── migrations/                 # 5 migration folders
+│   ├── schema.prisma               # Data model (User w/ location, HospitalBank, Wallet, IncentiveClaim, Session, Account, Verification)
+│   └── migrations/                 # 3 migration folders (broken intermediate migrations removed)
 │
 ├── proxy.ts                       # Edge proxy — session check via auth.api.getSession, RBAC guard
 ├── package.json                    # Dependencies & scripts
@@ -165,12 +165,18 @@ Shared patterns:
 | No shared dashboard components | Low | ✅ Extracted StatCard, SectionCard |
 | No error boundaries or toast on action failures | Low | ✅ Sonner `toast` wired in all pages |
 
+## Resolved in Phase 2
+
+| Issue | Severity | Status |
+|---|---|---|
+| Donor Finder is a stub | High | ✅ Full page with filters, table, pagination |
+| No donor location field → can't search by location | Medium | ✅ Added `location` to User schema |
+| Broken Prisma migrations (type mismatch in shadow DB) | Medium | ✅ Removed unapplied broken migrations |
+
 ## Remaining Issues
 
 | Issue | Severity | File(s) |
 |---|---|---|
-| Donor Finder is a stub | High | `app/hospital/donor-finder/page.tsx` |
-| No donor location field → can't search by location | Medium | `prisma/schema.prisma` |
 | `inventory` JSON blob — no type safety, can't query | Medium | `prisma/schema.prisma` |
 | Sidebar `userName` prop never passed by layouts | Low | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
 | Static nav links — no badge counts | Low | `components/layout/sidebar.tsx` |

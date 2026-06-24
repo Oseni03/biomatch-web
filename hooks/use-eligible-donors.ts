@@ -1,9 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { listDonors } from "@/servers/user";
+import type { ListDonorsFilters } from "@/servers/user";
 
-export function useEligibleDonors() {
+export function useEligibleDonors(filters?: ListDonorsFilters) {
+	const queryKey = ["eligible-donors", filters ?? {}];
+
 	return useQuery({
-		queryKey: ["eligible-donors"],
-		queryFn: () => listDonors({ eligibleOnly: true, pageSize: 20 }),
+		queryKey,
+		queryFn: () =>
+			listDonors({
+				pageSize: 20,
+				...filters,
+			}),
 	});
 }
