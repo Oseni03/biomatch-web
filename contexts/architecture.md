@@ -35,7 +35,7 @@
 
 ### Current Models
 
-**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), IncentiveClaim. *Planned additions: `location`, `availability`, `isActive`, `hmoTier`, `hospitalStaffRole`, `hospitalId`.*
+**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location`, `availability`, `isActive`, `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), IncentiveClaim. *Planned additions: `hmoTier`, `hospitalStaffRole`, `hospitalId`.*
 
 **HospitalBank** — Blood bank record. `hospitalName`, `location` (string), `inventory` (JSON blob of `Record<string, number>`), `managedBy` (optional User FK).
 

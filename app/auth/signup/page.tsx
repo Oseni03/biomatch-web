@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heart, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Heart, ArrowLeft, Eye, EyeOff, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -22,6 +22,9 @@ export default function SignupPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
+	const [location, setLocation] = useState("");
+	const [availability, setAvailability] = useState("");
+	const [receiveAlerts, setReceiveAlerts] = useState(true);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -31,6 +34,11 @@ export default function SignupPage() {
 
 		if (!name || !email || !password) {
 			setError("Please complete all required fields");
+			return;
+		}
+
+		if (role === "donor" && !location) {
+			setError("Location is required for donors");
 			return;
 		}
 
@@ -46,6 +54,9 @@ export default function SignupPage() {
 			password,
 			fullName: name,
 			role,
+			location: role === "donor" ? location : undefined,
+			availability: role === "donor" ? availability || undefined : undefined,
+			isActive: role === "donor" ? receiveAlerts : undefined,
 		});
 
 		if (result?.error) {
@@ -195,6 +206,47 @@ export default function SignupPage() {
 								</button>
 							</div>
 						</div>
+
+						{role === "donor" && (
+							<>
+								<div>
+									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+										Location *
+									</label>
+									<input
+										type="text"
+										value={location}
+										onChange={(e) => setLocation(e.target.value)}
+										placeholder="e.g. Ikeja, Lagos"
+										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+										required
+									/>
+								</div>
+								<div>
+									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+										Availability (optional)
+									</label>
+									<input
+										type="text"
+										value={availability}
+										onChange={(e) => setAvailability(e.target.value)}
+										placeholder="e.g. weekends, evenings"
+										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+									/>
+								</div>
+								<label className="flex items-center gap-3 cursor-pointer">
+									<input
+										type="checkbox"
+										checked={receiveAlerts}
+										onChange={(e) => setReceiveAlerts(e.target.checked)}
+										className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-400"
+									/>
+									<span className="text-sm text-gray-700 dark:text-zinc-300">
+										Receive emergency alerts
+									</span>
+								</label>
+							</>
+						)}
 
 						<Button
 							type="submit"

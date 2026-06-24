@@ -10,18 +10,18 @@ export async function signUpWithProfile(formData: {
 	password: string;
 	fullName: string;
 	role: "donor" | "hospital" | "admin";
+	location?: string;
+	availability?: string;
+	isActive?: boolean;
 }) {
-	const { email, password, fullName, role } = formData;
+	const { email, password, fullName, role, location, availability, isActive } = formData;
 	try {
-		// 1. BetterAuth sign up
 		const data = await auth.api.signUpEmail({
 			body: {
 				email,
 				password,
 				role,
 				name: fullName,
-				// role is usually not passed directly to BetterAuth unless you customized the schema
-				// If you added role to BetterAuth user, pass it here
 			},
 		});
 
@@ -35,11 +35,21 @@ export async function signUpWithProfile(formData: {
 					userId: data.user.id,
 				},
 			});
+
+			if (location || availability !== undefined || isActive !== undefined) {
+				await prisma.user.update({
+					where: { id: data.user.id },
+					data: {
+						...(location && { location }),
+						...(availability !== undefined && { availability }),
+						...(isActive !== undefined && { isActive }),
+					},
+				});
+			}
 		}
 
 		return { success: true, userId: data.user.id };
 	} catch (err: any) {
-		// Optional: cleanup BetterAuth user if profile creation fails
 		console.error("Profile creation failed:", err);
 		return {
 			error: err.message ?? "Account created but profile setup failed",

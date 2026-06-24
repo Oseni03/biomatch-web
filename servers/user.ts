@@ -47,6 +47,9 @@ export async function updateUserProfile(
 		genotype?: string;
 		updatedHealthInfo?: any;
 		lastDonationDate?: Date;
+		location?: string;
+		availability?: string;
+		isActive?: boolean;
 	},
 ) {
 	return prisma.user.update({

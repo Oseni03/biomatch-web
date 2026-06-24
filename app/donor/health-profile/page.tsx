@@ -12,6 +12,9 @@ import {
 	Save,
 	Loader2,
 	CheckCircle2,
+	MapPin,
+	Clock,
+	Bell,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { getUserById, updateUserProfile } from "@/servers/user";
@@ -43,6 +46,9 @@ interface ProfileFormState {
 	blood_group: string;
 	genotype: string;
 	last_donation_date: string;
+	location: string;
+	availability: string;
+	isActive: boolean;
 	health: HealthInfo;
 }
 
@@ -70,6 +76,9 @@ export default function HealthProfilePage() {
 		blood_group: "",
 		genotype: "",
 		last_donation_date: "",
+		location: "",
+		availability: "",
+		isActive: true,
 		health: EMPTY_HEALTH,
 	});
 
@@ -91,6 +100,9 @@ export default function HealthProfilePage() {
 					last_donation_date: user.lastDonationDate
 						? user.lastDonationDate.toString()
 						: "",
+					location: user.location ?? "",
+					availability: user.availability ?? "",
+					isActive: user.isActive ?? true,
 					health: { ...EMPTY_HEALTH, ...existingHealth },
 				});
 				setFormReady(true);
@@ -126,6 +138,9 @@ export default function HealthProfilePage() {
 					? new Date(form.last_donation_date)
 					: undefined,
 				updatedHealthInfo: form.health,
+				location: form.location || undefined,
+				availability: form.availability || undefined,
+				isActive: form.isActive,
 			});
 
 			setSaved(true);
@@ -239,6 +254,48 @@ export default function HealthProfilePage() {
 							/>
 						</Field>
 					</div>
+				</SectionCard>
+
+				<SectionCard icon={MapPin} title="Emergency Preferences">
+					<div className="grid gap-4 sm:grid-cols-2">
+						<Field label="Location" icon={MapPin}>
+							<input
+								value={form.location}
+								onChange={(e) =>
+									setForm({ ...form, location: e.target.value })
+								}
+								className={inputClass}
+								placeholder="e.g. Ikeja, Lagos"
+							/>
+						</Field>
+						<Field label="Availability" icon={Clock}>
+							<input
+								value={form.availability}
+								onChange={(e) =>
+									setForm({ ...form, availability: e.target.value })
+								}
+								className={inputClass}
+								placeholder="e.g. weekends, evenings"
+							/>
+						</Field>
+					</div>
+					<label className="mt-4 flex items-center gap-3 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={!form.isActive}
+							onChange={(e) =>
+								setForm({ ...form, isActive: !e.target.checked })
+							}
+							className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-400"
+						/>
+						<span className="flex items-center gap-1.5 text-sm text-gray-700">
+							<Bell className="h-3.5 w-3.5 text-gray-400" />
+							Pause emergency alerts
+						</span>
+					</label>
+					<p className="mt-1.5 text-xs text-gray-400">
+						When paused, you won&apos;t receive emergency donation requests.
+					</p>
 				</SectionCard>
 
 				<SectionCard icon={Activity} title="Vitals">

@@ -104,10 +104,10 @@ biomatch/
 │   └── utils.ts                    # cn() clsx+tailwind-merge helper
 │
 ├── servers/                        # Server Actions ("use server")
-│   ├── auth.ts                     # signUpWithProfile(), loginWithRole()
+│   ├── auth.ts                     # signUpWithProfile() (incl. location, availability, isActive), loginWithRole()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
-│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile(), updateUserRole(), listDonors() (paginated, location filter)
+│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter)
 │   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
 │
 ├── generated/
@@ -120,7 +120,7 @@ biomatch/
 │       └── internal/
 │
 ├── prisma/
-│   ├── schema.prisma               # Data model (User w/ location, HospitalBank, Wallet, IncentiveClaim, Session, Account, Verification)
+│   ├── schema.prisma               # Data model (User w/ location, availability, isActive, HospitalBank, Wallet, IncentiveClaim, Session, Account, Verification)
 │   └── migrations/                 # 3 migration folders (broken intermediate migrations removed)
 │
 ├── proxy.ts                       # Edge proxy — session check via auth.api.getSession, RBAC guard
@@ -172,6 +172,14 @@ Shared patterns:
 | Donor Finder is a stub | High | ✅ Full page with filters, table, pagination |
 | No donor location field → can't search by location | Medium | ✅ Added `location` to User schema |
 | Broken Prisma migrations (type mismatch in shadow DB) | Medium | ✅ Removed unapplied broken migrations |
+
+## Resolved in Issue 08
+
+| Issue | Severity | Status |
+|---|---|---|
+| No availability or alert opt-in for donors | High | ✅ Added `availability`, `isActive` to User schema, signup form, health profile |
+| Signup lacks location field | Medium | ✅ Location field added to signup form (required for donors) |
+| Health profile can't manage alert preferences | Low | ✅ Added emergency preferences section with location, availability, pause toggle |
 
 ## Remaining Issues
 
