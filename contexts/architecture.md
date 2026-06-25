@@ -13,7 +13,7 @@
 | Database | PostgreSQL |
 | Auth | better-auth (email/password) |
 | Charts | recharts + @tremor/react (installed, not yet used) |
-| Data Fetching | Server actions (`servers/`) + `@tanstack/react-query` (installed, not yet used) |
+| Data Fetching | Server actions (`servers/`) + `@tanstack/react-query` (in use across all pages) |
 | Toast | sonner |
 | Theme | next-themes |
 
@@ -102,6 +102,7 @@
 - **Server Actions**: All DB logic in `servers/*.ts` with `"use server"` directive. Pages import and call directly.
 - **Data Fetching**: React Query hooks in `hooks/` wrap server actions. Pages use `useQuery`/`useMutation` directly. `QueryClientProvider` in root layout with SSR-safe `makeQueryClient()`.
 - **Styling**: Tailwind utility classes throughout. All global style blocks removed.
-- **Sidebar**: `components/layout/sidebar.tsx` renders role-specific nav links from `NAV_LINKS` record. Mobile-responsive with hamburger toggle.
+- **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
+- **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
 - **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.

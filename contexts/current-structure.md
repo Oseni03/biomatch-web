@@ -15,7 +15,7 @@ biomatch/
 │   │   └── signup/page.tsx         # Registration form (donor/hospital toggle)
 │   ├── donor/                      # Donor section (role=donor)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="donor"
-│   │   ├── page.tsx                #   Dashboard — rich UI: deferral meter, HMO card, settings, emergency feed, supply chart, donation history, arrival modal. React Query + local state for simulation
+│   │   ├── page.tsx                #   Dashboard — orchestrates 8 extracted components: ActiveMissionTracker, DeferralStatusCard, HmoInsuranceCard, LocationSettingsCard, EmergencyAlertsFeed, BloodSupplyChart, DonationHistoryCard, SuccessModal. React Query + local state for simulation
 │   │   ├── health-profile/page.tsx #   Health/medical form — Tailwind classes, React Query initial load
 │   │   └── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
 │   ├── hospital/                   # Hospital section (role=hospital)
@@ -33,7 +33,15 @@ biomatch/
 │   ├── dashboard/                  # Shared dashboard components (Phase 1)
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
 │   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
-│   ├── donor/                      # Donor-specific components
+│   ├── donor/                      # Donor dashboard components (extracted from page.tsx)
+│   │   ├── active-mission-tracker.tsx #   Red tracking card during active emergency response
+│   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart by group
+│   │   ├── deferral-status-card.tsx #   Circular eligibility countdown + date input
+│   │   ├── donation-history-card.tsx #   Donation history table
+│   │   ├── emergency-alerts-feed.tsx #   Live emergency request cards with accept/decline
+│   │   ├── hmo-insurance-card.tsx  #   Dark HMO insurance card with milestone progress
+│   │   ├── location-settings-card.tsx #   Availability, location, radius, SMS settings form
+│   │   ├── success-modal.tsx       #   Mission completion modal overlay
 │   │   └── eligible-donors-list.tsx #   Donor table — blood group, genotype, location, eligibility badge; reusable by inventory + donor-finder
 │   ├── landing/                    # Landing page sections (8 files)
 │   │   ├── navbar.tsx
@@ -45,7 +53,9 @@ biomatch/
 │   │   ├── join.tsx
 │   │   └── footer.tsx
 │   ├── layout/
-│   │   └── sidebar.tsx             # Shared sidebar — role-based nav, mobile responsive
+│   │   └── sidebar.tsx             # shadcn SidebarProvider + Sidebar + SidebarInset, role-based nav
+│   ├── nav-main.tsx                # Collapsible nav groups with expandable sub-items (shadcn pattern)
+│   ├── nav-user.tsx                # Avatar dropdown with sign out via authClient
 │   ├── ui/                         # shadcn/ui primitives (17 files)
 │   │   ├── avatar.tsx
 │   │   ├── badge.tsx
@@ -61,9 +71,13 @@ biomatch/
 │   │   ├── menubar.tsx
 │   │   ├── select.tsx
 │   │   ├── separator.tsx
+│   │   ├── sidebar.tsx             # shadcn sidebar primitives (SidebarProvider, Sidebar, SidebarInset, etc.)
+│   │   ├── sheet.tsx
+│   │   ├── skeleton.tsx
 │   │   ├── sonner.tsx
 │   │   ├── switch.tsx
-│   │   └── textarea.tsx
+│   │   ├── textarea.tsx
+│   │   └── tooltip.tsx
 │   ├── theme-provider.tsx          # next-themes ThemeProvider wrapper
 │   └── theme-toggle.tsx            # Light/dark toggle
 │
@@ -100,7 +114,7 @@ biomatch/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
 │   ├── auth-client.ts              # createAuthClient() for browser
 │   ├── blood-compatibility.ts      # Blood group compatibility matrix (universal donor/recipient)
-│   ├── donor-types.ts             # UI types: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest
+│   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup(), HOSPITALS_FOR_HISTORY
 │   ├── eligibility.ts              # getEligibility() + ELIGIBILITY_DAYS (extracted from donor page)
 │   ├── prisma.ts                   # Singleton PrismaClient
 │   ├── supabase.ts                 # Legacy — unused, @ts-ignore
@@ -192,4 +206,5 @@ Shared patterns:
 | --------------------------------------------------- | -------- | ------------------------------------------------- |
 | `inventory` JSON blob — no type safety, can't query | Medium   | `prisma/schema.prisma`                            |
 | Sidebar `userName` prop never passed by layouts     | Low      | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
-| Static nav links — no badge counts                  | Low      | `components/layout/sidebar.tsx`                   |
+| Donor page is 1189-line monolith                    | Medium   | ✅ Extracted into 8 components in `components/donor/` |
+| Sidebar rewritten as shadcn primitives              | Low      | ✅ Uses SidebarProvider, Sidebar, NavMain, NavUser |
