@@ -17,7 +17,8 @@ biomatch/
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="donor"
 │   │   ├── page.tsx                #   Dashboard — orchestrates 8 extracted components: ActiveMissionTracker, DeferralStatusCard, HmoInsuranceCard, LocationSettingsCard, EmergencyAlertsFeed, BloodSupplyChart, DonationHistoryCard, SuccessModal. React Query + local state for simulation
 │   │   ├── health-profile/page.tsx #   Health/medical form — Tailwind classes, React Query initial load
-│   │   └── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
+│   │   ├── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
+│   │   └── history/page.tsx        #   Donation history & impact — paginated history table, personal impact stats (donations/points/lives), local monthly demand, eligibility banner
 │   ├── hospital/                   # Hospital section (role=hospital)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="hospital"
 │   │   ├── page.tsx                #   Dashboard — HospitalDashboard orchestrator, localStorage persistence for broadcast requests, session guard
@@ -48,7 +49,7 @@ biomatch/
 │   │   ├── active-mission-tracker.tsx #   Red tracking card during active emergency response
 │   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart by group
 │   │   ├── deferral-status-card.tsx #   Circular eligibility countdown + date input
-│   │   ├── donation-history-card.tsx #   Donation history table
+│   │   ├── donation-history-card.tsx #   Donation history table (legacy — used in dashboard, driven by fake data)
 │   │   ├── emergency-alerts-feed.tsx #   Live emergency request cards with accept/decline
 │   │   ├── hmo-insurance-card.tsx  #   Dark HMO insurance card with milestone progress
 │   │   ├── location-settings-card.tsx #   Availability, location, radius, SMS settings form
@@ -116,6 +117,7 @@ biomatch/
 ├── hooks/
 │   ├── use-scroll-reveal.ts        # IntersectionObserver scroll animation hook
 │   ├── use-donor-dashboard.ts      # React Query: wraps getUserById (incl. wallet)
+│   ├── use-donor-history.ts        # React Query: useDonorHistory(), useLocalDemandStats()
 │   ├── use-wallet.ts               # React Query: wraps getWalletByUserId
 │   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
 │   ├── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
@@ -137,7 +139,7 @@ biomatch/
 │   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus(), getPendingEmergencyRequestsForHospital(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), confirmDonation()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
-│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter)
+│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter), getDonorHistory() (paginated), getLocalDemandStats()
 │   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
 │
 ├── generated/
@@ -227,6 +229,15 @@ Shared patterns:
 | No availability or alert opt-in for donors    | High     | ✅ Added `availability`, `isActive` to User schema, signup form, health profile  |
 | Signup lacks location field                   | Medium   | ✅ Location field added to signup form (required for donors)                     |
 | Health profile can't manage alert preferences | Low      | ✅ Added emergency preferences section with location, availability, pause toggle |
+
+## Resolved in Issue 09
+
+| Issue | Severity | Status |
+|---|---|---|
+| Donor has no real donation history view | High | ✅ `/donor/history` page with paginated real data from completed EmergencyAlerts |
+| No local demand stats | High | ✅ `getLocalDemandStats` shows monthly emergency counts for donor's location |
+| No re-eligibility notification on login | Medium | ✅ Green banner on donor dashboard when deferral period ends |
+| No personal impact stats | Medium | ✅ Impact cards showing total donations, points, lives impacted (2x donations) |
 
 ## Resolved in Issue 06
 

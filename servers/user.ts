@@ -75,6 +75,85 @@ export interface ListDonorsFilters {
 	pageSize?: number;
 }
 
+export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
+	const skip = (page - 1) * pageSize;
+
+	const [alerts, total] = await Promise.all([
+		prisma.emergencyAlert.findMany({
+			where: { donorId: userId, status: "completed" },
+			include: {
+				request: {
+					select: {
+						bloodGroup: true,
+						unitsNeeded: true,
+						createdAt: true,
+						hospital: {
+							select: { name: true, location: true },
+						},
+					},
+				},
+			},
+			orderBy: { updatedAt: "desc" },
+			skip,
+			take: pageSize,
+		}),
+		prisma.emergencyAlert.count({
+			where: { donorId: userId, status: "completed" },
+		}),
+	]);
+
+	const records = alerts.map((a) => ({
+		id: a.id,
+		date: a.updatedAt.toISOString().split("T")[0],
+		hospitalName: a.request.hospital.name,
+		hospitalLocation: a.request.hospital.location,
+		bloodGroup: a.request.bloodGroup,
+		unitsNeeded: a.request.unitsNeeded,
+	}));
+
+	return {
+		records,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+	};
+}
+
+export async function getLocalDemandStats(userId: string) {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { location: true },
+	});
+
+	const startOfMonth = new Date();
+	startOfMonth.setDate(1);
+	startOfMonth.setHours(0, 0, 0, 0);
+
+	const baseWhere: Record<string, unknown> = {
+		createdAt: { gte: startOfMonth },
+	};
+
+	if (user?.location) {
+		baseWhere.hospital = {
+			location: { contains: user.location, mode: "insensitive" },
+		};
+	}
+
+	const [totalThisMonth, criticalThisMonth] = await Promise.all([
+		prisma.emergencyRequest.count({ where: baseWhere as any }),
+		prisma.emergencyRequest.count({
+			where: { ...baseWhere, urgencyLevel: "critical" } as any,
+		}),
+	]);
+
+	return {
+		totalThisMonth,
+		criticalThisMonth,
+		location: user?.location ?? "Unknown",
+	};
+}
+
 export async function listDonors(filters?: ListDonorsFilters) {
 	const page = filters?.page ?? 1;
 	const pageSize = filters?.pageSize ?? 50;
