@@ -139,12 +139,13 @@ biomatch/
 │   └── utils.ts                    # cn() clsx+tailwind-merge helper
 │
 ├── servers/                        # Server Actions ("use server")
-│   ├── auth.ts                     # signUpWithProfile() (incl. location, availability, isActive), loginWithRole()
-│   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus(), getPendingEmergencyRequestsForHospital(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), confirmDonation()
-│   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
+│   ├── auth.ts                     # signUpWithProfile() (incl. locationId, availability, isActive), loginWithRole()
+│   ├── emergency.ts                # createEmergencyRequest() — ancestor-based scoring, expandSearchRadius() — radius tier via getCommonAncestorDepth()
+│   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank() (incl. locationId), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
+│   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getLocationTree()
 │   ├── notification.ts             # sendEmergencyAlertEmail() — sends emergency alert via Resend, logs to NotificationLog
-│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter), getDonorHistory() (paginated), getLocalDemandStats()
+│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. locationId), updateUserRole(), listDonors() (paginated, location filter), getDonorHistory() (paginated), getLocalDemandStats()
 │   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
 │
 ├── generated/
@@ -157,8 +158,9 @@ biomatch/
 │       └── internal/
 │
 ├── prisma/
-│   ├── schema.prisma               # Data model (User w/ location, availability, isActive, HospitalBank, Wallet, IncentiveClaim, EmergencyRequest, EmergencyAlert, NotificationLog, Session, Account, Verification)
-│   └── migrations/                 # 4 migration folders
+│   ├── schema.prisma               # Data model (User w/ locationId, HospitalBank w/ locationId, Location hierarchy, EmergencyRequest, EmergencyAlert, NotificationLog, Wallet, IncentiveClaim, Session, Account, Verification)
+│   ├── seed.ts                     # Seeds Nigerian location hierarchy (6 regions, 37 states, ~120 cities)
+│   └── migrations/                 # 5 migration folders
 │
 ├── proxy.ts                       # Edge proxy — session check via auth.api.getSession, RBAC guard
 ├── package.json                    # Dependencies & scripts
@@ -268,11 +270,20 @@ Shared patterns:
 | No getEmergencyRequestStatus server action | Medium | ✅ Returns single request with alert aggregates + donor details |
 | No getEmergencyHistory server action | Medium | ✅ Paginated history with filters, returns funnel aggregates per request |
 
+## Resolved — Location Hierarchy & Scoring
+
+| Issue | Severity | Status |
+|---|---|---|
+| String-based location matching is fragile (free-text "Ikeja" vs "Ikeja, Lagos") | Medium | ✅ Replaced with Nigerian location hierarchy (6 regions, 37 states, ~120 cities) |
+| No structured location data | Medium | ✅ `Location` model with self-referential parent/children, seeded via `prisma/seed.ts` |
+| Signup uses free-text location input | Medium | ✅ Cascading dropdowns (Region → State → City) on signup form and health profile |
+| No geocoded fallback — locationId is source of truth | Low | ✅ Pure hierarchy-based scoring via `getCommonAncestorDepth()` — same area = 4, same city = 3, same state = 2, same region = 1 |
+| `expandSearchRadius` uses string matching for radius tiers | Medium | ✅ Now uses ancestor depth with radius-tier thresholds (depth >= 4 within 5km, >= 3 within 15km, >= 1 within 25km) |
+| `getLocalDemandStats` uses `contains` filter | Medium | ✅ Now filters by state-level ancestor chain from `locationId` |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |
 | --------------------------------------------------- | -------- | ------------------------------------------------- |
 | `inventory` JSON blob — no type safety, can't query | Medium   | `prisma/schema.prisma`                            |
 | Sidebar `userName` prop never passed by layouts     | Low      | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
-| Donor page is 1189-line monolith                    | Medium   | ✅ Extracted into 8 components in `components/donor/` |
-| Sidebar rewritten as shadcn primitives              | Low      | ✅ Uses SidebarProvider, Sidebar, NavMain, NavUser |

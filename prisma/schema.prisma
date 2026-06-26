@@ -75,6 +75,28 @@ model NotificationLog {
   @@map("notification_logs")
 }
 
+enum LocationType {
+  region
+  state
+  city
+  area
+}
+
+model Location {
+  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String
+  type     LocationType
+  parentId String?      @db.Uuid
+  parent   Location?    @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children Location[]   @relation("LocationHierarchy")
+  users    User[]
+  hospitalBanks HospitalBank[]
+
+  @@index([parentId])
+  @@index([type])
+  @@map("locations")
+}
+
 enum BloodGroup {
   A_PLUS
   A_MINUS
@@ -90,13 +112,16 @@ model HospitalBank {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   hospitalName String
   location     String
+  locationId   String?  @db.Uuid
   inventory    Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
   managedById  String?  @db.Uuid
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 
-  managedBy User? @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  managedBy  User?     @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  locationRel Location? @relation(fields: [locationId], references: [id])
 
+  @@index([locationId])
   @@map("hospital_banks")
 }
 
@@ -180,11 +205,14 @@ model User {
   role              Role        @default(donor)
   updatedHealthInfo Json        @default("{}")
   location          String?
+  locationId        String?     @db.Uuid
   availability      String?
   isActive          Boolean     @default(true)
   lastDonationDate  DateTime?   @db.Timestamptz(6)
   createdAt         DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
+
+  locationRel Location? @relation(fields: [locationId], references: [id])
 
   sessions     Session[]
   accounts     Account[]
@@ -197,6 +225,7 @@ model User {
   @@unique([email])
   @@index([role])
   @@index([bloodGroup])
+  @@index([locationId])
   @@index([lastDonationDate])
   @@map("user")
 }

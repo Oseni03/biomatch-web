@@ -23,11 +23,15 @@ export async function getHospitalBankById(id: string) {
 export async function createHospitalBank(data: {
 	hospitalName: string;
 	location: string;
+	locationId?: string;
 	managedById?: string;
 }) {
 	return prisma.hospitalBank.create({
 		data: {
-			...data,
+			hospitalName: data.hospitalName,
+			location: data.location,
+			locationId: data.locationId,
+			managedById: data.managedById,
 			inventory: {
 				"A+": 0,
 				"A-": 0,

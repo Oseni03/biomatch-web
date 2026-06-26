@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, ArrowLeft, Eye, EyeOff, MapPin, Clock } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { signUpWithProfile } from "@/servers/auth";
+import { getLocations } from "@/servers/location";
 import { toast } from "sonner";
 
 export default function SignupPage() {
@@ -22,11 +23,43 @@ export default function SignupPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const [location, setLocation] = useState("");
+	const [locationId, setLocationId] = useState("");
+	const [regionId, setRegionId] = useState("");
+	const [stateId, setStateId] = useState("");
+	const [cityId, setCityId] = useState("");
+	const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
+	const [states, setStates] = useState<{ id: string; name: string }[]>([]);
+	const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
 	const [availability, setAvailability] = useState("");
 	const [receiveAlerts, setReceiveAlerts] = useState(true);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+
+	useEffect(() => {
+		getLocations(null).then(setRegions);
+	}, []);
+
+	useEffect(() => {
+		if (regionId) {
+			getLocations(regionId).then(setStates);
+			setStateId("");
+			setCityId("");
+			setCities([]);
+		}
+	}, [regionId]);
+
+	useEffect(() => {
+		if (stateId) {
+			getLocations(stateId).then(setCities);
+			setCityId("");
+		}
+	}, [stateId]);
+
+	useEffect(() => {
+		if (cityId) {
+			setLocationId(cityId);
+		}
+	}, [cityId]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -37,7 +70,7 @@ export default function SignupPage() {
 			return;
 		}
 
-		if (role === "donor" && !location) {
+		if (role === "donor" && !locationId) {
 			setError("Location is required for donors");
 			return;
 		}
@@ -54,8 +87,9 @@ export default function SignupPage() {
 			password,
 			fullName: name,
 			role,
-			location: role === "donor" ? location : undefined,
-			availability: role === "donor" ? availability || undefined : undefined,
+			locationId: role === "donor" ? locationId || undefined : undefined,
+			availability:
+				role === "donor" ? availability || undefined : undefined,
 			isActive: role === "donor" ? receiveAlerts : undefined,
 		});
 
@@ -211,16 +245,65 @@ export default function SignupPage() {
 							<>
 								<div>
 									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
-										Location *
+										Region *
 									</label>
-									<input
-										type="text"
-										value={location}
-										onChange={(e) => setLocation(e.target.value)}
-										placeholder="e.g. Ikeja, Lagos"
+									<select
+										value={regionId}
+										onChange={(e) =>
+											setRegionId(e.target.value)
+										}
 										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
 										required
-									/>
+									>
+										<option value="">Select region</option>
+										{regions.map((r) => (
+											<option key={r.id} value={r.id}>
+												{r.name}
+											</option>
+										))}
+									</select>
+								</div>
+								<div>
+									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+										State *
+									</label>
+									<select
+										value={stateId}
+										onChange={(e) =>
+											setStateId(e.target.value)
+										}
+										disabled={!regionId}
+										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600 disabled:opacity-50"
+										required
+									>
+										<option value="">Select state</option>
+										{states.map((s) => (
+											<option key={s.id} value={s.id}>
+												{s.name}
+											</option>
+										))}
+									</select>
+								</div>
+								<div>
+									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+										City / Area *
+									</label>
+									<select
+										value={cityId}
+										onChange={(e) =>
+											setCityId(e.target.value)
+										}
+										disabled={!stateId}
+										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600 disabled:opacity-50"
+										required
+									>
+										<option value="">Select city</option>
+										{cities.map((c) => (
+											<option key={c.id} value={c.id}>
+												{c.name}
+											</option>
+										))}
+									</select>
 								</div>
 								<div>
 									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
@@ -229,7 +312,9 @@ export default function SignupPage() {
 									<input
 										type="text"
 										value={availability}
-										onChange={(e) => setAvailability(e.target.value)}
+										onChange={(e) =>
+											setAvailability(e.target.value)
+										}
 										placeholder="e.g. weekends, evenings"
 										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
 									/>
@@ -238,7 +323,9 @@ export default function SignupPage() {
 									<input
 										type="checkbox"
 										checked={receiveAlerts}
-										onChange={(e) => setReceiveAlerts(e.target.checked)}
+										onChange={(e) =>
+											setReceiveAlerts(e.target.checked)
+										}
 										className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-400"
 									/>
 									<span className="text-sm text-gray-700 dark:text-zinc-300">

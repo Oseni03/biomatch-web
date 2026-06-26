@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import type { BloodGroup, Role } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
+import { buildLocationLabel } from "./location";
 
 const ELIGIBILITY_DAYS = 56;
 
@@ -48,13 +49,22 @@ export async function updateUserProfile(
 		updatedHealthInfo?: any;
 		lastDonationDate?: Date;
 		location?: string;
+		locationId?: string;
 		availability?: string;
 		isActive?: boolean;
 	},
 ) {
+	const updateData: Record<string, unknown> = { ...data };
+	delete updateData.locationId;
+
+	if (data.locationId) {
+		updateData.locationId = data.locationId;
+		updateData.location = await buildLocationLabel(data.locationId);
+	}
+
 	return prisma.user.update({
 		where: { id },
-		data,
+		data: updateData as any,
 		include: { wallet: true },
 	});
 }
@@ -123,7 +133,7 @@ export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
 export async function getLocalDemandStats(userId: string) {
 	const user = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { location: true },
+		select: { location: true, locationId: true },
 	});
 
 	const startOfMonth = new Date();
@@ -134,7 +144,19 @@ export async function getLocalDemandStats(userId: string) {
 		createdAt: { gte: startOfMonth },
 	};
 
-	if (user?.location) {
+	if (user?.locationId) {
+		const state = await prisma.location.findUnique({
+			where: { id: user.locationId },
+			select: { parentId: true },
+		});
+		const stateId = state?.parentId;
+
+		baseWhere.hospital = {
+			locationRel: stateId
+				? { parentId: stateId }
+				: { id: user.locationId },
+		};
+	} else if (user?.location) {
 		baseWhere.hospital = {
 			location: { contains: user.location, mode: "insensitive" },
 		};
@@ -195,6 +217,7 @@ export async function listDonors(filters?: ListDonorsFilters) {
 				genotype: true,
 				lastDonationDate: true,
 				location: true,
+				locationId: true,
 			},
 			orderBy: { createdAt: "desc" },
 			skip,

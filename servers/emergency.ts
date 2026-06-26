@@ -12,6 +12,7 @@ import {
 } from "@/lib/radius-expansion";
 import type { DonorAlertWithRequest } from "@/lib/donor-types";
 import { sendEmergencyAlertEmail } from "./notification";
+import { getCommonAncestorDepth } from "./location";
 
 export async function createEmergencyRequest(data: {
 	hospitalId: string;
@@ -45,32 +46,43 @@ export async function createEmergencyRequest(data: {
 				{ lastDonationDate: { lt: cutoffDate } },
 			],
 		},
-		select: { id: true, location: true, name: true },
+		select: { id: true, location: true, locationId: true, name: true },
 	});
 
 	const requestLocation = await prisma.user.findUnique({
 		where: { id: data.hospitalId },
-		select: { location: true, name: true },
+		select: { location: true, locationId: true, name: true },
 	});
 
-	const hospitalArea = requestLocation?.location ?? "";
-	const hospitalAreaNormalized = hospitalArea.toLowerCase();
+	const scored = await Promise.all(
+		matchedDonors.map(async (donor) => {
+			let score = 0;
 
-	const scored = matchedDonors.map((donor) => {
-		const donorArea = (donor.location ?? "").toLowerCase();
-		let score = 0;
-		if (donorArea === hospitalAreaNormalized) {
-			score = 2;
-		} else if (
-			donorArea &&
-			hospitalAreaNormalized &&
-			(donorArea.includes(hospitalAreaNormalized) ||
-				hospitalAreaNormalized.includes(donorArea))
-		) {
-			score = 1;
-		}
-		return { ...donor, score };
-	});
+			if (donor.locationId && requestLocation?.locationId) {
+				score = await getCommonAncestorDepth(
+					donor.locationId,
+					requestLocation.locationId,
+				);
+			} else {
+				const donorArea = (donor.location ?? "").toLowerCase();
+				const hospitalArea = (
+					requestLocation?.location ?? ""
+				).toLowerCase();
+				if (donorArea && donorArea === hospitalArea) {
+					score = 2;
+				} else if (
+					donorArea &&
+					hospitalArea &&
+					(donorArea.includes(hospitalArea) ||
+						hospitalArea.includes(donorArea))
+				) {
+					score = 1;
+				}
+			}
+
+			return { ...donor, score };
+		}),
+	);
 
 	scored.sort((a, b) => b.score - a.score);
 
@@ -251,8 +263,6 @@ export async function expandSearchRadius(requestId: string) {
 	const alreadyAlertedIds = request.alerts.map((a) => a.donorId);
 
 	const compatibleGroups = getCompatibleDonorGroups(request.bloodGroup);
-	const hospitalLocation = (request.hospital.location ?? "").toLowerCase();
-	const hospitalLocationNormalized = hospitalLocation.toLowerCase();
 
 	const cutoffDate = new Date();
 	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
@@ -268,28 +278,61 @@ export async function expandSearchRadius(requestId: string) {
 				{ lastDonationDate: { lt: cutoffDate } },
 			],
 		},
-		select: { id: true, location: true, name: true },
+		select: { id: true, location: true, locationId: true, name: true },
 	});
 
-	const newDonors = potentialDonors.filter((donor) => {
-		const donorArea = (donor.location ?? "").toLowerCase();
-		if (!donorArea) return false;
-
-		if (request.searchRadius <= 5) {
-			return donorArea === hospitalLocationNormalized;
-		}
-		if (request.searchRadius <= 15) {
-			return (
-				donorArea.includes(hospitalLocationNormalized) ||
-				hospitalLocationNormalized.includes(donorArea)
-			);
-		}
-		return true;
+	const hospitalId = request.hospital.id;
+	const hospitalLoc = await prisma.user.findUnique({
+		where: { id: hospitalId },
+		select: { locationId: true, location: true },
 	});
 
-	if (newDonors.length > 0) {
+	const newDonors = await Promise.all(
+		potentialDonors.map(async (donor) => {
+			let score = 0;
+
+			if (donor.locationId && hospitalLoc?.locationId) {
+				score = await getCommonAncestorDepth(
+					donor.locationId,
+					hospitalLoc.locationId,
+				);
+			}
+
+			if (score === 0) {
+				const donorArea = (donor.location ?? "").toLowerCase();
+				const hospitalArea = (
+					hospitalLoc?.location ?? ""
+				).toLowerCase();
+				if (!donorArea) return null;
+				if (request.searchRadius <= 5) {
+					return donorArea === hospitalArea ? donor : null;
+				}
+				if (request.searchRadius <= 15) {
+					return donorArea.includes(hospitalArea) ||
+						hospitalArea.includes(donorArea)
+						? donor
+						: null;
+				}
+				return donor;
+			}
+
+			const radiusThreshold =
+				request.searchRadius <= 5
+					? 4
+					: request.searchRadius <= 15
+						? 3
+						: 1;
+			return score >= radiusThreshold ? donor : null;
+		}),
+	);
+
+	const filteredNewDonors = newDonors.filter(
+		(d): d is (typeof potentialDonors)[number] => d !== null,
+	);
+
+	if (filteredNewDonors.length > 0) {
 		await prisma.emergencyAlert.createMany({
-			data: newDonors.map((donor) => ({
+			data: filteredNewDonors.map((donor) => ({
 				requestId: request.id,
 				donorId: donor.id,
 				status: "alerted",
@@ -306,8 +349,8 @@ export async function expandSearchRadius(requestId: string) {
 		expanded: true,
 		reason: "expanded",
 		searchRadius: newRadius,
-		newDonorsAdded: newDonors.length,
-		totalDonors: request.alerts.length + newDonors.length,
+		newDonorsAdded: filteredNewDonors.length,
+		totalDonors: request.alerts.length + filteredNewDonors.length,
 	};
 }
 

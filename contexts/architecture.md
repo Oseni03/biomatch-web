@@ -24,9 +24,10 @@
 - `BloodGroup`: `A_PLUS | A_MINUS | B_PLUS | B_MINUS | AB_PLUS | AB_MINUS | O_PLUS | O_MINUS`
 - `IncentiveType`: `hmo_voucher | gym_discount`
 - `ClaimStatus`: `pending | approved | redeemed`
-- `UrgencyLevel` (planned): `standard | critical` — for EmergencyRequest
-- `RequestStatus` (planned): `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
-- `AlertStatus` (planned): `alerted | opened | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
+- `LocationType`: `region | state | city | area` — for Location hierarchy
+- `UrgencyLevel`: `standard | critical` — for EmergencyRequest
+- `RequestStatus`: `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
+- `AlertStatus`: `alerted | opened | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
 - `EmergencyMatchRequest.status` (UI type in `lib/donor-types.ts`): `pending | matched | completed`
 - `HmoTier` (planned): `none | basic | upgraded` — for User
 - `NotificationChannel`: `email` — for NotificationLog
@@ -36,9 +37,11 @@
 
 ### Current Models
 
-**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location`, `availability`, `isActive`, `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), IncentiveClaim. *Planned additions: `hmoTier`, `hospitalStaffRole`, `hospitalId`.*
+**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location` (display string), `locationId` (FK to Location), `availability`, `isActive`, `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), IncentiveClaim, Location. *Planned additions: `hmoTier`, `hospitalStaffRole`, `hospitalId`.*
 
-**HospitalBank** — Blood bank record. `hospitalName`, `location` (string), `inventory` (JSON blob of `Record<string, number>`), `managedBy` (optional User FK).
+**HospitalBank** — Blood bank record. `hospitalName`, `location` (string), `locationId` (FK to Location), `inventory` (JSON blob of `Record<string, number>`), `managedBy` (optional User FK).
+
+**Location** — Nigerian location hierarchy. `name`, `type` (region/state/city/area), `parentId` (self-referential FK). Relations to: User (users), HospitalBank (hospitalBanks). Seed data in `prisma/seed.ts` covers 6 regions, 37 states, ~120 cities. Helpers in `servers/location.ts`.
 
 **Wallet** — One per donor. `points` (int), `lifetimeDonations` (int).
 
@@ -111,6 +114,7 @@
 - **Data Fetching**: React Query hooks in `hooks/` wrap server actions. Pages use `useQuery`/`useMutation` directly. `QueryClientProvider` in root layout with SSR-safe `makeQueryClient()`.
 - **Styling**: Tailwind utility classes throughout. All global style blocks removed.
 - **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
+- **Location Scoring**: Nigerian location hierarchy via `Location` model self-referential FK. Signup/health profile use cascading dropdowns (Region → State → City). Emergency scoring uses `getCommonAncestorDepth()` — same city = 3, state = 2, region = 1. Fallback string matching for users without `locationId`.
 - **Email**: Resend SDK via `lib/email.ts` — sends React Email templates. Set `RESEND_API_KEY` env var for production; logs warning + returns mock ID when absent.
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
 - **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.

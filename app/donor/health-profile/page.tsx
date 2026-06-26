@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
 	Droplet,
 	Ruler,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { getUserById, updateUserProfile } from "@/servers/user";
+import { getLocations } from "@/servers/location";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SectionCard } from "@/components/dashboard/section-card";
@@ -47,6 +48,10 @@ interface ProfileFormState {
 	genotype: string;
 	last_donation_date: string;
 	location: string;
+	locationId: string;
+	regionId: string;
+	stateId: string;
+	cityId: string;
 	availability: string;
 	isActive: boolean;
 	health: HealthInfo;
@@ -77,6 +82,10 @@ export default function HealthProfilePage() {
 		genotype: "",
 		last_donation_date: "",
 		location: "",
+		locationId: "",
+		regionId: "",
+		stateId: "",
+		cityId: "",
 		availability: "",
 		isActive: true,
 		health: EMPTY_HEALTH,
@@ -85,6 +94,31 @@ export default function HealthProfilePage() {
 	const [formReady, setFormReady] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [saved, setSaved] = useState(false);
+	const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
+	const [states, setStates] = useState<{ id: string; name: string }[]>([]);
+	const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
+
+	useEffect(() => {
+		getLocations(null).then(setRegions);
+	}, []);
+
+	useEffect(() => {
+		if (form.regionId) {
+			getLocations(form.regionId).then(setStates);
+		}
+	}, [form.regionId]);
+
+	useEffect(() => {
+		if (form.stateId) {
+			getLocations(form.stateId).then(setCities);
+		}
+	}, [form.stateId]);
+
+	useEffect(() => {
+		if (form.cityId) {
+			setForm((prev) => ({ ...prev, locationId: form.cityId }));
+		}
+	}, [form.cityId]);
 
 	const { isLoading: profileLoading } = useQuery({
 		queryKey: ["health-profile", session?.user?.id],
@@ -93,6 +127,22 @@ export default function HealthProfilePage() {
 			if (user) {
 				const existingHealth = (user.updatedHealthInfo ??
 					{}) as Partial<HealthInfo>;
+
+				let regionId = "";
+				let stateId = "";
+				let cityId = "";
+
+				if (user.locationId) {
+					const ancestors = await import("@/servers/location").then(
+						(m) => m.getAncestors(user.locationId!),
+					);
+					for (const a of ancestors) {
+						if (a.type === "region") regionId = a.id;
+						else if (a.type === "state") stateId = a.id;
+						else if (a.type === "city") cityId = a.id;
+					}
+				}
+
 				setForm({
 					full_name: user.name ?? "",
 					blood_group: user.bloodGroup ?? "",
@@ -101,6 +151,10 @@ export default function HealthProfilePage() {
 						? user.lastDonationDate.toString()
 						: "",
 					location: user.location ?? "",
+					locationId: user.locationId ?? "",
+					regionId,
+					stateId,
+					cityId,
 					availability: user.availability ?? "",
 					isActive: user.isActive ?? true,
 					health: { ...EMPTY_HEALTH, ...existingHealth },
@@ -139,6 +193,7 @@ export default function HealthProfilePage() {
 					: undefined,
 				updatedHealthInfo: form.health,
 				location: form.location || undefined,
+				locationId: form.locationId || undefined,
 				availability: form.availability || undefined,
 				isActive: form.isActive,
 			});
@@ -258,21 +313,75 @@ export default function HealthProfilePage() {
 
 				<SectionCard icon={MapPin} title="Emergency Preferences">
 					<div className="grid gap-4 sm:grid-cols-2">
-						<Field label="Location" icon={MapPin}>
-							<input
-								value={form.location}
+						<Field label="Region" icon={MapPin}>
+							<select
+								value={form.regionId}
 								onChange={(e) =>
-									setForm({ ...form, location: e.target.value })
+									setForm({
+										...form,
+										regionId: e.target.value,
+										stateId: "",
+										cityId: "",
+										locationId: "",
+									})
 								}
 								className={inputClass}
-								placeholder="e.g. Ikeja, Lagos"
-							/>
+							>
+								<option value="">Select region</option>
+								{regions.map((r) => (
+									<option key={r.id} value={r.id}>
+										{r.name}
+									</option>
+								))}
+							</select>
+						</Field>
+						<Field label="State">
+							<select
+								value={form.stateId}
+								onChange={(e) =>
+									setForm({
+										...form,
+										stateId: e.target.value,
+										cityId: "",
+										locationId: "",
+									})
+								}
+								disabled={!form.regionId}
+								className={inputClass}
+							>
+								<option value="">Select state</option>
+								{states.map((s) => (
+									<option key={s.id} value={s.id}>
+										{s.name}
+									</option>
+								))}
+							</select>
+						</Field>
+						<Field label="City / Area">
+							<select
+								value={form.cityId}
+								onChange={(e) =>
+									setForm({ ...form, cityId: e.target.value })
+								}
+								disabled={!form.stateId}
+								className={inputClass}
+							>
+								<option value="">Select city</option>
+								{cities.map((c) => (
+									<option key={c.id} value={c.id}>
+										{c.name}
+									</option>
+								))}
+							</select>
 						</Field>
 						<Field label="Availability" icon={Clock}>
 							<input
 								value={form.availability}
 								onChange={(e) =>
-									setForm({ ...form, availability: e.target.value })
+									setForm({
+										...form,
+										availability: e.target.value,
+									})
 								}
 								className={inputClass}
 								placeholder="e.g. weekends, evenings"
@@ -284,7 +393,10 @@ export default function HealthProfilePage() {
 							type="checkbox"
 							checked={!form.isActive}
 							onChange={(e) =>
-								setForm({ ...form, isActive: !e.target.checked })
+								setForm({
+									...form,
+									isActive: !e.target.checked,
+								})
 							}
 							className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-400"
 						/>
@@ -294,7 +406,8 @@ export default function HealthProfilePage() {
 						</span>
 					</label>
 					<p className="mt-1.5 text-xs text-gray-400">
-						When paused, you won&apos;t receive emergency donation requests.
+						When paused, you won&apos;t receive emergency donation
+						requests.
 					</p>
 				</SectionCard>
 
@@ -432,7 +545,10 @@ export default function HealthProfilePage() {
 					</div>
 				</SectionCard>
 
-				<SectionCard icon={CalendarClock} title="Last Medical Screening">
+				<SectionCard
+					icon={CalendarClock}
+					title="Last Medical Screening"
+				>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field label="Screening date">
 							<input
