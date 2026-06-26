@@ -11,6 +11,7 @@ import {
 	canExpand,
 } from "@/lib/radius-expansion";
 import type { DonorAlertWithRequest } from "@/lib/donor-types";
+import { sendEmergencyAlertEmail } from "./notification";
 
 export async function createEmergencyRequest(data: {
 	hospitalId: string;
@@ -80,6 +81,24 @@ export async function createEmergencyRequest(data: {
 				donorId: donor.id,
 				status: "alerted",
 			})),
+		});
+
+		const createdAlerts = await prisma.emergencyAlert.findMany({
+			where: { requestId: request.id },
+			select: { id: true },
+		});
+
+		Promise.allSettled(
+			createdAlerts.map((a) => sendEmergencyAlertEmail(a.id)),
+		).then((results) => {
+			const failed = results.filter(
+				(r) => r.status === "rejected",
+			).length;
+			if (failed > 0) {
+				console.error(
+					`${failed}/${createdAlerts.length} notification emails failed for request ${request.id}`,
+				);
+			}
 		});
 	}
 

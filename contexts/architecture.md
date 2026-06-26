@@ -29,8 +29,8 @@
 - `AlertStatus` (planned): `alerted | opened | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
 - `EmergencyMatchRequest.status` (UI type in `lib/donor-types.ts`): `pending | matched | completed`
 - `HmoTier` (planned): `none | basic | upgraded` — for User
-- `NotificationChannel` (planned): `push | sms` — for NotificationLog
-- `NotificationStatus` (planned): `sent | delivered | opened | failed` — for NotificationLog
+- `NotificationChannel`: `email` — for NotificationLog
+- `NotificationStatus`: `sent | delivered | opened | failed` — for NotificationLog
 - `PartnerOrgStatus` (planned): `pending | active | suspended` — for PartnerOrganization
 - `HospitalStaffRole` (planned): `admin | requester | viewer` — for User.hospitalStaffRole
 
@@ -54,10 +54,9 @@
 
 - **EmergencyRequest** — id, hospitalId (FK to User), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt. Server actions: createEmergencyRequest(), getEmergencyRequestStatus(), getEmergencyHistory(), getPendingEmergencyRequestsForHospital(), expandSearchRadius()
 - **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, respondedAt, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus()
+- **NotificationLog** — id, alertId (FK to EmergencyAlert), channel (email), status (sent/failed/delivered/opened), providerMessageId, sentAt, deliveredAt, openedAt, errorMessage. Server actions: sendEmergencyAlertEmail() in servers/notification.ts
 
 ### Planned Models (from PRD Issues)
-
-- **NotificationLog** — id, alertId (FK to EmergencyAlert), channel, status, providerMessageId, sentAt, deliveredAt, openedAt, errorMessage
 - **HmoEnrollment** — id, userId, tier, providerEnrollmentId, enrolledAt, upgradedAt
 - **PartnerOrganization** — id, name, contactEmail, contactPhone, logo, status, memberCount, createdAt, updatedAt
 - **PartnerMember** — id, organizationId (FK to PartnerOrganization), userId (FK to User), invitedAt, joinedAt, isActive
@@ -112,6 +111,7 @@
 - **Data Fetching**: React Query hooks in `hooks/` wrap server actions. Pages use `useQuery`/`useMutation` directly. `QueryClientProvider` in root layout with SSR-safe `makeQueryClient()`.
 - **Styling**: Tailwind utility classes throughout. All global style blocks removed.
 - **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
+- **Email**: Resend SDK via `lib/email.ts` — sends React Email templates. Set `RESEND_API_KEY` env var for production; logs warning + returns mock ID when absent.
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
 - **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
 - **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state, funnel seed data, radius expansion countdown, and donor-response simulation; delegates rendering to 8 extracted sub-components in `components/hospital/` including LiveStatusPanel (per-request funnel with donor lists, 5s polling) and EmergencyHistory (filterable/paginated past requests).

@@ -10,7 +10,7 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 | 02 | AFK | Donor Alert & Response (In-App) | 01 | AFK | ✅ |
 | 03 | AFK | Radius Expansion | 02 | AFK | ✅ |
 | 04 | AFK | Hospital Live Request Status Panel | 02 | AFK | ✅ |
-| 05 | HITL | Notification Delivery (Push + SMS) | 01 | HITL | |
+| 05 | HITL | Notification Delivery (Push + SMS) | 01 | HITL | 🔶 (email done) |
 | 06 | AFK | Donation Confirmation | 02 | AFK | ✅ |
 | 07 | HITL | HMO Incentive Integration | 06 | HITL | |
 | 08 | AFK | Donor Registration Enhancements | — | AFK | ✅ |
@@ -22,7 +22,7 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 
 These issues require human input before an AFK agent can implement:
 
-- **Issue 05**: Push channel choice (browser vs FCM vs APNs), SMS provider (Twilio/Africa's Talking/Termii), "opened" tracking mechanism
+- **Issue 05**: Push channel choice (browser vs FCM vs APNs), SMS provider (Twilio/Africa's Talking/Termii), "opened" tracking mechanism. *Email notification implemented as incremental step (Resend + React Email).*
 - **Issue 07**: HMO partner API contract, coverage tier details, enrollment data requirements
 - **Issue 10**: Hospital staff role definitions, analytics KPI selection, export format
 - **Issue 11**: Partner onboarding flow, invitation method, dashboard access model
@@ -79,7 +79,7 @@ Recommended implementation order:
 4. ~~Issue 03~~ ✅ (radius expansion — depends on 02)
 5. ~~Issue 04~~ ✅ (status panel — depends on 02)
 6. ~~Issue 06~~ ✅ (donation confirmation — depends on 02)
-7. Issue 05 (notifications — depends on 01, can parallel with 02-06)
+7. ~Issue 05 (notifications — depends on 01, can parallel with 02-06)~ 🔶 Email notification implemented (Resend + React Email + NotificationLog). Push/SMS still pending HITL decisions.
 8. Issue 07 (HMO — depends on 06)
 9. ~~Issue 09~~ ✅ (donor history — depends on 06, 08)
 10. Issue 10 (admin — depends on 04, 06, can parallel with 09)

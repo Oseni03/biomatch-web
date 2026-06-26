@@ -2,6 +2,19 @@
 
 Implement push notification and SMS delivery for emergency alerts. When the matching engine selects donors, push notifications are sent as the primary channel. For standard urgency, SMS is sent as a fallback if the push is not opened within 2 minutes. For critical urgency, SMS is sent simultaneously with push. Delivery status is tracked per donor per channel.
 
+## What's Done (Email — June 2026)
+
+Email notification is implemented as an incremental step:
+
+- **Resend** SDK + `lib/email.ts` — sends React Email templates, mocks when `RESEND_API_KEY` not set
+- **`emails/emergency-alert.tsx`** — React Email template with blood type, hospital name, distance, urgency, accept button
+- **`servers/notification.ts`** — `sendEmergencyAlertEmail(alertId)` server action, logs to `NotificationLog`
+- **Wired** into `servers/emergency.ts:createEmergencyRequest()` — sends email to each matched donor immediately after `createMany`, non-blocking via `Promise.allSettled`
+- **`NotificationLog`** model in Prisma — `alertId`, `channel` (email), `status` (sent/failed/delivered/opened), `providerMessageId`, `errorMessage`
+- **Env vars**: `RESEND_API_KEY`, `EMAIL_FROM=noreply@biomatch.com`
+
+**Remaining**: Push notifications and SMS fallback (awaiting HITL decisions on providers).
+
 ### HITL Decisions Required
 
 1. **Push channel**: Browser push API (web app) vs FCM (Android) vs APNs (iOS) — determines implementation approach

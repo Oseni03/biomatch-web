@@ -93,6 +93,9 @@ biomatch/
 │   ├── theme-provider.tsx          # next-themes ThemeProvider wrapper
 │   └── theme-toggle.tsx            # Light/dark toggle
 │
+├── emails/                         # React Email templates
+│   └── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
+│
 ├── contexts/                       # AI context & plans directory
 │   ├── architecture.md             # Tech stack, data model, routing, patterns
 │   ├── current-structure.md        # This file — full file tree
@@ -129,6 +132,7 @@ biomatch/
 │   ├── blood-compatibility.ts      # Blood group compatibility matrix (universal donor/recipient)
 │   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup(), HOSPITALS_FOR_HISTORY
 │   ├── eligibility.ts              # getEligibility() + ELIGIBILITY_DAYS (extracted from donor page)
+│   ├── email.ts                    # Resend client + sendEmail() wrapper — sends React Email templates; mock mode when no RESEND_API_KEY
 │   ├── prisma.ts                   # Singleton PrismaClient
 │   ├── radius-expansion.ts         # Radius expansion config: INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, EXPANSION_TIMEOUT_MS, MAX_ALERTS_PER_REQUEST, canExpand(), nextRadius(), getRadiusTier()
 │   ├── supabase.ts                 # Legacy — unused, @ts-ignore
@@ -139,6 +143,7 @@ biomatch/
 │   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus(), getPendingEmergencyRequestsForHospital(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), confirmDonation()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
+│   ├── notification.ts             # sendEmergencyAlertEmail() — sends emergency alert via Resend, logs to NotificationLog
 │   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter), getDonorHistory() (paginated), getLocalDemandStats()
 │   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
 │
@@ -152,8 +157,8 @@ biomatch/
 │       └── internal/
 │
 ├── prisma/
-│   ├── schema.prisma               # Data model (User w/ location, availability, isActive, HospitalBank, Wallet, IncentiveClaim, Session, Account, Verification)
-│   └── migrations/                 # 3 migration folders (broken intermediate migrations removed)
+│   ├── schema.prisma               # Data model (User w/ location, availability, isActive, HospitalBank, Wallet, IncentiveClaim, EmergencyRequest, EmergencyAlert, NotificationLog, Session, Account, Verification)
+│   └── migrations/                 # 4 migration folders
 │
 ├── proxy.ts                       # Edge proxy — session check via auth.api.getSession, RBAC guard
 ├── package.json                    # Dependencies & scripts
@@ -245,6 +250,14 @@ Shared patterns:
 |---|---|---|
 | No donation confirmation flow | High | ✅ confirmDonation server action with atomic Prisma transaction — validates "arrived" status, updates lastDonationDate, awards 100 points, increments lifetimeDonations, marks request fulfilled when all units met |
 | No confirm button in live panel | High | ✅ "Confirm Donation" button on each arrived donor row in LiveStatusPanel with window.confirm dialog, toast on success/failure |
+
+## Resolved in Issue 05
+
+| Issue | Severity | Status |
+|---|---|---|
+| No email notification when emergency request created | High | ✅ Email sent via Resend to each matched donor immediately after alert creation; includes blood type, hospital name, distance, accept link |
+| No delivery tracking | Medium | ✅ NotificationLog model records channel, status (sent/failed), providerMessageId, errorMessage per alert |
+| No email infrastructure | High | ✅ Resend SDK + React Email template (emails/emergency-alert.tsx) + lib/email.ts wrapper |
 
 ## Resolved in Issue 04
 

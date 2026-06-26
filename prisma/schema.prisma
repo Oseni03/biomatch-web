@@ -47,6 +47,34 @@ enum AlertStatus {
   completed
 }
 
+enum NotificationChannel {
+  email
+}
+
+enum NotificationStatus {
+  sent
+  delivered
+  opened
+  failed
+}
+
+model NotificationLog {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertId           String               @db.Uuid
+  channel           NotificationChannel
+  status            NotificationStatus   @default(sent)
+  providerMessageId String?
+  sentAt            DateTime             @default(now()) @db.Timestamptz(6)
+  deliveredAt       DateTime?            @db.Timestamptz(6)
+  openedAt          DateTime?            @db.Timestamptz(6)
+  errorMessage      String?
+
+  alert EmergencyAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@map("notification_logs")
+}
+
 enum BloodGroup {
   A_PLUS
   A_MINUS
@@ -115,8 +143,9 @@ model EmergencyAlert {
   createdAt   DateTime     @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
 
-  request EmergencyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  donor   User             @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
+  request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
+  notificationLogs NotificationLog[]
 
   @@index([requestId])
   @@index([donorId])
