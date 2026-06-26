@@ -13,6 +13,8 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { signUpWithProfile } from "@/servers/auth";
+import { AVAILABILITY_OPTIONS } from "@/lib/availability";
+import type { Availability } from "@/generated/prisma/enums";
 import { getLocations } from "@/servers/location";
 import { toast } from "sonner";
 
@@ -30,7 +32,7 @@ export default function SignupPage() {
 	const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
 	const [states, setStates] = useState<{ id: string; name: string }[]>([]);
 	const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
-	const [availability, setAvailability] = useState("");
+	const [availability, setAvailability] = useState<Availability | "">("");
 	const [receiveAlerts, setReceiveAlerts] = useState(true);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
@@ -309,15 +311,25 @@ export default function SignupPage() {
 									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
 										Availability (optional)
 									</label>
-									<input
-										type="text"
+									<select
 										value={availability}
 										onChange={(e) =>
-											setAvailability(e.target.value)
+											setAvailability(e.target.value as Availability | "")
 										}
-										placeholder="e.g. weekends, evenings"
 										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
-									/>
+									>
+										<option value="">
+											Select availability
+										</option>
+										{AVAILABILITY_OPTIONS.map((opt) => (
+											<option
+												key={opt.value}
+												value={opt.value}
+											>
+												{opt.label}
+											</option>
+										))}
+									</select>
 								</div>
 								<label className="flex items-center gap-3 cursor-pointer">
 									<input

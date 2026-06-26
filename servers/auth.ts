@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { buildLocationLabel } from "./location";
+import type { Availability } from "@/generated/prisma/enums";
 
 export async function signUpWithProfile(formData: {
 	email: string;
@@ -12,7 +13,7 @@ export async function signUpWithProfile(formData: {
 	fullName: string;
 	role: "donor" | "hospital" | "admin";
 	locationId?: string;
-	availability?: string;
+	availability?: Availability;
 	isActive?: boolean;
 }) {
 	const {

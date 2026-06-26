@@ -22,6 +22,8 @@ import { getLocations } from "@/servers/location";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SectionCard } from "@/components/dashboard/section-card";
+import { AVAILABILITY_OPTIONS } from "@/lib/availability";
+import type { Availability } from "@/generated/prisma/enums";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const GENOTYPES = ["AA", "AS", "SS", "AC", "SC"];
@@ -52,7 +54,7 @@ interface ProfileFormState {
 	regionId: string;
 	stateId: string;
 	cityId: string;
-	availability: string;
+	availability: Availability | "";
 	isActive: boolean;
 	health: HealthInfo;
 }
@@ -375,17 +377,23 @@ export default function HealthProfilePage() {
 							</select>
 						</Field>
 						<Field label="Availability" icon={Clock}>
-							<input
+							<select
 								value={form.availability}
 								onChange={(e) =>
 									setForm({
 										...form,
-										availability: e.target.value,
+										availability: e.target.value as Availability | "",
 									})
 								}
 								className={inputClass}
-								placeholder="e.g. weekends, evenings"
-							/>
+							>
+								<option value="">Not specified</option>
+								{AVAILABILITY_OPTIONS.map((opt) => (
+									<option key={opt.value} value={opt.value}>
+										{opt.label}
+									</option>
+								))}
+							</select>
 						</Field>
 					</div>
 					<label className="mt-4 flex items-center gap-3 cursor-pointer">

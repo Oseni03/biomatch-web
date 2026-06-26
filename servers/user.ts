@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { BloodGroup, Role } from "@/generated/prisma/enums";
+import type { Availability, BloodGroup, Role } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { buildLocationLabel } from "./location";
 
@@ -50,7 +50,7 @@ export async function updateUserProfile(
 		lastDonationDate?: Date;
 		location?: string;
 		locationId?: string;
-		availability?: string;
+		availability?: Availability;
 		isActive?: boolean;
 	},
 ) {

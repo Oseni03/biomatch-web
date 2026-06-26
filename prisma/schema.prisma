@@ -13,6 +13,15 @@ enum Role {
   admin
 }
 
+enum Availability {
+  weekdays
+  weekends
+  mornings
+  afternoons
+  evenings
+  anytime
+}
+
 enum IncentiveType {
   hmo_voucher
   gym_discount
@@ -206,7 +215,7 @@ model User {
   updatedHealthInfo Json        @default("{}")
   location          String?
   locationId        String?     @db.Uuid
-  availability      String?
+  availability      Availability?
   isActive          Boolean     @default(true)
   lastDonationDate  DateTime?   @db.Timestamptz(6)
   createdAt         DateTime    @default(now()) @db.Timestamptz(6)
