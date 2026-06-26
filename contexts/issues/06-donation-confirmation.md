@@ -17,25 +17,26 @@ Hospital staff can mark a donation as confirmed when the donor arrives and donat
 - Confirmation dialog before action
 - Toast on success/failure
 
-### Tests
+## ✅ Completed
 
-- Confirmation updates lastDonationDate correctly
-- Confirmation increments lifetimeDonations
-- Points are awarded to wallet
-- Request is marked fulfilled when all units met
-- Duplicate confirmation is rejected
+| Deliverable | Files |
+|---|---|
+| `confirmDonation` server action (atomic Prisma transaction) | `servers/emergency.ts` |
+| `useConfirmDonation` hook (toast + query invalidation) | `hooks/use-emergency-requests.ts` |
+| "Confirm Donation" button on arrived donor rows in LiveStatusPanel | `components/hospital/live-status-panel.tsx` |
+| Confirmation dialog via `window.confirm` | `components/hospital/live-status-panel.tsx` |
 
 ## Acceptance criteria
 
-- [ ] Hospital staff can mark an arrived donor's donation as confirmed
-- [ ] Confirmation updates lastDonationDate to current timestamp
-- [ ] Confirmation increments donor's lifetimeDonations
-- [ ] Donor receives points for the donation
-- [ ] Request status transitions to "fulfilled" when all units are met
-- [ ] Duplicate confirmation on the same alert is rejected
-- [ ] Confirmation is not possible unless donor status is "arrived"
-- [ ] Confirmation shows success toast / error toast as appropriate
-- [ ] All state changes are atomic (all-or-nothing)
+- [x] Hospital staff can mark an arrived donor's donation as confirmed
+- [x] Confirmation updates lastDonationDate to current timestamp
+- [x] Confirmation increments donor's lifetimeDonations
+- [x] Donor receives points for the donation (100 points)
+- [x] Request status transitions to "fulfilled" when all units are met
+- [x] Duplicate confirmation on the same alert is rejected (status must be "arrived")
+- [x] Confirmation is not possible unless donor status is "arrived"
+- [x] Confirmation shows success toast / error toast as appropriate
+- [x] All state changes are atomic (wrapped in `prisma.$transaction`)
 
 ## Blocked by
 

@@ -146,7 +146,9 @@ export async function getEmergencyRequestsForHospital(hospitalId: string) {
 	});
 }
 
-export async function getPendingEmergencyRequestsForHospital(hospitalId: string) {
+export async function getPendingEmergencyRequestsForHospital(
+	hospitalId: string,
+) {
 	return prisma.emergencyRequest.findMany({
 		where: {
 			hospitalId,
@@ -159,7 +161,12 @@ export async function getPendingEmergencyRequestsForHospital(hospitalId: string)
 					donorId: true,
 					status: true,
 					donor: {
-						select: { id: true, name: true, location: true, bloodGroup: true },
+						select: {
+							id: true,
+							name: true,
+							location: true,
+							bloodGroup: true,
+						},
 					},
 				},
 			},
@@ -319,7 +326,8 @@ export async function getEmergencyRequestStatus(requestId: string) {
 		declined: request.alerts.filter((a) => a.status === "declined").length,
 		en_route: request.alerts.filter((a) => a.status === "en_route").length,
 		arrived: request.alerts.filter((a) => a.status === "arrived").length,
-		completed: request.alerts.filter((a) => a.status === "completed").length,
+		completed: request.alerts.filter((a) => a.status === "completed")
+			.length,
 	};
 
 	return { ...request, aggregates };
@@ -346,13 +354,13 @@ export async function getEmergencyHistory(
 
 	if (filters?.dateFrom) {
 		where.createdAt = {
-			...(where.createdAt as Record<string, unknown> ?? {}),
+			...((where.createdAt as Record<string, unknown>) ?? {}),
 			gte: new Date(filters.dateFrom),
 		};
 	}
 	if (filters?.dateTo) {
 		where.createdAt = {
-			...(where.createdAt as Record<string, unknown> ?? {}),
+			...((where.createdAt as Record<string, unknown>) ?? {}),
 			lte: new Date(filters.dateTo),
 		};
 	}
@@ -391,7 +399,8 @@ export async function getEmergencyHistory(
 			declined: req.alerts.filter((a) => a.status === "declined").length,
 			en_route: req.alerts.filter((a) => a.status === "en_route").length,
 			arrived: req.alerts.filter((a) => a.status === "arrived").length,
-			completed: req.alerts.filter((a) => a.status === "completed").length,
+			completed: req.alerts.filter((a) => a.status === "completed")
+				.length,
 		};
 		return { ...req, aggregates };
 	});
@@ -497,4 +506,75 @@ export async function updateAlertStatus(
 	}
 
 	return alert;
+}
+
+export async function confirmDonation(alertId: string) {
+	const alert = await prisma.emergencyAlert.findUnique({
+		where: { id: alertId },
+		include: {
+			request: {
+				select: { id: true, unitsNeeded: true },
+			},
+			donor: {
+				select: { id: true, name: true },
+			},
+		},
+	});
+
+	if (!alert) {
+		throw new Error("Alert not found");
+	}
+
+	if (alert.status !== "arrived") {
+		throw new Error(
+			`Cannot confirm donation: alert status is "${alert.status}". Donation can only be confirmed for donors who have arrived.`,
+		);
+	}
+
+	return prisma.$transaction(async (tx) => {
+		const updatedAlert = await tx.emergencyAlert.update({
+			where: { id: alertId },
+			data: { status: "completed" },
+		});
+
+		await tx.user.update({
+			where: { id: alert.donor.id },
+			data: { lastDonationDate: new Date() },
+		});
+
+		await tx.wallet.upsert({
+			where: { userId: alert.donor.id },
+			create: {
+				userId: alert.donor.id,
+				points: 100,
+				lifetimeDonations: 1,
+			},
+			update: {
+				points: { increment: 100 },
+				lifetimeDonations: { increment: 1 },
+			},
+		});
+
+		const completedCount = await tx.emergencyAlert.count({
+			where: {
+				requestId: alert.requestId,
+				status: "completed",
+			},
+		});
+
+		if (completedCount >= alert.request.unitsNeeded) {
+			await tx.emergencyRequest.update({
+				where: { id: alert.requestId },
+				data: { status: "fulfilled" },
+			});
+		}
+
+		return {
+			success: true,
+			donorName: alert.donor.name,
+			requestId: alert.requestId,
+			completedCount,
+			unitsNeeded: alert.request.unitsNeeded,
+		};
+	});
 }

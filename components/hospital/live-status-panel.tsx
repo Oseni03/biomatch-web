@@ -14,7 +14,10 @@ import {
 	Clock,
 } from "lucide-react";
 import { displayBloodGroup } from "@/lib/donor-types";
-import { useEmergencyRequestStatus } from "@/hooks/use-emergency-requests";
+import {
+	useEmergencyRequestStatus,
+	useConfirmDonation,
+} from "@/hooks/use-emergency-requests";
 
 interface LiveStatusPanelProps {
 	requestId: string;
@@ -82,6 +85,7 @@ const STATUS_CONFIG = [
 export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 	const { data: request, isLoading } = useEmergencyRequestStatus(requestId);
 	const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
+	const confirmDonation = useConfirmDonation();
 
 	if (isLoading) {
 		return (
@@ -92,9 +96,7 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 	}
 
 	if (!request) {
-		return (
-			<p className="text-sm text-gray-500">Request not found.</p>
-		);
+		return <p className="text-sm text-gray-500">Request not found.</p>;
 	}
 
 	const bloodGroup = displayBloodGroup(request.bloodGroup);
@@ -105,7 +107,8 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 			<div className="flex items-center justify-between flex-wrap gap-2">
 				<div>
 					<h3 className="font-bold text-lg text-gray-900 dark:text-white">
-						{bloodGroup} — {request.unitsNeeded} unit{request.unitsNeeded > 1 ? "s" : ""}
+						{bloodGroup} — {request.unitsNeeded} unit
+						{request.unitsNeeded > 1 ? "s" : ""}
 					</h3>
 					<p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 font-medium">
 						{request.hospital.name}
@@ -117,7 +120,9 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 							</>
 						)}
 						<span>&bull;</span>
-						<span className="capitalize">{request.urgencyLevel}</span>
+						<span className="capitalize">
+							{request.urgencyLevel}
+						</span>
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -182,8 +187,11 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 											className={`h-4 w-4 ${cfg?.color ?? ""}`}
 										/>
 										<span className="text-sm font-semibold text-gray-900 dark:text-white">
-											{cfg?.label} — {filteredDonors.length} donor
-											{filteredDonors.length !== 1 ? "s" : ""}
+											{cfg?.label} —{" "}
+											{filteredDonors.length} donor
+											{filteredDonors.length !== 1
+												? "s"
+												: ""}
 										</span>
 									</div>
 									<button
@@ -202,11 +210,11 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 										{filteredDonors.map((alert) => (
 											<div
 												key={alert.id}
-												className="px-4 py-3 flex items-center justify-between"
+												className="px-4 py-3 flex items-center justify-between gap-4"
 											>
-												<div className="flex items-center gap-3">
+												<div className="flex items-center gap-3 min-w-0">
 													<div
-														className={`w-8 h-8 rounded-lg ${cfg?.bg ?? ""} flex items-center justify-center ${cfg?.color ?? ""} text-xs font-bold`}
+														className={`w-8 h-8 rounded-lg ${cfg?.bg ?? ""} flex items-center justify-center ${cfg?.color ?? ""} text-xs font-bold shrink-0`}
 													>
 														{alert.donor.name
 															?.split(" ")
@@ -216,10 +224,11 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 															)
 															.join("")
 															.slice(0, 2)
-															.toUpperCase() ?? "?"}
+															.toUpperCase() ??
+															"?"}
 													</div>
 													<div>
-														<p className="text-sm font-medium text-gray-900 dark:text-white">
+														<p className="text-sm font-medium text-gray-900 dark:text-white truncate">
 															{alert.donor.name}
 														</p>
 														<p className="text-xs text-gray-400">
@@ -228,19 +237,52 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 																	.bloodGroup,
 															)}{" "}
 															&bull;{" "}
-															{alert.donor.location ??
+															{alert.donor
+																.location ??
 																"Location unknown"}
 														</p>
 													</div>
 												</div>
-												<span className="text-[10px] text-gray-400 font-mono">
-													{new Date(
-														alert.updatedAt,
-													).toLocaleTimeString([], {
-														hour: "2-digit",
-														minute: "2-digit",
-													})}
-												</span>
+												<div className="flex items-center gap-3 shrink-0">
+													<span className="text-[10px] text-gray-400 font-mono">
+														{new Date(
+															alert.updatedAt,
+														).toLocaleTimeString(
+															[],
+															{
+																hour: "2-digit",
+																minute: "2-digit",
+															},
+														)}
+													</span>
+													{alert.status ===
+														"arrived" && (
+														<button
+															onClick={() => {
+																if (
+																	window.confirm(
+																		`Confirm donation for ${alert.donor.name}? This will update their donation record and award points.`,
+																	)
+																) {
+																	confirmDonation.mutate(
+																		{
+																			alertId:
+																				alert.id,
+																		},
+																	);
+																}
+															}}
+															disabled={
+																confirmDonation.isPending
+															}
+															className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-[10px] font-medium rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
+														>
+															{confirmDonation.isPending
+																? "Confirming..."
+																: "Confirm Donation"}
+														</button>
+													)}
+												</div>
 											</div>
 										))}
 									</div>
@@ -254,12 +296,15 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 			<div className="flex items-center gap-2 text-xs text-gray-400 border-t border-gray-100 dark:border-zinc-800 pt-4">
 				<ArrowRight className="h-3 w-3" />
 				<span>
-					{totalDonors} donor{totalDonors !== 1 ? "s" : ""} alerted &mdash;{" "}
-					{request.aggregates.accepted + request.aggregates.en_route + request.aggregates.arrived + request.aggregates.completed} responded
+					{totalDonors} donor{totalDonors !== 1 ? "s" : ""} alerted
+					&mdash;{" "}
+					{request.aggregates.accepted +
+						request.aggregates.en_route +
+						request.aggregates.arrived +
+						request.aggregates.completed}{" "}
+					responded
 					{request.searchRadius && (
-						<>
-							{" "}&bull; Radius: {request.searchRadius}km
-						</>
+						<> &bull; Radius: {request.searchRadius}km</>
 					)}
 				</span>
 			</div>

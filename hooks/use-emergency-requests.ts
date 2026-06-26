@@ -8,6 +8,7 @@ import {
 	expandSearchRadius,
 	respondToAlert,
 	updateAlertStatus,
+	confirmDonation,
 } from "@/servers/emergency";
 import { toast } from "sonner";
 
@@ -101,6 +102,32 @@ export function useEmergencyHistory(
 		queryKey: ["emergency-history", hospitalId, filters],
 		queryFn: () => getEmergencyHistory(hospitalId!, filters),
 		enabled: !!hospitalId,
+	});
+}
+
+export function useConfirmDonation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ alertId }: { alertId: string }) =>
+			confirmDonation(alertId),
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({
+				queryKey: ["emergency-request-status", data.requestId],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["pending-emergency-requests"],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["donor-alerts"],
+			});
+			toast.success(
+				`Donation confirmed for ${data.donorName}. ${data.completedCount}/${data.unitsNeeded} units completed.`,
+			);
+		},
+		onError: (err: Error) => {
+			toast.error(err.message);
+		},
 	});
 }
 

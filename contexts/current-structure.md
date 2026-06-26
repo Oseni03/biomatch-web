@@ -39,7 +39,7 @@ biomatch/
 │   │   ├── radius-expansion-card.tsx #   Auto-expanding alert radius widget with countdown + radar animation
 │   │   ├── emergency-request-form.tsx #   Toggle form for creating emergency match requests
 │   │   ├── broadcast-stream-card.tsx #   Active dispatch stream — funnel metrics, donor en-route card, confirm arrival
-│   │   ├── live-status-panel.tsx   #   Live funnel detail per active request — per-status donor lists with name, blood group, status badge, timestamps; auto-refreshes 5s polling
+│   │   ├── live-status-panel.tsx   #   Live funnel detail per active request — per-status donor lists with name, blood group, status badge, timestamps; "Confirm Donation" button on arrived rows with window.confirm + toast; auto-refreshes 5s polling
 │   │   ├── emergency-history.tsx   #   Past requests list with filtering (date range, blood type, status), expandable rows showing full funnel breakdown, pagination
 │   │   ├── donor-directory.tsx     #   Proactive donor registry search/filter with inline call actions
 │   │   ├── analytics-dashboard.tsx #   Stats cards + bar chart timeline with CSV export
@@ -119,7 +119,7 @@ biomatch/
 │   ├── use-wallet.ts               # React Query: wraps getWalletByUserId
 │   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
 │   ├── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
-│   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts(), useRespondToAlert(), useUpdateAlertStatus(), usePendingEmergencyRequests(), useExpandSearchRadius(), useEmergencyRequestStatus(), useEmergencyHistory() — auto-refetch 15s (5s for status panel)
+│   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts(), useRespondToAlert(), useUpdateAlertStatus(), usePendingEmergencyRequests(), useExpandSearchRadius(), useEmergencyRequestStatus(), useEmergencyHistory(), useConfirmDonation() — auto-refetch 15s (5s for status panel)
 │
 ├── lib/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
@@ -134,7 +134,7 @@ biomatch/
 │
 ├── servers/                        # Server Actions ("use server")
 │   ├── auth.ts                     # signUpWithProfile() (incl. location, availability, isActive), loginWithRole()
-│   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus(), getPendingEmergencyRequestsForHospital(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory()
+│   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus(), getPendingEmergencyRequestsForHospital(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), confirmDonation()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
 │   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter)
@@ -227,6 +227,13 @@ Shared patterns:
 | No availability or alert opt-in for donors    | High     | ✅ Added `availability`, `isActive` to User schema, signup form, health profile  |
 | Signup lacks location field                   | Medium   | ✅ Location field added to signup form (required for donors)                     |
 | Health profile can't manage alert preferences | Low      | ✅ Added emergency preferences section with location, availability, pause toggle |
+
+## Resolved in Issue 06
+
+| Issue | Severity | Status |
+|---|---|---|
+| No donation confirmation flow | High | ✅ confirmDonation server action with atomic Prisma transaction — validates "arrived" status, updates lastDonationDate, awards 100 points, increments lifetimeDonations, marks request fulfilled when all units met |
+| No confirm button in live panel | High | ✅ "Confirm Donation" button on each arrived donor row in LiveStatusPanel with window.confirm dialog, toast on success/failure |
 
 ## Resolved in Issue 04
 
