@@ -35,10 +35,12 @@ biomatch/
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
 │   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
 │   ├── hospital/                   # Hospital dashboard components (extracted from hospital-dashboard.tsx)
-│   │   ├── hospital-dashboard.tsx  #   Orchestrator — tab nav, funnel state, radius expansion, composition
+│   │   ├── hospital-dashboard.tsx  #   Orchestrator — tab nav, funnel state, radius expansion, history tab, composition
 │   │   ├── radius-expansion-card.tsx #   Auto-expanding alert radius widget with countdown + radar animation
 │   │   ├── emergency-request-form.tsx #   Toggle form for creating emergency match requests
 │   │   ├── broadcast-stream-card.tsx #   Active dispatch stream — funnel metrics, donor en-route card, confirm arrival
+│   │   ├── live-status-panel.tsx   #   Live funnel detail per active request — per-status donor lists with name, blood group, status badge, timestamps; auto-refreshes 5s polling
+│   │   ├── emergency-history.tsx   #   Past requests list with filtering (date range, blood type, status), expandable rows showing full funnel breakdown, pagination
 │   │   ├── donor-directory.tsx     #   Proactive donor registry search/filter with inline call actions
 │   │   ├── analytics-dashboard.tsx #   Stats cards + bar chart timeline with CSV export
 │   │   └── staff-accounts.tsx      #   Authorized staff list + "add practitioner" form
@@ -117,7 +119,7 @@ biomatch/
 │   ├── use-wallet.ts               # React Query: wraps getWalletByUserId
 │   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
 │   ├── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
-│   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts() — auto-refetch 15s
+│   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts(), useRespondToAlert(), useUpdateAlertStatus(), usePendingEmergencyRequests(), useExpandSearchRadius(), useEmergencyRequestStatus(), useEmergencyHistory() — auto-refetch 15s (5s for status panel)
 │
 ├── lib/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
@@ -126,12 +128,13 @@ biomatch/
 │   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup(), HOSPITALS_FOR_HISTORY
 │   ├── eligibility.ts              # getEligibility() + ELIGIBILITY_DAYS (extracted from donor page)
 │   ├── prisma.ts                   # Singleton PrismaClient
+│   ├── radius-expansion.ts         # Radius expansion config: INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, EXPANSION_TIMEOUT_MS, MAX_ALERTS_PER_REQUEST, canExpand(), nextRadius(), getRadiusTier()
 │   ├── supabase.ts                 # Legacy — unused, @ts-ignore
 │   └── utils.ts                    # cn() clsx+tailwind-merge helper
 │
 ├── servers/                        # Server Actions ("use server")
 │   ├── auth.ts                     # signUpWithProfile() (incl. location, availability, isActive), loginWithRole()
-│   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus()
+│   ├── emergency.ts                # createEmergencyRequest(), getAlertsForDonor(), respondToAlert(), updateAlertStatus(), getPendingEmergencyRequestsForHospital(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank(), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
 │   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. location, availability, isActive), updateUserRole(), listDonors() (paginated, location filter)
@@ -201,6 +204,22 @@ Shared patterns:
 | No donor location field → can't search by location    | Medium   | ✅ Added `location` to User schema           |
 | Broken Prisma migrations (type mismatch in shadow DB) | Medium   | ✅ Removed unapplied broken migrations       |
 
+## Resolved in Issue 02
+
+| Issue                                                 | Severity | Status                                       |
+| ----------------------------------------------------- | -------- | -------------------------------------------- |
+| Donor alerts UI not implemented                       | High     | ✅ Full donor alert feed with accept/decline/en-route/arrived flow, status badges, collapse declined |
+| No server actions for donor response                  | High     | ✅ respondToAlert(), updateAlertStatus(), getAlertsForDonor()        |
+
+## Resolved in Issue 03
+
+| Issue                                                 | Severity | Status                                       |
+| ----------------------------------------------------- | -------- | -------------------------------------------- |
+| No radius expansion when zero acceptances             | High     | ✅ expandSearchRadius() server action with tiered matching by radius |
+| No expansion configuration constants                  | Medium   | ✅ INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, EXPANSION_TIMEOUT_MS, MAX_ALERTS_PER_REQUEST |
+| Hospital UI shows no expansion indicator              | High     | ✅ RadiusExpansionCard shows current radius, countdown, total donors alerted, animation |
+| Auto-expansion not wired to real server data          | High     | ✅ usePendingEmergencyRequests + useExpandSearchRadius hooks, 5-min countdown polling |
+
 ## Resolved in Issue 08
 
 | Issue                                         | Severity | Status                                                                           |
@@ -208,6 +227,15 @@ Shared patterns:
 | No availability or alert opt-in for donors    | High     | ✅ Added `availability`, `isActive` to User schema, signup form, health profile  |
 | Signup lacks location field                   | Medium   | ✅ Location field added to signup form (required for donors)                     |
 | Health profile can't manage alert preferences | Low      | ✅ Added emergency preferences section with location, availability, pause toggle |
+
+## Resolved in Issue 04
+
+| Issue | Severity | Status |
+|---|---|---|
+| No live funnel status view with per-status donor lists | High | ✅ LiveStatusPanel shows alerted/opened/accepted/declined/en_route/arrived/completed with donor names, blood groups, timestamps; 5s polling via useEmergencyRequestStatus |
+| No past request history view | High | ✅ EmergencyHistory tab with date/type/status filters, expandable funnel breakdown, pagination |
+| No getEmergencyRequestStatus server action | Medium | ✅ Returns single request with alert aggregates + donor details |
+| No getEmergencyHistory server action | Medium | ✅ Paginated history with filters, returns funnel aggregates per request |
 
 ## Remaining Issues
 

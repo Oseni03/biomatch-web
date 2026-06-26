@@ -75,6 +75,7 @@ export default function HospitalDashboardPage() {
 	return (
 		<HospitalDashboard
 			session={dashboardSession}
+			hospitalUserId={session.user.id}
 			requests={requests}
 			onAddNewRequest={handleAddNewRequest}
 			onConfirmFulfillment={handleConfirmFulfillment}

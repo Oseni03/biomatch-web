@@ -24,16 +24,28 @@ Hospital staff see a live status panel for each active emergency request showing
 - `getEmergencyRequestStatus(requestId)` — returns request with all alert aggregates and donor details
 - `getEmergencyHistory(hospitalId, filters?)` — paginated history with funnel data
 
+## ✅ Completed
+
+| Deliverable | Files |
+|---|---|
+| `getEmergencyRequestStatus` server action | `servers/emergency.ts` |
+| `getEmergencyHistory` server action | `servers/emergency.ts` |
+| `useEmergencyRequestStatus` hook (5s polling) | `hooks/use-emergency-requests.ts` |
+| `useEmergencyHistory` hook | `hooks/use-emergency-requests.ts` |
+| LiveStatusPanel component | `components/hospital/live-status-panel.tsx` |
+| EmergencyHistory component | `components/hospital/emergency-history.tsx` |
+| History tab in dashboard | `components/hospital/hospital-dashboard.tsx` |
+
 ## Acceptance criteria
 
-- [ ] Active request shows real-time funnel counts (alerted → opened → accepted → en route → arrived)
-- [ ] Each funnel stage shows a donor list for that status
-- [ ] Donor entries show name, blood group, status badge, and update timestamp
-- [ ] Status updates from donor side reflect in the panel within 5 seconds
-- [ ] Request history shows all past requests with funnel data
-- [ ] Unfulfilled requests clearly show where in the funnel the shortfall occurred
-- [ ] History is filterable by date range, blood type, and status
-- [ ] History is paginated
+- [x] Active request shows real-time funnel counts (alerted → opened → accepted → en route → arrived)
+- [x] Each funnel stage shows a donor list for that status
+- [x] Donor entries show name, blood group, status badge, and update timestamp
+- [x] Status updates from donor side reflect in the panel within 5 seconds
+- [x] Request history shows all past requests with funnel data
+- [x] Unfulfilled requests clearly show where in the funnel the shortfall occurred
+- [x] History is filterable by date range, blood type, and status
+- [x] History is paginated
 
 ## Blocked by
 

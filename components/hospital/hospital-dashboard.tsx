@@ -1,17 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Bell, Users, BarChart, UserPlus, Clock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+	Bell,
+	Users,
+	BarChart,
+	UserPlus,
+	Clock,
+	History,
+} from "lucide-react";
 import type { EmergencyMatchRequest } from "@/lib/donor-types";
+import { EXPANSION_TIMEOUT_MS } from "@/lib/radius-expansion";
 import { RadiusExpansionCard } from "@/components/hospital/radius-expansion-card";
 import { EmergencyRequestForm } from "@/components/hospital/emergency-request-form";
 import {
 	BroadcastStreamCard,
 	type FunnelData,
 } from "@/components/hospital/broadcast-stream-card";
+import { LiveStatusPanel } from "@/components/hospital/live-status-panel";
+import { EmergencyHistory } from "@/components/hospital/emergency-history";
 import { DonorDirectory } from "@/components/hospital/donor-directory";
 import { AnalyticsDashboard } from "@/components/hospital/analytics-dashboard";
 import { StaffAccounts } from "@/components/hospital/staff-accounts";
+import {
+	usePendingEmergencyRequests,
+	useExpandSearchRadius,
+} from "@/hooks/use-emergency-requests";
 
 interface HospitalProfile {
 	location: string;
@@ -25,6 +39,7 @@ interface UserSession {
 
 interface HospitalDashboardProps {
 	session: UserSession;
+	hospitalUserId?: string;
 	requests: EmergencyMatchRequest[];
 	onAddNewRequest: (newReq: EmergencyMatchRequest) => void;
 	onConfirmFulfillment: (reqId: string) => void;
@@ -38,11 +53,15 @@ const TABS = [
 		icon: Users,
 	},
 	{ id: "analytics" as const, label: "Analytics & Reports", icon: BarChart },
+	{ id: "history" as const, label: "Request History", icon: History },
 	{ id: "staff" as const, label: "Hospital Staff Accounts", icon: UserPlus },
 ];
 
+const EXPANSION_COUNTDOWN_S = Math.floor(EXPANSION_TIMEOUT_MS / 1000);
+
 export default function HospitalDashboard({
 	session,
+	hospitalUserId,
 	requests,
 	onAddNewRequest,
 	onConfirmFulfillment,
@@ -50,41 +69,89 @@ export default function HospitalDashboard({
 	const userDetails = session.details as HospitalProfile;
 
 	const [activeTab, setActiveTab] = useState<
-		"broadcasts" | "directory" | "analytics" | "staff"
+		"broadcasts" | "directory" | "analytics" | "history" | "staff"
 	>("broadcasts");
-	const [alertRadius, setAlertRadius] = useState(3);
-	const [autoExpandCountdown, setAutoExpandCountdown] = useState(30);
+
+	const { data: pendingRequests } = usePendingEmergencyRequests(hospitalUserId);
+	const expandMutation = useExpandSearchRadius();
+
+	const pendingServerReqs = pendingRequests ?? [];
+	const hasPendingServerReq = pendingServerReqs.some(
+		(r) => r.status === "pending",
+	);
+
+	const [alertRadius, setAlertRadius] = useState(5);
+	const [totalDonors, setTotalDonors] = useState(0);
+	const [autoExpandCountdown, setAutoExpandCountdown] =
+		useState(EXPANSION_COUNTDOWN_S);
 	const [isExpandingRadius, setIsExpandingRadius] = useState(false);
+	const [expandingRequestId, setExpandingRequestId] = useState<string | null>(
+		null,
+	);
 	const [funnelStates, setFunnelStates] = useState<
 		Record<string, FunnelData>
 	>({});
 
+	const lastExpandRef = useRef<number>(0);
+
+	useEffect(() => {
+		if (pendingServerReqs.length > 0) {
+			const pending = pendingServerReqs.find((r) => r.status === "pending");
+			if (pending) {
+				setAlertRadius(pending.searchRadius);
+				setTotalDonors(pending.alerts.length);
+				setExpandingRequestId(pending.id);
+			}
+		}
+	}, [pendingServerReqs]);
+
+	useEffect(() => {
+		if (!hasPendingServerReq || !expandingRequestId) {
+			setAutoExpandCountdown(EXPANSION_COUNTDOWN_S);
+			return;
+		}
+
+		const timer = setInterval(() => {
+			setAutoExpandCountdown((prev) => {
+				if (prev <= 1) {
+					const now = Date.now();
+					if (now - lastExpandRef.current > 10_000) {
+						lastExpandRef.current = now;
+						expandMutation.mutate(
+							{ requestId: expandingRequestId },
+							{
+								onSuccess: (data) => {
+									if (data.expanded) {
+										setAlertRadius(data.searchRadius);
+										setTotalDonors(data.totalDonors);
+										setIsExpandingRadius(true);
+										setTimeout(
+											() => setIsExpandingRadius(false),
+											2000,
+										);
+									}
+								},
+							},
+						);
+					}
+					return EXPANSION_COUNTDOWN_S;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, [hasPendingServerReq, expandingRequestId]);
+
+	useEffect(() => {
+		if (!hasPendingServerReq && expandingRequestId) {
+			setExpandingRequestId(null);
+		}
+	}, [hasPendingServerReq, expandingRequestId]);
+
 	const hospitalRequests = requests.filter(
 		(r) => r.hospitalName === session.name,
 	);
-
-	useEffect(() => {
-		let timer: NodeJS.Timeout;
-		const hasPending = hospitalRequests.some((r) => r.status === "pending");
-
-		if (hasPending) {
-			timer = setInterval(() => {
-				setAutoExpandCountdown((prev) => {
-					if (prev <= 1) {
-						setAlertRadius((r) => Math.min(15, r + 3));
-						setIsExpandingRadius(true);
-						setTimeout(() => setIsExpandingRadius(false), 2000);
-						return 30;
-					}
-					return prev - 1;
-				});
-			}, 1000);
-		} else {
-			setAutoExpandCountdown(30);
-		}
-
-		return () => clearInterval(timer);
-	}, [hospitalRequests]);
 
 	useEffect(() => {
 		const updated: Record<string, FunnelData> = { ...funnelStates };
@@ -94,7 +161,10 @@ export default function HospitalDashboard({
 			if (!updated[req.id]) {
 				changed = true;
 				const isCritical = req.urgency === "critical";
-				const alerted = isCritical ? 34 : 18;
+				const serverReq = pendingServerReqs.find(
+					(sr) => sr.id === req.id,
+				);
+				const alerted = serverReq?.alerts.length ?? (isCritical ? 34 : 18);
 				const opened = Math.round(alerted * 0.7);
 				const accepted = req.status === "matched" ? 1 : 0;
 
@@ -113,13 +183,27 @@ export default function HospitalDashboard({
 		if (changed) {
 			setFunnelStates(updated);
 		}
-	}, [requests]);
+	}, [requests, pendingServerReqs]);
 
 	const handleWidenRadius = () => {
-		setAlertRadius((r) => Math.min(15, r + 2));
-		setIsExpandingRadius(true);
-		setTimeout(() => setIsExpandingRadius(false), 2000);
-		setAutoExpandCountdown(30);
+		if (!expandingRequestId) return;
+		const now = Date.now();
+		if (now - lastExpandRef.current < 5_000) return;
+		lastExpandRef.current = now;
+		expandMutation.mutate(
+			{ requestId: expandingRequestId },
+			{
+				onSuccess: (data) => {
+					if (data.expanded) {
+						setAlertRadius(data.searchRadius);
+						setTotalDonors(data.totalDonors);
+						setIsExpandingRadius(true);
+						setTimeout(() => setIsExpandingRadius(false), 2000);
+						setAutoExpandCountdown(EXPANSION_COUNTDOWN_S);
+					}
+				},
+			},
+		);
 	};
 
 	const handleCreateRequest = (newReq: EmergencyMatchRequest) => {
@@ -192,13 +276,15 @@ export default function HospitalDashboard({
 
 			{activeTab === "broadcasts" && (
 				<div className="space-y-8 animate-in fade-in duration-300">
-					{hospitalRequests.some((r) => r.status === "pending") && (
+					{hasPendingServerReq && expandingRequestId && (
 						<RadiusExpansionCard
 							hospitalLocation={userDetails?.location || "Lagos"}
 							alertRadius={alertRadius}
 							autoExpandCountdown={autoExpandCountdown}
 							isExpanding={isExpandingRadius}
+							totalDonors={totalDonors}
 							onWidenRadius={handleWidenRadius}
+							requestId={expandingRequestId}
 						/>
 					)}
 
@@ -217,11 +303,25 @@ export default function HospitalDashboard({
 							Active Dispatch Stream
 						</h3>
 
+						{pendingServerReqs.length > 0 && (
+							<div className="space-y-4">
+								<h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+									Live Status Panel
+								</h4>
+								{pendingServerReqs.map((req) => (
+									<LiveStatusPanel
+										key={req.id}
+										requestId={req.id}
+									/>
+								))}
+							</div>
+						)}
+
 						{hospitalRequests.length === 0 ? (
 							<div className="bg-white dark:bg-zinc-900 border rounded-3xl p-10 text-center text-gray-500">
-								You haven't launched any emergency requests yet.
-								Click "Launch Emergency Match Request" above to
-								trigger a live matching query.
+								You haven't launched any emergency requests
+								yet. Click "Launch Emergency Match Request"
+								above to trigger a live matching query.
 							</div>
 						) : (
 							hospitalRequests.map((req) => {
@@ -248,6 +348,10 @@ export default function HospitalDashboard({
 						)}
 					</div>
 				</div>
+			)}
+
+			{activeTab === "history" && hospitalUserId && (
+				<EmergencyHistory hospitalId={hospitalUserId} />
 			)}
 
 			{activeTab === "directory" && <DonorDirectory />}

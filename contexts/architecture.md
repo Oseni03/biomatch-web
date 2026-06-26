@@ -46,10 +46,17 @@
 
 **Session, Account, Verification** — BetterAuth internal models.
 
+### Radius Expansion Config (in `lib/radius-expansion.ts`)
+- `INITIAL_RADIUS = 5`, `EXPANSION_INCREMENT = 5`, `MAX_RADIUS = 25`, `EXPANSION_TIMEOUT_MS = 300000`, `MAX_ALERTS_PER_REQUEST = 50`
+- `canExpand()`, `nextRadius()`, `getRadiusTier()` helpers
+
+### Emergency Models (in Schema)
+
+- **EmergencyRequest** — id, hospitalId (FK to User), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt. Server actions: createEmergencyRequest(), getEmergencyRequestStatus(), getEmergencyHistory(), getPendingEmergencyRequestsForHospital(), expandSearchRadius()
+- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, respondedAt, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus()
+
 ### Planned Models (from PRD Issues)
 
-- **EmergencyRequest** — id, hospitalId (FK to User), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt
-- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, respondedAt, createdAt, updatedAt
 - **NotificationLog** — id, alertId (FK to EmergencyAlert), channel, status, providerMessageId, sentAt, deliveredAt, openedAt, errorMessage
 - **HmoEnrollment** — id, userId, tier, providerEnrollmentId, enrolledAt, upgradedAt
 - **PartnerOrganization** — id, name, contactEmail, contactPhone, logo, status, memberCount, createdAt, updatedAt
@@ -107,5 +114,7 @@
 - **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
 - **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
-- **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state, funnel seed data, radius expansion countdown, and donor-response simulation; delegates rendering to 6 extracted sub-components in `components/hospital/`.
+- **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state, funnel seed data, radius expansion countdown, and donor-response simulation; delegates rendering to 8 extracted sub-components in `components/hospital/` including LiveStatusPanel (per-request funnel with donor lists, 5s polling) and EmergencyHistory (filterable/paginated past requests).
+- **Live Status Panel**: `components/hospital/live-status-panel.tsx` shows funnel metrics (alerted/opened/accepted/declined/en_route/arrived/completed) with expandable donor lists per status; uses `useEmergencyRequestStatus` hook polling every 5s.
+- **Request History**: `components/hospital/emergency-history.tsx` shows past requests with date range, blood type, and status filters; expandable rows show full funnel breakdown with shortfall indicators; paginated via `useEmergencyHistory` hook.
 - **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.

@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	getActiveEmergencyRequests,
 	getAlertsForDonor,
+	getPendingEmergencyRequestsForHospital,
+	getEmergencyRequestStatus,
+	getEmergencyHistory,
+	expandSearchRadius,
 	respondToAlert,
 	updateAlertStatus,
 } from "@/servers/emergency";
@@ -57,6 +61,68 @@ export function useUpdateAlertStatus() {
 		}) => updateAlertStatus(alertId, status),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+		},
+		onError: (err: Error) => {
+			toast.error(err.message);
+		},
+	});
+}
+
+export function usePendingEmergencyRequests(hospitalId?: string) {
+	return useQuery({
+		queryKey: ["pending-emergency-requests", hospitalId],
+		queryFn: () => getPendingEmergencyRequestsForHospital(hospitalId!),
+		enabled: !!hospitalId,
+		refetchInterval: 15_000,
+	});
+}
+
+export function useEmergencyRequestStatus(requestId?: string) {
+	return useQuery({
+		queryKey: ["emergency-request-status", requestId],
+		queryFn: () => getEmergencyRequestStatus(requestId!),
+		enabled: !!requestId,
+		refetchInterval: 5_000,
+	});
+}
+
+export function useEmergencyHistory(
+	hospitalId?: string,
+	filters?: {
+		dateFrom?: string;
+		dateTo?: string;
+		bloodGroup?: string;
+		status?: string;
+		page?: number;
+		pageSize?: number;
+	},
+) {
+	return useQuery({
+		queryKey: ["emergency-history", hospitalId, filters],
+		queryFn: () => getEmergencyHistory(hospitalId!, filters),
+		enabled: !!hospitalId,
+	});
+}
+
+export function useExpandSearchRadius() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ requestId }: { requestId: string }) =>
+			expandSearchRadius(requestId),
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({
+				queryKey: ["pending-emergency-requests"],
+			});
+			if (data.expanded) {
+				toast.success(
+					`Radius expanded to ${data.searchRadius}km — ${data.newDonorsAdded} new donors alerted`,
+				);
+			} else if (data.reason === "max_radius_reached") {
+				toast.error("Maximum search radius reached");
+			} else if (data.reason === "max_alerts_reached") {
+				toast.error("Maximum alert count reached");
+			}
 		},
 		onError: (err: Error) => {
 			toast.error(err.message);

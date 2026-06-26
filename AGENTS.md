@@ -69,6 +69,7 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 | File | Functions |
 |---|---|
 | `auth.ts` | `signUpWithProfile()`, `loginWithRole()` |
+| `emergency.ts` | `createEmergencyRequest()`, `getActiveEmergencyRequests()`, `getAlertsForDonor()`, `getEmergencyRequestsForHospital()`, `getPendingEmergencyRequestsForHospital()`, `expandSearchRadius()`, `respondToAlert()`, `updateAlertStatus()`, `getEmergencyRequestStatus()`, `getEmergencyHistory()` |
 | `hospital.ts` | `getAllHospitalBanks()`, `getHospitalBankById()`, `createHospitalBank()`, `updateHospitalBankInventory()` |
 | `incentive.ts` | `createIncentiveClaim()`, `getClaimsByUserId()`, `getPendingClaims()`, `updateClaimStatus()` |
 | `user.ts` | `getUserById()`, `getUserBasicById()`, `getUserByEmail()`, `updateUserProfile()`, `updateUserRole()`, `listDonors()` |
