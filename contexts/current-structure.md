@@ -20,6 +20,7 @@ biomatch/
 │   │   └── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
 │   ├── hospital/                   # Hospital section (role=hospital)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="hospital"
+│   │   ├── page.tsx                #   Dashboard — HospitalDashboard orchestrator, localStorage persistence for broadcast requests, session guard
 │   │   ├── inventory/page.tsx      #   Live inventory grid — React Query auto-refetch
 │   │   ├── emergency/page.tsx      #   Emergency request creation form — blood group, units, urgency, radius; shows matched donor count
 │   │   ├── donor-finder/page.tsx   #   Donor Finder — search/filter with blood group, location, name, eligibility toggle, pagination

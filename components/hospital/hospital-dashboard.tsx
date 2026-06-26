@@ -5,7 +5,10 @@ import { Bell, Users, BarChart, UserPlus, Clock } from "lucide-react";
 import type { EmergencyMatchRequest } from "@/lib/donor-types";
 import { RadiusExpansionCard } from "@/components/hospital/radius-expansion-card";
 import { EmergencyRequestForm } from "@/components/hospital/emergency-request-form";
-import { BroadcastStreamCard, type FunnelData } from "@/components/hospital/broadcast-stream-card";
+import {
+	BroadcastStreamCard,
+	type FunnelData,
+} from "@/components/hospital/broadcast-stream-card";
 import { DonorDirectory } from "@/components/hospital/donor-directory";
 import { AnalyticsDashboard } from "@/components/hospital/analytics-dashboard";
 import { StaffAccounts } from "@/components/hospital/staff-accounts";
@@ -29,7 +32,11 @@ interface HospitalDashboardProps {
 
 const TABS = [
 	{ id: "broadcasts" as const, label: "Active Match Broadcasts", icon: Bell },
-	{ id: "directory" as const, label: "Proactive Donor Directory", icon: Users },
+	{
+		id: "directory" as const,
+		label: "Proactive Donor Directory",
+		icon: Users,
+	},
 	{ id: "analytics" as const, label: "Analytics & Reports", icon: BarChart },
 	{ id: "staff" as const, label: "Hospital Staff Accounts", icon: UserPlus },
 ];
@@ -42,13 +49,19 @@ export default function HospitalDashboard({
 }: HospitalDashboardProps) {
 	const userDetails = session.details as HospitalProfile;
 
-	const [activeTab, setActiveTab] = useState<"broadcasts" | "directory" | "analytics" | "staff">("broadcasts");
+	const [activeTab, setActiveTab] = useState<
+		"broadcasts" | "directory" | "analytics" | "staff"
+	>("broadcasts");
 	const [alertRadius, setAlertRadius] = useState(3);
 	const [autoExpandCountdown, setAutoExpandCountdown] = useState(30);
 	const [isExpandingRadius, setIsExpandingRadius] = useState(false);
-	const [funnelStates, setFunnelStates] = useState<Record<string, FunnelData>>({});
+	const [funnelStates, setFunnelStates] = useState<
+		Record<string, FunnelData>
+	>({});
 
-	const hospitalRequests = requests.filter((r) => r.hospitalName === session.name);
+	const hospitalRequests = requests.filter(
+		(r) => r.hospitalName === session.name,
+	);
 
 	useEffect(() => {
 		let timer: NodeJS.Timeout;
@@ -134,7 +147,10 @@ export default function HospitalDashboard({
 				const idx = list.findIndex((r) => r.id === newReq.id);
 				if (idx !== -1) {
 					list[idx].status = "matched";
-					localStorage.setItem("biomatch_broadcasts", JSON.stringify(list));
+					localStorage.setItem(
+						"biomatch_broadcasts",
+						JSON.stringify(list),
+					);
 				}
 			}
 		}, 6000);
@@ -188,7 +204,9 @@ export default function HospitalDashboard({
 
 					<EmergencyRequestForm
 						hospitalName={session.name}
-						hospitalLocation={userDetails?.location || "Ikeja, Lagos"}
+						hospitalLocation={
+							userDetails?.location || "Ikeja, Lagos"
+						}
 						hospitalPhone={userDetails?.phone || "08098765432"}
 						onSubmit={handleCreateRequest}
 					/>
@@ -201,8 +219,9 @@ export default function HospitalDashboard({
 
 						{hospitalRequests.length === 0 ? (
 							<div className="bg-white dark:bg-zinc-900 border rounded-3xl p-10 text-center text-gray-500">
-								You haven't launched any emergency requests yet. Click "Launch
-								Emergency Match Request" above to trigger a live matching query.
+								You haven't launched any emergency requests yet.
+								Click "Launch Emergency Match Request" above to
+								trigger a live matching query.
 							</div>
 						) : (
 							hospitalRequests.map((req) => {
@@ -220,7 +239,9 @@ export default function HospitalDashboard({
 										key={req.id}
 										request={req}
 										funnel={funnel}
-										onConfirmFulfillment={handleFulfillDonation}
+										onConfirmFulfillment={
+											handleFulfillDonation
+										}
 									/>
 								);
 							})
