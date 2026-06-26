@@ -139,10 +139,34 @@ export async function getEmergencyRequestsForHospital(hospitalId: string) {
 	});
 }
 
+const VALID_RESPOND_TRANSITIONS: Record<string, string[]> = {
+	alerted: ["accepted", "declined"],
+};
+
+const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+	accepted: ["en_route"],
+	en_route: ["arrived"],
+};
+
 export async function respondToAlert(
 	alertId: string,
 	status: "accepted" | "declined",
 ) {
+	const existing = await prisma.emergencyAlert.findUnique({
+		where: { id: alertId },
+	});
+
+	if (!existing) {
+		throw new Error("Alert not found");
+	}
+
+	const allowed = VALID_RESPOND_TRANSITIONS[existing.status];
+	if (!allowed || !allowed.includes(status)) {
+		throw new Error(
+			`Cannot transition from "${existing.status}" to "${status}". Allowed: ${(allowed ?? []).join(", ") || "none"}`,
+		);
+	}
+
 	const alert = await prisma.emergencyAlert.update({
 		where: { id: alertId },
 		data: {
@@ -177,11 +201,25 @@ export async function updateAlertStatus(
 	alertId: string,
 	status: "en_route" | "arrived" | "completed",
 ) {
+	const existing = await prisma.emergencyAlert.findUnique({
+		where: { id: alertId },
+	});
+
+	if (!existing) {
+		throw new Error("Alert not found");
+	}
+
+	const allowed = VALID_STATUS_TRANSITIONS[existing.status];
+	if (!allowed || !allowed.includes(status)) {
+		throw new Error(
+			`Cannot transition from "${existing.status}" to "${status}". Allowed: ${(allowed ?? []).join(", ") || "none"}`,
+		);
+	}
+
 	const alert = await prisma.emergencyAlert.update({
 		where: { id: alertId },
 		data: {
 			status,
-			respondedAt: new Date(),
 		},
 	});
 

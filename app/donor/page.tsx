@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { getAllHospitalBanks } from "@/servers/hospital";
 import { updateUserProfile } from "@/servers/user";
+import { respondToAlert, updateAlertStatus } from "@/servers/emergency";
 import { getEligibility, ELIGIBILITY_DAYS } from "@/lib/eligibility";
 import {
 	displayBloodGroup,
@@ -16,9 +17,9 @@ import {
 	type DonorStatus,
 } from "@/lib/donor-types";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
-import { respondToAlert, updateAlertStatus } from "@/servers/emergency";
 import { toast } from "sonner";
 
+import { AlertCountProvider } from "@/lib/alert-context";
 import { ActiveMissionTracker } from "@/components/donor/active-mission-tracker";
 import { DeferralStatusCard } from "@/components/donor/deferral-status-card";
 import { HmoInsuranceCard } from "@/components/donor/hmo-insurance-card";
@@ -92,9 +93,25 @@ export default function DonorDashboardPage() {
 						? ("critical" as const)
 						: ("high" as const),
 				timestamp: new Date(a.request.createdAt).toISOString(),
-				status: a.request.status as "pending" | "matched",
+				status: a.request.status as "pending" | "matched" | "completed",
 			}),
 		);
+
+	const donorAlertStatuses: Record<string, string> = {};
+	const declinedRequestIds: string[] = [];
+	for (const a of alerts ?? []) {
+		donorAlertStatuses[a.id] = a.status;
+		if (a.status === "declined") {
+			declinedRequestIds.push(a.id);
+		}
+	}
+
+	const activeAlertCount = (alerts ?? []).filter(
+		(a: { status: string }) =>
+			a.status === "alerted" ||
+			a.status === "accepted" ||
+			a.status === "en_route",
+	).length;
 
 	const donorApprovedRequests = (alerts ?? [])
 		.filter(
@@ -137,7 +154,6 @@ export default function DonorDashboardPage() {
 						clearInterval(timer);
 						setTrackingStatus("arrived");
 						setEtaMinutes(0);
-						setIsSuccessModalOpen(true);
 						return 100;
 					}
 					const next = prev + 5;
@@ -227,6 +243,49 @@ export default function DonorDashboardPage() {
 		[queryClient],
 	);
 
+	const handleDecline = useCallback(
+		async (reqId: string) => {
+			try {
+				await respondToAlert(reqId, "declined");
+				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+				toast.success("Alert declined");
+			} catch {
+				toast.error("Failed to decline alert");
+			}
+		},
+		[queryClient],
+	);
+
+	const handleMarkEnRoute = useCallback(
+		async (reqId: string) => {
+			try {
+				await updateAlertStatus(reqId, "en_route");
+				setTrackingStatus("en_route");
+				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+				toast.success("Marked as en route");
+			} catch {
+				toast.error("Failed to update status");
+			}
+		},
+		[queryClient],
+	);
+
+	const handleMarkArrived = useCallback(
+		async (reqId: string) => {
+			try {
+				await updateAlertStatus(reqId, "arrived");
+				setTrackingStatus("arrived");
+				setTrackingProgress(100);
+				setEtaMinutes(0);
+				setIsSuccessModalOpen(true);
+				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+			} catch {
+				toast.error("Failed to update status");
+			}
+		},
+		[queryClient],
+	);
+
 	const handleManualComplete = useCallback(async () => {
 		if (activeTrackingId) {
 			try {
@@ -289,75 +348,82 @@ export default function DonorDashboardPage() {
 	}
 
 	return (
-		<div className="space-y-8">
-			{activeTrackingId && activeRequest && (
-				<ActiveMissionTracker
-					request={activeRequest}
-					trackingStatus={trackingStatus}
-					trackingProgress={trackingProgress}
-					etaMinutes={etaMinutes}
-					donorLocation={donorLocation}
-					onAbort={() => {
-						setActiveTrackingId(null);
-						setTrackingProgress(0);
-					}}
-					onSimulateArrival={() => setTrackingProgress(100)}
-				/>
-			)}
-
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-				<div className="space-y-8 lg:col-span-1">
-					<DeferralStatusCard
-						eligibility={eligibility}
-						lastDonationDate={lastDonationDate}
-						lastDonationDateInput={lastDonationDateInput}
-						onDateChange={setLastDonationDateInput}
-						deferralPercent={deferralPercent}
-					/>
-
-					<HmoInsuranceCard
-						userName={session.user.name ?? "BioMatch User"}
-						userId={user?.id ?? ""}
-						completedCount={completedCountLocal}
-						hmoTier={hmoTier}
-					/>
-
-					<LocationSettingsCard
-						donorStatus={donorStatus}
-						onStatusChange={setDonorStatus}
+		<AlertCountProvider value={activeAlertCount}>
+			<div className="space-y-8">
+				{activeTrackingId && activeRequest && (
+					<ActiveMissionTracker
+						request={activeRequest}
+						trackingStatus={trackingStatus}
+						trackingProgress={trackingProgress}
+						etaMinutes={etaMinutes}
 						donorLocation={donorLocation}
-						onLocationChange={setDonorLocation}
-						maxRadius={maxRadius}
-						onRadiusChange={setMaxRadius}
-						smsFallbackEnabled={smsFallbackEnabled}
-						onSmsFallbackChange={setSmsFallbackEnabled}
-						settingsSuccess={settingsSuccess}
-						onSave={handleSaveSettings}
+						onAbort={() => {
+							setActiveTrackingId(null);
+							setTrackingProgress(0);
+						}}
+						onSimulateArrival={() =>
+							handleMarkArrived(activeTrackingId)
+						}
 					/>
+				)}
+
+				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+					<div className="space-y-8 lg:col-span-1">
+						<DeferralStatusCard
+							eligibility={eligibility}
+							lastDonationDate={lastDonationDate}
+							lastDonationDateInput={lastDonationDateInput}
+							onDateChange={setLastDonationDateInput}
+							deferralPercent={deferralPercent}
+						/>
+
+						<HmoInsuranceCard
+							userName={session.user.name ?? "BioMatch User"}
+							userId={user?.id ?? ""}
+							completedCount={completedCountLocal}
+							hmoTier={hmoTier}
+						/>
+
+						<LocationSettingsCard
+							donorStatus={donorStatus}
+							onStatusChange={setDonorStatus}
+							donorLocation={donorLocation}
+							onLocationChange={setDonorLocation}
+							maxRadius={maxRadius}
+							onRadiusChange={setMaxRadius}
+							smsFallbackEnabled={smsFallbackEnabled}
+							onSmsFallbackChange={setSmsFallbackEnabled}
+							settingsSuccess={settingsSuccess}
+							onSave={handleSaveSettings}
+						/>
+					</div>
+
+					<div className="space-y-8 lg:col-span-2">
+						<EmergencyAlertsFeed
+							requests={requests}
+							bloodType={bloodType}
+							eligibility={eligibility}
+							donorStatus={donorStatus}
+							donorAlertStatuses={donorAlertStatuses}
+							activeTrackingId={activeTrackingId}
+							onRespond={handleRespond}
+							onDecline={handleDecline}
+							onMarkEnRoute={handleMarkEnRoute}
+							onMarkArrived={handleMarkArrived}
+						/>
+
+						<BloodSupplyChart banks={banks} bloodType={bloodType} />
+
+						<DonationHistoryCard records={donationRecords} />
+					</div>
 				</div>
 
-				<div className="space-y-8 lg:col-span-2">
-					<EmergencyAlertsFeed
-						requests={requests}
-						bloodType={bloodType}
-						eligibility={eligibility}
-						donorStatus={donorStatus}
-						donorApprovedRequests={donorApprovedRequests}
-						activeTrackingId={activeTrackingId}
-						onRespond={handleRespond}
-					/>
-
-					<BloodSupplyChart banks={banks} bloodType={bloodType} />
-
-					<DonationHistoryCard records={donationRecords} />
-				</div>
+				<SuccessModal
+					isOpen={isSuccessModalOpen}
+					completedCount={completedCountLocal}
+					onUpdateRecords={handleManualComplete}
+				/>
 			</div>
-
-			<SuccessModal
-				isOpen={isSuccessModalOpen}
-				completedCount={completedCountLocal}
-				onUpdateRecords={handleManualComplete}
-			/>
-		</div>
+		</AlertCountProvider>
 	);
 }

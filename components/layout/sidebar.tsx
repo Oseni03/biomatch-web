@@ -32,10 +32,14 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { useAlertCount } from "@/lib/alert-context";
 
 type Role = "donor" | "hospital" | "admin";
 
-const NAV_ITEMS: Record<Role, { title: string; url: string; icon: LucideIcon }[]> = {
+const NAV_ITEMS: Record<
+	Role,
+	{ title: string; url: string; icon: LucideIcon }[]
+> = {
 	donor: [
 		{ title: "Dashboard", url: "/donor", icon: LayoutDashboard },
 		{
@@ -123,10 +127,17 @@ export function SidebarLayout({
 
 function AppSidebar({ role, userName }: { role: Role; userName?: string }) {
 	const pathname = usePathname();
-	const items = NAV_ITEMS[role].map((item) => ({
-		...item,
-		isActive: pathname === item.url || pathname.startsWith(item.url + "/"),
-	}));
+	const alertCount = useAlertCount();
+
+	const items = NAV_ITEMS[role].map((item) => {
+		const isActive =
+			pathname === item.url || pathname.startsWith(item.url + "/");
+		const badge =
+			role === "donor" && item.title === "Dashboard" && alertCount > 0
+				? alertCount
+				: undefined;
+		return { ...item, isActive, badge };
+	});
 	const label = SECTION_LABELS[role];
 
 	return (
