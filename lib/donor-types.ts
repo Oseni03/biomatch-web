@@ -28,9 +28,9 @@ export interface EmergencyMatchRequest {
 	bloodType: string;
 	requiredPints: number;
 	contactPhone: string;
-	urgency: "critical" | "high";
+	urgency: "critical" | "high" | "medium";
 	timestamp: string;
-	status: "pending" | "matched";
+	status: "pending" | "matched" | "completed";
 }
 
 export interface DonationRecord {

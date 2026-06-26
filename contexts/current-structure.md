@@ -33,6 +33,14 @@ biomatch/
 │   ├── dashboard/                  # Shared dashboard components (Phase 1)
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
 │   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
+│   ├── hospital/                   # Hospital dashboard components (extracted from hospital-dashboard.tsx)
+│   │   ├── hospital-dashboard.tsx  #   Orchestrator — tab nav, funnel state, radius expansion, composition
+│   │   ├── radius-expansion-card.tsx #   Auto-expanding alert radius widget with countdown + radar animation
+│   │   ├── emergency-request-form.tsx #   Toggle form for creating emergency match requests
+│   │   ├── broadcast-stream-card.tsx #   Active dispatch stream — funnel metrics, donor en-route card, confirm arrival
+│   │   ├── donor-directory.tsx     #   Proactive donor registry search/filter with inline call actions
+│   │   ├── analytics-dashboard.tsx #   Stats cards + bar chart timeline with CSV export
+│   │   └── staff-accounts.tsx      #   Authorized staff list + "add practitioner" form
 │   ├── donor/                      # Donor dashboard components (extracted from page.tsx)
 │   │   ├── active-mission-tracker.tsx #   Red tracking card during active emergency response
 │   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart by group

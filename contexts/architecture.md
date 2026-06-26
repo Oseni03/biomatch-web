@@ -27,6 +27,7 @@
 - `UrgencyLevel` (planned): `standard | critical` — for EmergencyRequest
 - `RequestStatus` (planned): `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
 - `AlertStatus` (planned): `alerted | opened | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
+- `EmergencyMatchRequest.status` (UI type in `lib/donor-types.ts`): `pending | matched | completed`
 - `HmoTier` (planned): `none | basic | upgraded` — for User
 - `NotificationChannel` (planned): `push | sms` — for NotificationLog
 - `NotificationStatus` (planned): `sent | delivered | opened | failed` — for NotificationLog
@@ -76,6 +77,7 @@
 | `/hospital/inventory` | `app/hospital/inventory/page.tsx` | Live inventory grid + eligible donors |
 | `/hospital/donor-finder` | `app/hospital/donor-finder/page.tsx` | **STUB** — donor search |
 | `/hospital/blood-drive` | `app/hospital/blood-drive/page.tsx` | **STUB** — blood drive request |
+| `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Emergency request creation |
 
 ### Protected — Admin
 | Path | Page | Description |
@@ -105,4 +107,5 @@
 - **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
 - **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
+- **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state, funnel seed data, radius expansion countdown, and donor-response simulation; delegates rendering to 6 extracted sub-components in `components/hospital/`.
 - **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.
