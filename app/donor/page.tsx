@@ -55,7 +55,7 @@ export default function DonorDashboardPage() {
 	const eligibility = getEligibility(lastDonationDate);
 	const walletData = user?.wallet;
 	const completedCount = walletData?.lifetimeDonations ?? 0;
-	const points = walletData?.points ?? 0;
+	// const points = walletData?.points ?? 0;
 
 	const [donorStatus, setDonorStatus] = useState<DonorStatus>("available");
 	const [donorLocation, setDonorLocation] = useState<string>(
