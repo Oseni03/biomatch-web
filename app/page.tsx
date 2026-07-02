@@ -16,7 +16,7 @@ export default function HomePage() {
 			<Mission />
 			<Services />
 			<Impact />
-			<Join />
+			{/* <Join /> */}
 			<Footer />
 		</>
 	);
