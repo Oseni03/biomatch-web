@@ -63,15 +63,15 @@ export function EmergencyAlertsFeed({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex justify-between items-center bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+			<div className="flex justify-between items-center bg-card border-border rounded-2xl p-6 shadow-sm">
 				<div>
-					<h3 className="font-bold flex items-center gap-2 text-red-600">
+					<h3 className="font-bold flex items-center gap-2 text-brand">
 						<Bell className="h-5 w-5" />
 						Urgent Emergency Match Feed
 					</h3>
-					<p className="text-xs text-gray-400 mt-1">
+					<p className="text-xs text-muted-foreground mt-1">
 						Matching compatible Blood Type:{" "}
-						<strong className="text-red-600 font-mono">
+						<strong className="text-brand font-mono">
 							{bloodType}
 						</strong>
 					</p>
@@ -83,7 +83,7 @@ export function EmergencyAlertsFeed({
 
 			<div className="space-y-4">
 				{requests.length === 0 ? (
-					<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-10 text-center text-gray-500">
+					<div className="bg-card border-border rounded-3xl p-10 text-center text-muted-foreground">
 						No active emergency alerts currently matching your
 						criteria. Thank you for your availability!
 					</div>
@@ -103,18 +103,18 @@ export function EmergencyAlertsFeed({
 							return (
 								<div
 									key={req.id}
-									className="bg-gray-50 dark:bg-zinc-900/50 border border-gray-150 dark:border-zinc-800 rounded-3xl p-4"
+									className="bg-muted border-border rounded-3xl p-4"
 								>
 									<button
 										onClick={() => toggleDeclined(req.id)}
 										className="w-full flex items-center justify-between text-left"
 									>
-										<span className="flex items-center gap-2 text-xs text-gray-400">
-											<X className="h-3.5 w-3.5 text-gray-300" />
+										<span className="flex items-center gap-2 text-xs text-muted-foreground">
+											<X className="h-3.5 w-3.5 text-muted-foreground" />
 											Declined — {req.hospitalName} (
 											{req.bloodType})
 										</span>
-										<span className="text-[10px] text-gray-300 font-mono">
+										<span className="text-[10px] text-muted-foreground font-mono">
 											{new Date(
 												req.timestamp,
 											).toLocaleTimeString([], {
@@ -130,25 +130,25 @@ export function EmergencyAlertsFeed({
 						return (
 							<div
 								key={req.id}
-								className={`bg-white dark:bg-zinc-900 border border-gray-150 dark:border-zinc-800 rounded-3xl p-6 transition-all duration-300 relative overflow-hidden ${
+								className={`bg-card border border-gray-150 dark:border-zinc-800 rounded-3xl p-6 transition-all duration-300 relative overflow-hidden ${
 									isApproved
 										? "border-green-300 dark:border-green-900/50"
 										: ""
 								} ${isDeclined ? "opacity-50" : ""}`}
 							>
-								<div className="absolute right-6 top-6 w-11 h-11 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/50 rounded-2xl flex items-center justify-center text-red-600 dark:text-red-400 font-bold font-mono">
+								<div className="absolute right-6 top-6 w-11 h-11 bg-brand-light border-brand/20 rounded-2xl flex items-center justify-center text-brand font-bold font-mono">
 									{req.bloodType}
 								</div>
 
-								<div className="flex items-start gap-3 border-b border-gray-100 dark:border-zinc-800/80 pb-4 mb-4">
-									<Activity className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+								<div className="flex items-start gap-3 border-b border-border pb-4 mb-4">
+									<Activity className="h-5 w-5 text-brand mt-0.5 flex-shrink-0" />
 									<div>
 										<div className="flex items-center gap-2 flex-wrap">
 											<span className="font-bold text-base md:text-lg">
 												{req.hospitalName}
 											</span>
 											{req.urgency === "critical" ? (
-												<Badge className="bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 font-mono text-[10px] tracking-wider animate-pulse">
+												<Badge className="bg-brand-light text-brand border-brand/20 font-mono text-[10px] tracking-wider animate-pulse">
 													CRITICAL
 												</Badge>
 											) : (
@@ -158,7 +158,7 @@ export function EmergencyAlertsFeed({
 											)}
 										</div>
 
-										<div className="flex items-center gap-4 text-xs text-gray-400 mt-1 font-medium">
+										<div className="flex items-center gap-4 text-xs text-muted-foreground mt-1 font-medium">
 											<span className="flex items-center gap-1">
 												<MapPin className="h-3.5 w-3.5" />
 												{req.location}
@@ -176,27 +176,27 @@ export function EmergencyAlertsFeed({
 									</div>
 								</div>
 
-								<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 dark:border-zinc-800/60 pb-3.5 mb-3.5">
-									<div className="text-xs text-gray-500 dark:text-zinc-400 space-y-1 text-left">
+								<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-3.5 mb-3.5">
+									<div className="text-xs text-muted-foreground space-y-1 text-left">
 										<div>
 											Required:{" "}
-											<strong className="text-gray-900 dark:text-white font-semibold">
+											<strong className="text-foreground font-semibold">
 												{req.requiredPints} Pints
 											</strong>{" "}
 											- Emergency Hotline:{" "}
-											<span className="font-mono text-red-600 dark:text-red-400">
+											<span className="font-mono text-brand">
 												{req.contactPhone}
 											</span>
 										</div>
-										<div className="flex items-center gap-2 text-[10px] font-mono text-gray-400 flex-wrap">
+										<div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground flex-wrap">
 											<span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
 												<span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
 												Push Notification: DELIVERED
 											</span>
 											<span>-</span>
 											{req.urgency === "critical" ? (
-												<span className="flex items-center gap-1 text-red-600 dark:text-red-400 font-semibold">
-													<span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+												<span className="flex items-center gap-1 text-brand font-semibold">
+													<span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
 													SMS Fallback: SENT
 													SIMULTANEOUSLY
 												</span>
@@ -212,15 +212,15 @@ export function EmergencyAlertsFeed({
 								</div>
 
 								<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-									<div className="text-xs text-gray-500 dark:text-zinc-400 font-medium">
+									<div className="text-xs text-muted-foreground font-medium">
 										Status:{" "}
 										<span
 											className={`font-bold uppercase ${
 												isDeclined
-													? "text-gray-400"
+													? "text-muted-foreground"
 													: isApproved
 														? "text-green-600"
-														: "text-red-600 dark:text-red-400"
+														: "text-brand"
 											}`}
 										>
 											{isDeclined
@@ -241,7 +241,7 @@ export function EmergencyAlertsFeed({
 												onClick={() =>
 													toggleDeclined(req.id)
 												}
-												className="px-3 py-1.5 border border-gray-200 text-gray-400 rounded-2xl text-xs hover:bg-gray-50 transition"
+												className="px-3 py-1.5 border-border text-muted-foreground hover:bg-muted transition"
 											>
 												{collapsedDeclined[req.id]
 													? "Show"
@@ -296,7 +296,7 @@ export function EmergencyAlertsFeed({
 													onClick={() =>
 														onDecline(req.id)
 													}
-													className="px-4 py-2 border border-gray-200 dark:border-zinc-800 text-gray-500 hover:text-red-600 rounded-2xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+													className="px-4 py-2 border-border text-muted-foreground hover:text-brand hover:bg-muted transition"
 												>
 													Decline
 												</button>

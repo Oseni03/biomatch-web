@@ -90,7 +90,7 @@ export default function DonorWalletPage() {
 
 	return (
 		<div className="space-y-8">
-			<div className="rounded-2xl bg-gradient-to-br from-rose-600 to-rose-500 p-6 text-white shadow-lg">
+			<div className="rounded-2xl bg-gradient-to-br from-brand to-brand-hover p-6 text-white shadow-lg">
 				<div className="flex items-center gap-2 text-rose-100">
 					<Wallet className="h-4.5 w-4.5" />
 					<span className="text-sm font-medium">
@@ -122,8 +122,8 @@ export default function DonorWalletPage() {
 			</div>
 
 			<section>
-				<h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-					<Award className="h-4 w-4 text-rose-600" />
+				<h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+					<Award className="h-4 w-4 text-brand" />
 					Available Perks
 				</h2>
 				<div className="grid gap-4 sm:grid-cols-2">
@@ -181,29 +181,29 @@ function PerkCard({
 	);
 
 	return (
-		<div className="rounded-xl border border-gray-200 bg-white p-5">
+		<div className="rounded-xl border border-border bg-white p-5">
 			<div className="flex items-start justify-between">
-				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50">
-					<Icon className="h-5 w-5 text-rose-600" />
+				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-light">
+					<Icon className="h-5 w-5 text-brand" />
 				</div>
-				{!unlocked && <Lock className="h-4 w-4 text-gray-300" />}
+				{!unlocked && <Lock className="h-4 w-4 text-muted-foreground" />}
 				{unlocked && !redeemed && (
 					<CheckCircle2 className="h-4 w-4 text-emerald-500" />
 				)}
 			</div>
-			<h3 className="mt-3 text-sm font-semibold text-gray-900">
+			<h3 className="mt-3 text-sm font-semibold text-foreground">
 				{title}
 			</h3>
-			<p className="mt-1 text-xs text-gray-500">{description}</p>
+			<p className="mt-1 text-xs text-muted-foreground">{description}</p>
 
 			<div className="mt-4">
-				<div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+				<div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
 					<div
 						className={`h-full rounded-full ${unlocked ? "bg-emerald-500" : "bg-rose-400"}`}
 						style={{ width: `${progress}%` }}
 					/>
 				</div>
-				<p className="mt-1.5 text-[11px] text-gray-400">
+				<p className="mt-1.5 text-[11px] text-muted-foreground">
 					{currentPoints}/{pointsRequired} points
 				</p>
 			</div>
@@ -215,8 +215,8 @@ function PerkCard({
 					redeemed
 						? "bg-emerald-50 text-emerald-700"
 						: unlocked
-							? "bg-rose-600 text-white hover:bg-rose-700"
-							: "bg-gray-100 text-gray-400"
+							? "bg-brand text-white hover:bg-brand-hover"
+							: "bg-muted text-muted-foreground"
 				}`}
 			>
 				<Ticket className="h-3.5 w-3.5" />

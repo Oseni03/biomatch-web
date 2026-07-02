@@ -330,7 +330,7 @@ export default function DonorDashboardPage() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+				<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
@@ -341,7 +341,7 @@ export default function DonorDashboardPage() {
 
 	if (!session?.user) {
 		return (
-			<p className="text-sm text-gray-500">
+			<p className="text-sm text-muted-foreground">
 				Sign in to view the donor dashboard
 			</p>
 		);

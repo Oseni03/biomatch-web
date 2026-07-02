@@ -254,7 +254,7 @@ export default function HospitalDashboard({
 
 	return (
 		<div className="space-y-8 text-left">
-			<div className="flex border-b border-gray-200 dark:border-zinc-800 pb-px gap-6 overflow-x-auto">
+			<div className="flex border-b border-border pb-px gap-6 overflow-x-auto">
 				{TABS.map((tab) => {
 					const Icon = tab.icon;
 					return (
@@ -263,8 +263,8 @@ export default function HospitalDashboard({
 							onClick={() => setActiveTab(tab.id)}
 							className={`flex items-center gap-2 pb-4 text-sm font-medium border-b-2 transition cursor-pointer whitespace-nowrap ${
 								activeTab === tab.id
-									? "border-red-600 text-red-600 dark:border-red-500 dark:text-red-500 font-bold"
-									: "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+									? "border-brand text-brand font-bold"
+									: "border-transparent text-muted-foreground hover:text-foreground"
 							}`}
 						>
 							<Icon className="h-4.5 w-4.5" />
@@ -298,14 +298,14 @@ export default function HospitalDashboard({
 					/>
 
 					<div className="space-y-6">
-						<h3 className="font-bold flex items-center gap-2 text-base text-gray-900 dark:text-white">
-							<Clock className="h-5 w-5 text-gray-400" />
+						<h3 className="font-bold flex items-center gap-2 text-base text-foreground">
+							<Clock className="h-5 w-5 text-muted-foreground" />
 							Active Dispatch Stream
 						</h3>
 
 						{pendingServerReqs.length > 0 && (
 							<div className="space-y-4">
-								<h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+								<h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
 									Live Status Panel
 								</h4>
 								{pendingServerReqs.map((req) => (
@@ -318,7 +318,7 @@ export default function HospitalDashboard({
 						)}
 
 						{hospitalRequests.length === 0 ? (
-							<div className="bg-white dark:bg-zinc-900 border rounded-3xl p-10 text-center text-gray-500">
+							<div className="bg-card border rounded-3xl p-10 text-center text-muted-foreground">
 								You haven't launched any emergency requests
 								yet. Click "Launch Emergency Match Request"
 								above to trigger a live matching query.

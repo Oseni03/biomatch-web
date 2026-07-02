@@ -62,7 +62,7 @@ export function EmergencyRequestForm({
 			<div className="flex justify-end">
 				<button
 					onClick={() => setShowCreateForm(true)}
-					className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 transition"
+					className="bg-brand hover:bg-brand-hover text-white text-xs font-semibold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 transition"
 				>
 					<Plus className="h-4 w-4" />
 					Launch Emergency Match Request
@@ -72,11 +72,11 @@ export function EmergencyRequestForm({
 	}
 
 	return (
-		<Card className="bg-white dark:bg-zinc-900 border border-gray-150 dark:border-zinc-800 rounded-3xl p-8 mb-8 animate-in slide-in-from-top-4 duration-300 shadow-lg">
+		<Card className="bg-card border-border rounded-3xl p-8 mb-8 animate-in slide-in-from-top-4 duration-300 shadow-lg">
 			<h2 className="text-xl font-bold tracking-tight mb-2">
 				Publish Immediate Emergency Match Request
 			</h2>
-			<p className="text-gray-500 dark:text-zinc-400 text-xs mb-6">
+			<p className="text-muted-foreground text-xs mb-6">
 				This triggers instant emergency broadcasts across the bio
 				network, alerting all nearby voluntary donors matching the blood
 				criteria.
@@ -93,13 +93,13 @@ export function EmergencyRequestForm({
 				className="grid grid-cols-1 md:grid-cols-4 gap-6"
 			>
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-gray-400 uppercase mb-2">
+					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 						Required Blood Type
 					</label>
 					<select
 						value={reqBloodType}
 						onChange={(e) => setReqBloodType(e.target.value)}
-						className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none"
+						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
 					>
 						{BLOOD_GROUPS.map((v) => (
 							<option key={v} value={v}>
@@ -110,20 +110,20 @@ export function EmergencyRequestForm({
 				</div>
 
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-gray-400 uppercase mb-2">
+					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 						Location Address
 					</label>
 					<input
 						type="text"
 						value={reqLocation}
 						onChange={(e) => setReqLocation(e.target.value)}
-						className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none"
+						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
 						required
 					/>
 				</div>
 
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-gray-400 uppercase mb-2">
+					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 						Urgency Level
 					</label>
 					<select
@@ -136,7 +136,7 @@ export function EmergencyRequestForm({
 									| "medium",
 							)
 						}
-						className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none"
+						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
 					>
 						<option value="critical">
 							Critical (Simultaneous Push & SMS)
@@ -147,7 +147,7 @@ export function EmergencyRequestForm({
 				</div>
 
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-gray-400 uppercase mb-2">
+					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 						Required Pints
 					</label>
 					<input
@@ -158,21 +158,21 @@ export function EmergencyRequestForm({
 						onChange={(e) =>
 							setReqPints(parseInt(e.target.value) || 1)
 						}
-						className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none"
+						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
 					/>
 				</div>
 
-				<div className="md:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-zinc-850">
+				<div className="md:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t border-border">
 					<button
 						type="button"
 						onClick={() => setShowCreateForm(false)}
-						className="px-5 py-3 rounded-2xl border border-gray-200 dark:border-zinc-800 text-xs hover:bg-gray-50 transition"
+						className="px-5 py-3 rounded-2xl border-border text-xs hover:bg-muted transition"
 					>
 						Cancel
 					</button>
 					<button
 						type="submit"
-						className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-2xl text-xs shadow flex items-center gap-2"
+						className="px-6 py-3 bg-brand hover:bg-brand-hover text-white font-medium rounded-2xl text-xs shadow flex items-center gap-2"
 					>
 						<Send className="h-4 w-4" />
 						Launch Live Broadcast

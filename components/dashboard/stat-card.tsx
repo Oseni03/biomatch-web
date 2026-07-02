@@ -14,13 +14,13 @@ export function StatCard({
 	tone = "default",
 }: StatCardProps) {
 	return (
-		<div className="rounded-xl border border-gray-200 bg-white p-5">
-			<div className="flex items-center gap-2 text-gray-400">
+		<div className="rounded-xl border border-border bg-card p-5">
+			<div className="flex items-center gap-2 text-muted-foreground">
 				<Icon className="h-4 w-4" />
 				<span className="text-xs font-medium">{label}</span>
 			</div>
 			<p
-				className={`mt-2 text-2xl font-bold ${tone === "warning" ? "text-amber-600" : "text-gray-900"}`}
+				className={`mt-2 text-2xl font-bold ${tone === "warning" ? "text-amber-600" : "text-foreground"}`}
 			>
 				{value}
 			</p>

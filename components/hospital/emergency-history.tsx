@@ -31,11 +31,11 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 	},
 	expired: {
 		label: "Expired",
-		color: "text-red-600 bg-red-50 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900/50",
+		color: "text-brand bg-brand-light border-brand/20",
 	},
 	cancelled: {
 		label: "Cancelled",
-		color: "text-gray-600 bg-gray-50 border-gray-200 dark:bg-zinc-800 dark:text-gray-400 dark:border-zinc-700",
+		color: "text-muted-foreground bg-muted border-border",
 	},
 };
 
@@ -77,44 +77,44 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 
 	return (
 		<div className="space-y-6">
-			<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-5 shadow-sm">
+			<div className="bg-card border-border rounded-3xl p-5 shadow-sm">
 				<div className="flex items-center gap-2 mb-4">
-					<Filter className="h-4 w-4 text-gray-400" />
-					<span className="text-sm font-semibold text-gray-900 dark:text-white">
+					<Filter className="h-4 w-4 text-muted-foreground" />
+					<span className="text-sm font-semibold text-foreground">
 						Filters
 					</span>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
 					<div>
-						<label className="text-[10px] font-mono uppercase text-gray-400 tracking-wider block mb-1">
+						<label className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block mb-1">
 							From
 						</label>
 						<input
 							type="date"
 							value={dateFrom}
 							onChange={(e) => setDateFrom(e.target.value)}
-							className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 bg-white px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+							className="w-full rounded-xl border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						/>
 					</div>
 					<div>
-						<label className="text-[10px] font-mono uppercase text-gray-400 tracking-wider block mb-1">
+						<label className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block mb-1">
 							To
 						</label>
 						<input
 							type="date"
 							value={dateTo}
 							onChange={(e) => setDateTo(e.target.value)}
-							className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 bg-white px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+							className="w-full rounded-xl border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						/>
 					</div>
 					<div>
-						<label className="text-[10px] font-mono uppercase text-gray-400 tracking-wider block mb-1">
+						<label className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block mb-1">
 							Blood Type
 						</label>
 						<select
 							value={bloodFilter}
 							onChange={(e) => setBloodFilter(e.target.value)}
-							className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 bg-white px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+							className="w-full rounded-xl border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						>
 							<option value="">All Types</option>
 							{BLOOD_GROUPS.map((bg) => (
@@ -125,13 +125,13 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 						</select>
 					</div>
 					<div>
-						<label className="text-[10px] font-mono uppercase text-gray-400 tracking-wider block mb-1">
+						<label className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block mb-1">
 							Status
 						</label>
 						<select
 							value={statusFilter}
 							onChange={(e) => setStatusFilter(e.target.value)}
-							className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 bg-white px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+							className="w-full rounded-xl border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						>
 							<option value="">All Statuses</option>
 							{STATUS_OPTIONS.map((s) => (
@@ -144,7 +144,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 					<div className="flex items-end">
 						<button
 							onClick={handleFilter}
-							className="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 transition cursor-pointer"
+							className="w-full rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-medium px-4 py-2 transition cursor-pointer"
 						>
 							Apply Filters
 						</button>
@@ -154,15 +154,15 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 
 			{isLoading ? (
 				<div className="flex h-32 items-center justify-center">
-					<Clock className="h-5 w-5 animate-spin text-gray-400" />
+					<Clock className="h-5 w-5 animate-spin text-muted-foreground" />
 				</div>
 			) : !data || data.requests.length === 0 ? (
-				<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-10 text-center text-gray-500">
-					<Calendar className="h-8 w-8 mx-auto mb-3 text-gray-300 dark:text-zinc-600" />
+				<div className="bg-card border-border rounded-3xl p-10 text-center text-muted-foreground">
+					<Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
 					<p className="text-sm font-medium">
 						No completed emergency requests found.
 					</p>
-					<p className="text-xs text-gray-400 mt-1">
+					<p className="text-xs text-muted-foreground mt-1">
 						Past requests with fulfilled, expired, or cancelled
 						status will appear here.
 					</p>
@@ -173,7 +173,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 						const isExpanded = expandedId === req.id;
 						const badge = STATUS_BADGE[req.status] ?? {
 							label: req.status,
-							color: "text-gray-600 bg-gray-50 border-gray-200",
+							color: "text-muted-foreground bg-muted border-border",
 						};
 						const totalFunnel = req.aggregates.alerted + req.aggregates.opened + req.aggregates.accepted + req.aggregates.en_route + req.aggregates.arrived + req.aggregates.completed;
 						const shortfallStages = FUNNEL_LABELS.filter(
@@ -183,7 +183,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 						return (
 							<div
 								key={req.id}
-								className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden"
+								className="bg-card border-border rounded-2xl shadow-sm overflow-hidden"
 							>
 								<button
 									onClick={() =>
@@ -191,16 +191,16 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 											isExpanded ? null : req.id,
 										)
 									}
-									className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition text-left"
+									className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-muted transition text-left"
 								>
 									<div className="flex items-center gap-4 flex-wrap">
 										<div className="flex items-center gap-2">
-											<span className="font-bold text-gray-900 dark:text-white">
+											<span className="font-bold text-foreground">
 												{displayBloodGroup(
 													req.bloodGroup,
 												)}
 											</span>
-											<span className="text-xs text-gray-400">
+											<span className="text-xs text-muted-foreground">
 												{req.unitsNeeded} unit
 												{req.unitsNeeded > 1
 													? "s"
@@ -214,7 +214,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 										</span>
 										{req.aggregates.alerted === 0 &&
 											req.status === "expired" && (
-												<span className="text-[10px] font-mono text-red-500 flex items-center gap-1">
+												<span className="text-[10px] font-mono text-brand flex items-center gap-1">
 													<AlertTriangle className="h-3 w-3" />
 													No donors found
 												</span>
@@ -229,21 +229,21 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 											)}
 									</div>
 									<div className="flex items-center gap-3">
-										<span className="text-xs text-gray-400 font-mono hidden sm:inline">
+										<span className="text-xs text-muted-foreground font-mono hidden sm:inline">
 											{new Date(
 												req.createdAt,
 											).toLocaleDateString()}
 										</span>
 										{isExpanded ? (
-											<ChevronUp className="h-4 w-4 text-gray-400" />
+											<ChevronUp className="h-4 w-4 text-muted-foreground" />
 										) : (
-											<ChevronDown className="h-4 w-4 text-gray-400" />
+											<ChevronDown className="h-4 w-4 text-muted-foreground" />
 										)}
 									</div>
 								</button>
 
 								{isExpanded && (
-									<div className="px-5 pb-4 space-y-4 border-t border-gray-100 dark:border-zinc-800 pt-4">
+									<div className="px-5 pb-4 space-y-4 border-t border-border pt-4">
 										<div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
 											{FUNNEL_LABELS.map((f) => {
 												const count =
@@ -254,20 +254,20 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 														key={f.key}
 														className={`p-2 rounded-xl text-center border ${
 															isZero
-																? "border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/10"
+																? "border-brand/20 bg-brand-light"
 																: "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/10"
 														}`}
 													>
 														<span
 															className={`text-lg font-bold font-mono block ${
 																isZero
-																	? "text-red-500"
+																	? "text-brand"
 																	: "text-green-600"
 															}`}
 														>
 															{count}
 														</span>
-														<span className="text-[8px] font-mono uppercase text-gray-400 tracking-wider">
+														<span className="text-[8px] font-mono uppercase text-muted-foreground tracking-wider">
 															{f.label}
 														</span>
 													</div>
@@ -298,20 +298,20 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 
 										{req.alerts.length > 0 && (
 											<div>
-												<p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
+												<p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
 													All Donors
 												</p>
-												<div className="divide-y divide-gray-100 dark:divide-zinc-800">
+												<div className="divide-y divide-border">
 													{req.alerts.map(
 														(alert) => (
 															<div
 																key={alert.id}
 																className="py-2 flex items-center justify-between"
 															>
-																<span className="text-sm text-gray-900 dark:text-white">
+																<span className="text-sm text-foreground">
 																	{alert.donor.name ?? "Unknown"}
 																</span>
-																<span className="text-xs text-gray-400">
+																<span className="text-xs text-muted-foreground">
 																	{displayBloodGroup(
 																		alert.donor
 																			.bloodGroup,
@@ -343,11 +343,11 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 					<button
 						onClick={() => setPage((p) => Math.max(1, p - 1))}
 						disabled={page <= 1}
-						className="p-2 rounded-xl border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+						className="p-2 rounded-xl border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
 					>
 						<ChevronLeft className="h-4 w-4" />
 					</button>
-					<span className="text-sm text-gray-500 font-mono">
+					<span className="text-sm text-muted-foreground font-mono">
 						Page {data.page} of {data.totalPages}
 					</span>
 					<button
@@ -355,7 +355,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 							setPage((p) => Math.min(data.totalPages, p + 1))
 						}
 						disabled={page >= data.totalPages}
-						className="p-2 rounded-xl border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+						className="p-2 rounded-xl border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
 					>
 						<ChevronRight className="h-4 w-4" />
 					</button>

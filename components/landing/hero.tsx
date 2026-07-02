@@ -1,58 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Eyebrow } from "@/components/prospeo/eyebrow";
+import { BlobDecoration } from "@/components/prospeo/blob-decoration";
 
 export function Hero() {
 	return (
-		<section className="pt-24 pb-20 px-6 relative overflow-hidden">
-			<div className="absolute inset-0 bg-[radial-gradient(#ef444420_0.8px,transparent_1px)] dark:bg-[radial-gradient(#ef444410_0.8px,transparent_1px)] bg-[length:4px_4px]" />
+		<section className="relative overflow-hidden bg-background px-4 pt-24 pb-16 text-center">
+			<BlobDecoration />
 
-			<div className="max-w-3xl mx-auto text-center relative">
-				<Badge
-					variant="outline"
-					className="inline-flex px-4 py-1.5 bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 text-xs font-mono tracking-widest rounded-full mb-8 border-0 animate-fade-in"
-				>
-					REAL-TIME BLOOD NETWORK &bull; LAGOS
-				</Badge>
+			<div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted-foreground shadow-xs">
+				<Star className="h-3 w-3 fill-brand text-brand" />
+				<span>4.8 &middot; 400+ responses</span>
+			</div>
 
-				<h1 className="text-6xl md:text-7xl font-semibold tracking-tighter leading-none mb-8 animate-fade-in-up">
-					Blood. Matched.
-					<br />
-					In minutes.
-				</h1>
+			<h1 className="text-display-xl mx-auto max-w-2xl font-bold tracking-tight text-foreground">
+				Blood. Matched. In minutes.
+			</h1>
 
-				<p
-					className="text-xl text-gray-600 dark:text-zinc-400 max-w-md mx-auto animate-fade-in-up"
-					style={{ animationDelay: "300ms" }}
-				>
-					Connecting verified donors with hospitals across Africa
-					through instant, location-aware matching.
-				</p>
+			<p className="mx-auto mt-4 max-w-md text-body-md text-muted-foreground">
+				Connecting verified donors with hospitals across Africa through instant, location-aware matching.
+			</p>
 
-				<div
-					className="flex flex-col sm:flex-row gap-4 justify-center mt-12 animate-fade-in-up"
-					style={{ animationDelay: "500ms" }}
-				>
-					<Button
-						className="bg-red-600 hover:bg-red-700 text-white px-10 py-4 rounded-3xl text-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
-						asChild
-					>
-						<Link href="/auth/signup">
-							Register as Donor
-							<ChevronRight className="group-hover:translate-x-1 transition-transform" />
-						</Link>
-					</Button>
-					<Button
-						variant="outline"
-						className="px-8 py-4 rounded-3xl text-lg border-gray-300 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-all duration-300 hover:scale-105"
-						asChild
-					>
-						<Link href="/auth/login">Hospital Portal</Link>
-					</Button>
-				</div>
+			<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+				<Button size="lg" asChild>
+					<Link href="/auth/signup">
+						Register as Donor
+						<ChevronRight className="group-hover:translate-x-1 transition-transform" />
+					</Link>
+				</Button>
+				<Button variant="secondary" size="lg" asChild>
+					<Link href="/auth/login">Hospital Portal</Link>
+				</Button>
 			</div>
 		</section>
 	);

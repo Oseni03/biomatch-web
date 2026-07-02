@@ -57,7 +57,7 @@ export function NavMain({
 									<item.icon />
 									<span>{item.title}</span>
 									{item.badge != null && item.badge > 0 && (
-										<span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white leading-none">
+										<span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[10px] font-bold text-white leading-none">
 											{item.badge > 99
 												? "99+"
 												: item.badge}

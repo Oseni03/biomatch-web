@@ -91,7 +91,7 @@ export default function EmergencyRequestPage() {
 	if (!session?.user) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<p className="text-sm text-gray-500">
+				<p className="text-sm text-muted-foreground">
 					Sign in to request blood
 				</p>
 			</div>
@@ -99,15 +99,15 @@ export default function EmergencyRequestPage() {
 	}
 
 	const inputClass =
-		"w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-red-400";
+		"w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring";
 
 	return (
 		<div className="max-w-2xl space-y-8">
 			<header>
-				<h1 className="text-2xl font-bold text-gray-900">
+				<h1 className="text-2xl font-bold text-foreground">
 					Emergency Blood Request
 				</h1>
-				<p className="mt-1 text-sm text-gray-500">
+				<p className="mt-1 text-sm text-muted-foreground">
 					Create an urgent request and notify compatible donors in
 					your area
 				</p>
@@ -119,11 +119,11 @@ export default function EmergencyRequestPage() {
 						<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
 							<CheckCircle2 className="h-8 w-8 text-green-600" />
 						</div>
-						<h2 className="text-xl font-bold text-gray-900">
+						<h2 className="text-xl font-bold text-foreground">
 							Request Broadcasted
 						</h2>
-						<p className="mt-2 text-sm text-gray-500">
-							<span className="font-semibold text-gray-900">
+						<p className="mt-2 text-sm text-muted-foreground">
+							<span className="font-semibold text-foreground">
 								{result.matchedDonorCount}
 							</span>{" "}
 							compatible donor
@@ -157,7 +157,7 @@ export default function EmergencyRequestPage() {
 					<Card className="rounded-3xl">
 						<CardHeader>
 							<CardTitle className="text-base flex items-center gap-2">
-								<Droplet className="h-5 w-5 text-red-600" />
+								<Droplet className="h-5 w-5 text-brand" />
 								Request Details
 							</CardTitle>
 							<CardDescription>
@@ -166,7 +166,7 @@ export default function EmergencyRequestPage() {
 						</CardHeader>
 						<CardContent className="space-y-5">
 							<div>
-								<label className="mb-1.5 block text-xs font-medium text-gray-500">
+								<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
 									Blood Group Needed
 								</label>
 								<select
@@ -187,7 +187,7 @@ export default function EmergencyRequestPage() {
 							</div>
 
 							<div>
-								<label className="mb-1.5 block text-xs font-medium text-gray-500">
+								<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
 									Units Needed (pints)
 								</label>
 								<input
@@ -206,14 +206,14 @@ export default function EmergencyRequestPage() {
 									className={inputClass}
 									required
 								/>
-								<p className="mt-1 text-[11px] text-gray-400">
+								<p className="mt-1 text-[11px] text-muted-foreground">
 									Adult patient: 1 unit raises hemoglobin by
 									~1 g/dL
 								</p>
 							</div>
 
 							<div>
-								<label className="mb-1.5 block text-xs font-medium text-gray-500">
+								<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
 									Urgency Level
 								</label>
 								<div className="grid grid-cols-2 gap-3">
@@ -225,13 +225,13 @@ export default function EmergencyRequestPage() {
 										className={`rounded-xl border p-4 text-left transition ${
 											urgencyLevel === "standard"
 												? "border-orange-300 bg-orange-50"
-												: "border-gray-200 bg-white"
+												: "border-border bg-white"
 										}`}
 									>
-										<span className="text-sm font-semibold text-gray-900">
+										<span className="text-sm font-semibold text-foreground">
 											Standard
 										</span>
-										<p className="text-xs text-gray-500 mt-0.5">
+										<p className="text-xs text-muted-foreground mt-0.5">
 											Schedule within 24 hours
 										</p>
 									</button>
@@ -242,15 +242,15 @@ export default function EmergencyRequestPage() {
 										}
 										className={`rounded-xl border p-4 text-left transition ${
 											urgencyLevel === "critical"
-												? "border-red-300 bg-red-50"
-												: "border-gray-200 bg-white"
+												? "border-destructive/30 bg-brand-light"
+												: "border-border bg-white"
 										}`}
 									>
-										<span className="flex items-center gap-1.5 text-sm font-semibold text-red-700">
+										<span className="flex items-center gap-1.5 text-sm font-semibold text-brand">
 											<AlertTriangle className="h-4 w-4" />
 											Critical
 										</span>
-										<p className="text-xs text-gray-500 mt-0.5">
+										<p className="text-xs text-muted-foreground mt-0.5">
 											Immediate response needed
 										</p>
 									</button>
@@ -258,9 +258,9 @@ export default function EmergencyRequestPage() {
 							</div>
 
 							<div>
-								<div className="flex justify-between items-center text-xs text-gray-500 mb-1.5">
+								<div className="flex justify-between items-center text-xs text-muted-foreground mb-1.5">
 									<span>Search Radius</span>
-									<span className="font-semibold text-gray-900">
+									<span className="font-semibold text-foreground">
 										{searchRadius} km
 									</span>
 								</div>
@@ -273,9 +273,9 @@ export default function EmergencyRequestPage() {
 									onChange={(e) =>
 										setSearchRadius(Number(e.target.value))
 									}
-									className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+									className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-brand"
 								/>
-								<div className="flex justify-between text-[10px] text-gray-400 mt-1">
+								<div className="flex justify-between text-[10px] text-muted-foreground mt-1">
 									<span>5 km</span>
 									<span>50 km</span>
 								</div>

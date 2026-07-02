@@ -32,6 +32,13 @@ biomatch/
 │   └── page.tsx                    # Landing page (navbar, hero, stats, mission, services, impact, join, footer)
 │
 ├── components/
+│   ├── prospeo/                    # Prospeo Design System shared components
+│   │   ├── index.ts                #   Barrel export
+│   │   ├── eyebrow.tsx             #   Section eyebrow label (11px, brand, uppercase)
+│   │   ├── stat-block.tsx          #   Stat value + label + optional icon
+│   │   ├── section.tsx             #   Section wrapper (light or dark bg, max-w-6xl)
+│   │   ├── blob-decoration.tsx     #   Hero background blur blobs
+│   │   └── logo-bar.tsx            #   Social proof logo strip
 │   ├── dashboard/                  # Shared dashboard components (Phase 1)
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
 │   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
@@ -280,6 +287,19 @@ Shared patterns:
 | No geocoded fallback — locationId is source of truth | Low | ✅ Pure hierarchy-based scoring via `getCommonAncestorDepth()` — same area = 4, same city = 3, same state = 2, same region = 1 |
 | `expandSearchRadius` uses string matching for radius tiers | Medium | ✅ Now uses ancestor depth with radius-tier thresholds (depth >= 4 within 5km, >= 3 within 15km, >= 1 within 25km) |
 | `getLocalDemandStats` uses `contains` filter | Medium | ✅ Now filters by state-level ancestor chain from `locationId` |
+
+## Design System Integration (Prospeo)
+
+| Change | Status |
+|---|---|
+| CSS variables switched from oklch to Prospeo HSL tokens in `globals.css` | Done |
+| `tailwind.config.ts` extended with brand colors, display/stat font sizes, 2xl/3xl/4xl radii, card/brand shadows | Done |
+| `button.tsx` overridden with Prospeo variants (brand default, shadow-brand, hover scale) | Done |
+| `card.tsx` simplified to Prospeo card (rounded-2xl, border-border, shadow-card, hover shadow) | Done |
+| `components/prospeo/` — shared Eyebrow, StatBlock, Section, BlobDecoration, LogoBar | Done |
+| Landing page (hero, navbar, stats, mission, services, impact, join, footer) fully migrated | Done |
+| Fixed pre-existing `Tooltip must be used within TooltipProvider` runtime error in sidebar | Done |
+| Fixed sidebar overlap/transparency — replaced Tailwind v4 `w-(--sidebar-width)` syntax with v3 `w-[var(--sidebar-width)]` in `components/ui/sidebar.tsx` | Done |
 
 ## Remaining Issues
 

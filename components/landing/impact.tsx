@@ -1,5 +1,6 @@
 "use client";
 
+import { Eyebrow } from "@/components/prospeo/eyebrow";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const IMPACTS = [
@@ -22,14 +23,12 @@ export function Impact() {
 		<section
 			id="impact"
 			ref={ref}
-			className={`px-6 py-24 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+			className={`w-full px-4 py-16 md:py-24 bg-background border-t border-border transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
 		>
-			<div className="max-w-4xl mx-auto">
-				<div className="text-center mb-16">
-					<div className="text-xs font-mono tracking-widest text-red-600 dark:text-red-500">
-						IMPACT
-					</div>
-					<h2 className="text-4xl font-semibold tracking-tighter">
+			<div className="mx-auto max-w-4xl">
+				<div className="text-center mb-12">
+					<Eyebrow className="mb-3">IMPACT</Eyebrow>
+					<h2 className="text-display-lg font-bold tracking-tight text-foreground">
 						Lives changed every day
 					</h2>
 				</div>
@@ -37,14 +36,14 @@ export function Impact() {
 				<div className="space-y-16">
 					{IMPACTS.map((item, i) => (
 						<div key={i} className="flex gap-8 group">
-							<div className="font-mono text-6xl font-semibold text-red-200 dark:text-red-800 flex-shrink-0 transition-all group-hover:text-red-300">
+							<div className="font-mono text-6xl font-semibold text-brand/30 flex-shrink-0 transition-all group-hover:text-brand/40">
 								{item.num}
 							</div>
 							<div>
-								<div className="font-semibold text-2xl group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">
+								<div className="font-semibold text-heading-lg text-foreground group-hover:text-brand transition-colors">
 									{item.title}
 								</div>
-								<p className="mt-4 text-gray-600 dark:text-zinc-400">
+								<p className="mt-4 text-body-md text-muted-foreground">
 									{item.desc}
 								</p>
 							</div>

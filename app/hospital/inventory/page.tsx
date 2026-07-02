@@ -52,7 +52,7 @@ export default function HospitalInventoryPage() {
 				{BLOOD_GROUPS.map((g) => (
 					<div
 						key={g}
-						className="h-32 animate-pulse rounded-xl bg-gray-100"
+						className="h-32 animate-pulse rounded-xl bg-muted"
 					/>
 				))}
 			</div>
@@ -71,14 +71,14 @@ export default function HospitalInventoryPage() {
 		<div className="space-y-8">
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900">
+					<h1 className="text-2xl font-bold text-foreground">
 						Live Inventory Grid
 					</h1>
-					<p className="text-sm text-gray-500">
+					<p className="text-sm text-muted-foreground">
 						Real-time blood stock across all BioMatch partner banks
 					</p>
 				</div>
-				<div className="flex items-center gap-2 text-xs text-gray-400">
+				<div className="flex items-center gap-2 text-xs text-muted-foreground">
 					<RefreshCw className="h-3.5 w-3.5" />
 					{dataUpdatedAt
 						? `Synced ${new Date(dataUpdatedAt).toLocaleTimeString()}`
@@ -95,19 +95,19 @@ export default function HospitalInventoryPage() {
 							key={group}
 							className={`relative overflow-hidden rounded-xl border p-4 transition-shadow ${
 								critical
-									? "border-red-300 bg-red-50 shadow-[0_0_0_1px_rgba(248,113,113,0.4)] animate-pulse"
-									: "border-gray-200 bg-white"
+									? "border-destructive/30 bg-brand-light shadow-[0_0_0_1px_rgba(248,113,113,0.4)] animate-pulse"
+									: "border-border bg-white"
 							}`}
 						>
 							{critical && (
-								<span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+								<span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">
 									<AlertTriangle className="h-3 w-3" />
 									Critical
 								</span>
 							)}
-							<div className="flex items-center gap-2 text-gray-400">
+							<div className="flex items-center gap-2 text-muted-foreground">
 								<Droplet
-									className={`h-4 w-4 ${critical ? "text-red-500" : "text-rose-400"}`}
+									className={`h-4 w-4 ${critical ? "text-brand" : "text-brand-muted"}`}
 									fill="currentColor"
 								/>
 								<span className="text-sm font-medium">
@@ -115,11 +115,11 @@ export default function HospitalInventoryPage() {
 								</span>
 							</div>
 							<p
-								className={`mt-3 text-3xl font-bold ${critical ? "text-red-600" : "text-gray-900"}`}
+								className={`mt-3 text-3xl font-bold ${critical ? "text-brand" : "text-foreground"}`}
 							>
 								{units}
 							</p>
-							<p className="text-xs text-gray-400">
+							<p className="text-xs text-muted-foreground">
 								units available
 							</p>
 						</div>

@@ -30,7 +30,6 @@ const config: Config = {
 				ring: "hsl(var(--ring))",
 				background: "hsl(var(--background))",
 				foreground: "hsl(var(--foreground))",
-
 				primary: {
 					DEFAULT: "hsl(var(--primary))",
 					foreground: "hsl(var(--primary-foreground))",
@@ -59,16 +58,36 @@ const config: Config = {
 					DEFAULT: "hsl(var(--card))",
 					foreground: "hsl(var(--card-foreground))",
 				},
-
-				// Your custom rose colors
-				rose: {
-					50: "#fff1f2",
-					100: "#ffe4e6",
-					400: "#fb7185",
-					500: "#f43f5e",
-					600: "#e11d48",
-					700: "#be123c",
+				brand: {
+					DEFAULT: "#E8342A",
+					hover: "#C9281F",
+					light: "#FEF2F2",
+					muted: "#F87171",
 				},
+				dark: {
+					bg: "#0F0F0E",
+					surface: "#1C1C1A",
+					border: "#2A2A28",
+				},
+			},
+			fontFamily: {
+				sans: ["Inter", "system-ui", "sans-serif"],
+				display: ["Inter", "system-ui", "sans-serif"],
+			},
+			fontSize: {
+				"display-xl": ["3.25rem", { lineHeight: "1.1", letterSpacing: "-0.03em", fontWeight: "700" }],
+				"display-lg": ["2.5rem", { lineHeight: "1.15", letterSpacing: "-0.02em", fontWeight: "700" }],
+				"stat": ["2.75rem", { lineHeight: "1", letterSpacing: "-0.02em", fontWeight: "700" }],
+			},
+			borderRadius: {
+				"2xl": "14px",
+				"3xl": "20px",
+				"4xl": "28px",
+			},
+			boxShadow: {
+				"card": "0 2px 8px rgba(0,0,0,0.07)",
+				"card-hover": "0 8px 32px rgba(0,0,0,0.12)",
+				"brand": "0 4px 20px rgba(232,52,42,0.25)",
 			},
 		},
 	},

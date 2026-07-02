@@ -28,9 +28,9 @@ const STATUS_CONFIG = [
 		key: "alerted" as const,
 		label: "Alerted",
 		icon: Bell,
-		color: "text-gray-600",
-		bg: "bg-gray-50 dark:bg-zinc-800/50",
-		border: "border-gray-200 dark:border-zinc-700",
+		color: "text-muted-foreground",
+		bg: "bg-muted",
+		border: "border-border",
 	},
 	{
 		key: "opened" as const,
@@ -52,9 +52,9 @@ const STATUS_CONFIG = [
 		key: "declined" as const,
 		label: "Declined",
 		icon: XCircle,
-		color: "text-red-600",
-		bg: "bg-red-50 dark:bg-red-950/10",
-		border: "border-red-200 dark:border-red-900/50",
+		color: "text-brand",
+		bg: "bg-brand-light",
+		border: "border-brand/20",
 	},
 	{
 		key: "en_route" as const,
@@ -90,27 +90,27 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 	if (isLoading) {
 		return (
 			<div className="flex h-32 items-center justify-center">
-				<Clock className="h-5 w-5 animate-spin text-gray-400" />
+				<Clock className="h-5 w-5 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
 
 	if (!request) {
-		return <p className="text-sm text-gray-500">Request not found.</p>;
+		return <p className="text-sm text-muted-foreground">Request not found.</p>;
 	}
 
 	const bloodGroup = displayBloodGroup(request.bloodGroup);
 	const totalDonors = request.alerts.length;
 
 	return (
-		<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm space-y-6">
+		<div className="bg-card border-border rounded-3xl p-6 shadow-sm space-y-6">
 			<div className="flex items-center justify-between flex-wrap gap-2">
 				<div>
-					<h3 className="font-bold text-lg text-gray-900 dark:text-white">
+					<h3 className="font-bold text-lg text-foreground">
 						{bloodGroup} — {request.unitsNeeded} unit
 						{request.unitsNeeded > 1 ? "s" : ""}
 					</h3>
-					<p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 font-medium">
+					<p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 font-medium">
 						{request.hospital.name}
 						{request.hospital.location && (
 							<>
@@ -126,10 +126,10 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
-					<span className="text-[10px] uppercase font-mono px-2 py-0.5 bg-red-50 text-red-600 rounded border border-red-100 dark:bg-red-950 dark:text-red-400 dark:border-red-900/50">
+					<span className="text-[10px] uppercase font-mono px-2 py-0.5 bg-brand-light text-brand rounded border-brand/20">
 						{request.status}
 					</span>
-					<span className="text-xs text-gray-400 font-mono">
+					<span className="text-xs text-muted-foreground font-mono">
 						{new Date(request.createdAt).toLocaleDateString()}
 					</span>
 				</div>
@@ -156,10 +156,10 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 							<Icon
 								className={`h-4 w-4 mx-auto mb-1 ${cfg.color}`}
 							/>
-							<span className="text-lg font-bold font-mono block text-gray-900 dark:text-white">
+							<span className="text-lg font-bold font-mono block text-foreground">
 								{count}
 							</span>
-							<span className="text-[9px] font-mono uppercase text-gray-400 tracking-wider">
+							<span className="text-[9px] font-mono uppercase text-muted-foreground tracking-wider">
 								{cfg.label}
 							</span>
 						</button>
@@ -168,7 +168,7 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 			</div>
 
 			{expandedStatus && (
-				<div className="border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+				<div className="border-border rounded-2xl overflow-hidden">
 					{(() => {
 						const cfg = STATUS_CONFIG.find(
 							(s) => s.key === expandedStatus,
@@ -186,7 +186,7 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 										<Icon
 											className={`h-4 w-4 ${cfg?.color ?? ""}`}
 										/>
-										<span className="text-sm font-semibold text-gray-900 dark:text-white">
+										<span className="text-sm font-semibold text-foreground">
 											{cfg?.label} —{" "}
 											{filteredDonors.length} donor
 											{filteredDonors.length !== 1
@@ -196,17 +196,17 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 									</div>
 									<button
 										onClick={() => setExpandedStatus(null)}
-										className="text-gray-400 hover:text-gray-600 cursor-pointer"
+										className="text-muted-foreground hover:text-muted-foreground cursor-pointer"
 									>
 										<ChevronUp className="h-4 w-4" />
 									</button>
 								</div>
 								{filteredDonors.length === 0 ? (
-									<p className="p-4 text-sm text-gray-400">
+									<p className="p-4 text-sm text-muted-foreground">
 										No donors in this stage.
 									</p>
 								) : (
-									<div className="divide-y divide-gray-100 dark:divide-zinc-800">
+									<div className="divide-y divide-border">
 										{filteredDonors.map((alert) => (
 											<div
 												key={alert.id}
@@ -228,10 +228,10 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 															"?"}
 													</div>
 													<div>
-														<p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+														<p className="text-sm font-medium text-foreground truncate">
 															{alert.donor.name}
 														</p>
-														<p className="text-xs text-gray-400">
+														<p className="text-xs text-muted-foreground">
 															{displayBloodGroup(
 																alert.donor
 																	.bloodGroup,
@@ -244,7 +244,7 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 													</div>
 												</div>
 												<div className="flex items-center gap-3 shrink-0">
-													<span className="text-[10px] text-gray-400 font-mono">
+													<span className="text-[10px] text-muted-foreground font-mono">
 														{new Date(
 															alert.updatedAt,
 														).toLocaleTimeString(
@@ -293,7 +293,7 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 				</div>
 			)}
 
-			<div className="flex items-center gap-2 text-xs text-gray-400 border-t border-gray-100 dark:border-zinc-800 pt-4">
+			<div className="flex items-center gap-2 text-xs text-muted-foreground border-t border-border pt-4">
 				<ArrowRight className="h-3 w-3" />
 				<span>
 					{totalDonors} donor{totalDonors !== 1 ? "s" : ""} alerted

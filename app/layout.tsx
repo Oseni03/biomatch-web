@@ -23,7 +23,7 @@ export default function RootLayout({
 			className={cn("font-sans", inter.variable)}
 			suppressHydrationWarning
 		>
-			<body className="antialiased text-gray-900 dark:text-gray-100">
+			<body className="antialiased text-foreground">
 				<Providers>{children}</Providers>
 			</body>
 		</html>

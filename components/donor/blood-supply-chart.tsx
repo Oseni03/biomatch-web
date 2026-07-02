@@ -48,13 +48,13 @@ export function BloodSupplyChart({ banks, bloodType }: BloodSupplyChartProps) {
 	const maxTotal = Math.max(...Object.values(totals), 1);
 
 	return (
-		<Card className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-			<CardHeader className="p-0 pb-4 border-b border-gray-50 dark:border-zinc-800/60 mb-6">
+		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm">
+			<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 				<CardTitle className="text-base font-bold flex items-center gap-2">
-					<Activity className="h-5 w-5 text-red-600" />
+					<Activity className="h-5 w-5 text-brand" />
 					Lagos Blood Supply and Demand Trends
 				</CardTitle>
-				<CardDescription className="text-xs text-gray-500 dark:text-zinc-400">
+				<CardDescription className="text-xs text-muted-foreground">
 					Monthly active emergency requests count by blood group in
 					your area
 				</CardDescription>
@@ -68,10 +68,10 @@ export function BloodSupplyChart({ banks, bloodType }: BloodSupplyChartProps) {
 						const isLow = units < 5;
 						const isMedium = units >= 5 && units < 15;
 						const barColor = isLow
-							? "bg-red-600"
+							? "bg-brand"
 							: isMedium
 								? "bg-orange-500"
-								: "bg-red-600";
+								: "bg-brand";
 						const statusLabel = isLow
 							? "Critical Shortage"
 							: isMedium
@@ -85,11 +85,11 @@ export function BloodSupplyChart({ banks, bloodType }: BloodSupplyChartProps) {
 								<div className="flex justify-between items-center text-xs">
 									<div className="flex items-center gap-2">
 										<span
-											className={`w-8 font-bold font-mono ${isUsers ? "text-red-600" : "text-gray-900 dark:text-white"}`}
+											className={`w-8 font-bold font-mono ${isUsers ? "text-brand" : "text-foreground"}`}
 										>
 											{item.blood}
 										</span>
-										<span className="text-[10px] px-2 py-0.5 rounded bg-gray-50 dark:bg-zinc-950 font-mono text-gray-400">
+										<span className="text-[10px] px-2 py-0.5 rounded bg-muted font-mono text-muted-foreground">
 											{statusLabel}
 										</span>
 									</div>
@@ -98,7 +98,7 @@ export function BloodSupplyChart({ banks, bloodType }: BloodSupplyChartProps) {
 									</span>
 								</div>
 
-								<div className="w-full h-2.5 bg-gray-50 dark:bg-zinc-950 rounded-full border border-gray-100 dark:border-zinc-850 overflow-hidden">
+								<div className="w-full h-2.5 bg-muted rounded-full border-border overflow-hidden">
 									<div
 										className={`h-full ${barColor} rounded-full transition-all duration-1000`}
 										style={{

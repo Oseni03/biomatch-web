@@ -30,32 +30,32 @@ export function ActiveMissionTracker({
 	onSimulateArrival,
 }: ActiveMissionTrackerProps) {
 	return (
-		<Card className="border-red-200 dark:border-red-900/50 bg-red-50/40 dark:bg-red-950/10 rounded-3xl p-6 shadow-md relative overflow-hidden animate-in slide-in-from-top-4 duration-300">
-			<div className="absolute right-0 top-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+		<Card className="border-brand/20 bg-brand-light rounded-3xl p-6 shadow-md relative overflow-hidden animate-in slide-in-from-top-4 duration-300">
+			<div className="absolute right-0 top-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 
-			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-red-100 dark:border-red-950">
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-brand/10">
 				<div className="flex items-center gap-4">
-					<div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center text-white relative animate-pulse">
+					<div className="w-12 h-12 bg-brand rounded-2xl flex items-center justify-center text-white relative animate-pulse">
 						<Navigation className="h-6 w-6" />
 					</div>
 					<div>
-						<Badge className="bg-red-600 hover:bg-red-700 text-white font-mono text-[10px] uppercase font-semibold">
+						<Badge className="bg-brand hover:bg-brand-hover text-white font-mono text-[10px] uppercase font-semibold">
 							Active Emergency Mission
 						</Badge>
 						<h3 className="font-bold text-lg mt-1">
 							{request.hospitalName}
 						</h3>
-						<p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 flex items-center gap-1">
+						<p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
 							<MapPin className="h-3 w-3" /> {request.location}
 						</p>
 					</div>
 				</div>
 
 				<div className="text-right w-full md:w-auto">
-					<span className="text-xs font-mono text-gray-400 block uppercase">
+					<span className="text-xs font-mono text-muted-foreground block uppercase">
 						Estimated Arrival
 					</span>
-					<span className="text-3xl font-bold font-mono text-red-600 dark:text-red-400">
+					<span className="text-3xl font-bold font-mono text-brand">
 						{etaMinutes > 0 ? `${etaMinutes} mins` : "Arrived"}
 					</span>
 				</div>
@@ -63,11 +63,11 @@ export function ActiveMissionTracker({
 
 			<div className="py-6">
 				<div className="flex justify-between items-center text-xs mb-2">
-					<span className="font-mono text-gray-400 uppercase">
+					<span className="font-mono text-muted-foreground uppercase">
 						Transit Status:
 					</span>
-					<span className="font-semibold uppercase text-red-600 dark:text-red-400 flex items-center gap-1.5">
-						<span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
+					<span className="font-semibold uppercase text-brand flex items-center gap-1.5">
+						<span className="w-2 h-2 rounded-full bg-brand animate-ping" />
 						{trackingStatus === "accepted"
 							? "Awaiting Departure"
 							: trackingStatus === "en_route"
@@ -76,14 +76,14 @@ export function ActiveMissionTracker({
 					</span>
 				</div>
 
-				<div className="relative w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+				<div className="relative w-full h-2 bg-muted rounded-full overflow-hidden">
 					<div
-						className="absolute left-0 top-0 h-full bg-red-600 rounded-full transition-all duration-1000 ease-linear"
+						className="absolute left-0 top-0 h-full bg-brand rounded-full transition-all duration-1000 ease-linear"
 						style={{ width: `${trackingProgress}%` }}
 					/>
 				</div>
 
-				<div className="flex justify-between text-[10px] font-mono text-gray-400 mt-2">
+				<div className="flex justify-between text-[10px] font-mono text-muted-foreground mt-2">
 					<span>DEPARTED</span>
 					<span>IN TRANSIT ({donorLocation.split(",")[0]})</span>
 					<span>{request.hospitalName.substring(0, 15)}...</span>
@@ -91,22 +91,22 @@ export function ActiveMissionTracker({
 			</div>
 
 			<div className="flex justify-between items-center pt-4 border-t border-red-100 dark:border-red-950 text-xs">
-				<span className="text-gray-500 dark:text-zinc-400">
+				<span className="text-muted-foreground">
 					Requires{" "}
-					<strong className="text-gray-900 dark:text-white font-semibold">
+					<strong className="text-foreground font-semibold">
 						{request.requiredPints} Pints ({request.bloodType})
 					</strong>
 				</span>
 				<div className="flex gap-2">
 					<button
 						onClick={onAbort}
-						className="px-4 py-2 border border-red-200 text-red-700 dark:border-red-900 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl font-medium transition"
+						className="px-4 py-2 border-brand/20 text-brand hover:bg-brand-light rounded-xl font-medium transition"
 					>
 						Abort Drive
 					</button>
 					<button
 						onClick={onSimulateArrival}
-						className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-xl font-medium transition"
+						className="px-4 py-2 bg-brand text-white hover:bg-brand-hover rounded-xl font-medium transition"
 					>
 						Simulate Arrival
 					</button>

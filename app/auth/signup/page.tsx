@@ -106,12 +106,12 @@ export default function SignupPage() {
 	};
 
 	return (
-		<div className="min-h-screen w-full flex items-center justify-center p-6 bg-white dark:bg-zinc-950">
+		<div className="min-h-screen w-full flex items-center justify-center p-6 bg-background">
 			<div className="absolute top-8 left-6 md:left-12">
 				<Button
 					asChild
 					variant="outline"
-					className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all duration-200 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 px-4 py-2 h-10 rounded-2xl"
+					className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 bg-muted border-border px-4 py-2 h-10 rounded-2xl"
 				>
 					<Link href="/">
 						<ArrowLeft className="h-4 w-4" />
@@ -120,23 +120,23 @@ export default function SignupPage() {
 				</Button>
 			</div>
 
-			<Card className="w-full max-w-md bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-2 shadow-sm relative overflow-hidden">
+			<Card className="w-full max-w-md rounded-3xl p-2 shadow-sm relative overflow-hidden">
 				<div className="absolute inset-0 bg-[radial-gradient(#ef444408_0.8px,transparent_1px)] bg-[length:4px_4px] pointer-events-none" />
 
 				<CardHeader className="text-center relative pb-2 pt-6">
-					<div className="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 scale-100 hover:scale-105 transition-transform duration-300">
+					<div className="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-4 scale-100 hover:scale-105 transition-transform duration-300">
 						<Heart className="h-5 w-5 text-white fill-current animate-pulse" />
 					</div>
 					<CardTitle className="text-3xl font-semibold tracking-tighter">
 						Join the Network
 					</CardTitle>
-					<CardDescription className="text-sm text-gray-500 dark:text-zinc-400 mt-2">
+					<CardDescription className="text-sm text-muted-foreground mt-2">
 						Register and start saving lives or requesting matches
 					</CardDescription>
 				</CardHeader>
 
 				<CardContent className="p-6 pt-0">
-					<div className="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-zinc-950 p-1.5 rounded-2xl border border-gray-100 dark:border-zinc-800 mb-8 relative">
+					<div className="grid grid-cols-2 gap-2 bg-muted p-1.5 rounded-2xl border-border mb-8 relative">
 						<button
 							type="button"
 							onClick={() => {
@@ -145,8 +145,8 @@ export default function SignupPage() {
 							}}
 							className={`py-3 text-sm font-medium rounded-xl transition-all duration-300 cursor-pointer ${
 								role === "donor"
-									? "bg-white dark:bg-zinc-800 text-red-600 dark:text-white shadow-sm font-semibold"
-									: "text-gray-500 hover:text-gray-800 dark:hover:text-zinc-300"
+									? "bg-card text-brand shadow-sm font-semibold"
+									: "text-muted-foreground hover:text-foreground"
 							}`}
 						>
 							Become a Donor
@@ -159,8 +159,8 @@ export default function SignupPage() {
 							}}
 							className={`py-3 text-sm font-medium rounded-xl transition-all duration-300 cursor-pointer ${
 								role === "hospital"
-									? "bg-white dark:bg-zinc-800 text-red-600 dark:text-white shadow-sm font-semibold"
-									: "text-gray-500 hover:text-gray-800 dark:hover:text-zinc-300"
+									? "bg-card text-brand shadow-sm font-semibold"
+									: "text-muted-foreground hover:text-foreground"
 							}`}
 						>
 							Hospital Partner
@@ -168,7 +168,7 @@ export default function SignupPage() {
 					</div>
 
 					{error && (
-						<div className="p-4 mb-6 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/30">
+						<div className="p-4 mb-6 text-sm text-brand bg-brand-light rounded-2xl border border-brand/20">
 							{error}
 						</div>
 					)}
@@ -178,7 +178,7 @@ export default function SignupPage() {
 						className="space-y-6 relative"
 					>
 						<div>
-							<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 								{role === "donor"
 									? "Full Name"
 									: "Hospital Name"}{" "}
@@ -193,13 +193,13 @@ export default function SignupPage() {
 										? "e.g. David Adebayo"
 										: "e.g. Red Cross Hospital"
 								}
-								className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+								className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 								required
 							/>
 						</div>
 
 						<div>
-							<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 								Email Address *
 							</label>
 							<input
@@ -207,13 +207,13 @@ export default function SignupPage() {
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								placeholder="you@example.com"
-								className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+								className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 								required
 							/>
 						</div>
 
 						<div>
-							<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 								Password *
 							</label>
 							<div className="relative">
@@ -224,7 +224,7 @@ export default function SignupPage() {
 										setPassword(e.target.value)
 									}
 									placeholder="At least 6 characters"
-									className="w-full px-4 pr-12 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+									className="w-full px-4 pr-12 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 									required
 								/>
 								<button
@@ -232,7 +232,7 @@ export default function SignupPage() {
 									onClick={() =>
 										setShowPassword(!showPassword)
 									}
-									className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+									className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
 								>
 									{showPassword ? (
 										<EyeOff className="h-4 w-4" />
@@ -246,7 +246,7 @@ export default function SignupPage() {
 						{role === "donor" && (
 							<>
 								<div>
-									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 										Region *
 									</label>
 									<select
@@ -254,7 +254,7 @@ export default function SignupPage() {
 										onChange={(e) =>
 											setRegionId(e.target.value)
 										}
-										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 										required
 									>
 										<option value="">Select region</option>
@@ -266,7 +266,7 @@ export default function SignupPage() {
 									</select>
 								</div>
 								<div>
-									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 										State *
 									</label>
 									<select
@@ -275,7 +275,7 @@ export default function SignupPage() {
 											setStateId(e.target.value)
 										}
 										disabled={!regionId}
-										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600 disabled:opacity-50"
+										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 										required
 									>
 										<option value="">Select state</option>
@@ -287,7 +287,7 @@ export default function SignupPage() {
 									</select>
 								</div>
 								<div>
-									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 										City / Area *
 									</label>
 									<select
@@ -296,7 +296,7 @@ export default function SignupPage() {
 											setCityId(e.target.value)
 										}
 										disabled={!stateId}
-										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600 disabled:opacity-50"
+										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 										required
 									>
 										<option value="">Select city</option>
@@ -308,7 +308,7 @@ export default function SignupPage() {
 									</select>
 								</div>
 								<div>
-									<label className="block text-xs font-mono tracking-wider dark:text-zinc-400 uppercase mb-2">
+									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
 										Availability (optional)
 									</label>
 									<select
@@ -316,7 +316,7 @@ export default function SignupPage() {
 										onChange={(e) =>
 											setAvailability(e.target.value as Availability | "")
 										}
-										className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 									>
 										<option value="">
 											Select availability
@@ -338,9 +338,9 @@ export default function SignupPage() {
 										onChange={(e) =>
 											setReceiveAlerts(e.target.checked)
 										}
-										className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-400"
+										className="h-4 w-4 rounded border-input text-brand focus:ring-ring"
 									/>
-									<span className="text-sm text-gray-700 dark:text-zinc-300">
+									<span className="text-sm text-foreground">
 										Receive emergency alerts
 									</span>
 								</label>
@@ -350,7 +350,7 @@ export default function SignupPage() {
 						<Button
 							type="submit"
 							disabled={isLoading}
-							className="w-full py-6 text-center text-white bg-red-600 hover:bg-red-700 hover:scale-[1.01] active:scale-95 disabled:opacity-50 border border-transparent font-medium rounded-2xl shadow-sm transition-all duration-300 cursor-pointer text-sm"
+							className="w-full py-6 font-medium rounded-2xl text-sm"
 						>
 							{isLoading
 								? "Creating Account..."
@@ -358,12 +358,12 @@ export default function SignupPage() {
 						</Button>
 					</form>
 
-					<div className="mt-8 pt-6 border-t border-gray-100 dark:border-zinc-800 text-center">
-						<p className="text-sm text-gray-500 dark:text-zinc-400">
+					<div className="mt-8 pt-6 border-t border-border text-center">
+						<p className="text-sm text-muted-foreground">
 							Already registered?{" "}
 							<Link
 								href="/auth/login"
-								className="font-medium text-red-600 hover:text-red-700"
+								className="font-medium text-brand hover:text-brand-hover"
 							>
 								Sign In
 							</Link>

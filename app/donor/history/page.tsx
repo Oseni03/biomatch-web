@@ -37,14 +37,14 @@ export default function DonorHistoryPage() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+				<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
 
 	if (!session?.user) {
 		return (
-			<p className="text-sm text-gray-500">
+			<p className="text-sm text-muted-foreground">
 				Sign in to view your donation history.
 			</p>
 		);
@@ -63,10 +63,10 @@ export default function DonorHistoryPage() {
 	return (
 		<div className="space-y-8">
 			<div>
-				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+				<h1 className="text-2xl font-bold text-foreground">
 					Donation History & Impact
 				</h1>
-				<p className="text-sm text-gray-500 mt-1">
+				<p className="text-sm text-muted-foreground mt-1">
 					Track your life-saving contributions and local demand
 				</p>
 			</div>
@@ -104,92 +104,92 @@ export default function DonorHistoryPage() {
 			)}
 
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-				<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+				<div className="bg-white dark:bg-card border border-border dark:border-border rounded-2xl p-5 shadow-sm">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 bg-red-50 dark:bg-red-950 rounded-xl flex items-center justify-center">
-							<Droplets className="h-5 w-5 text-red-600" />
+						<div className="w-10 h-10 bg-brand-light dark:bg-red-950 rounded-xl flex items-center justify-center">
+							<Droplets className="h-5 w-5 text-brand" />
 						</div>
 					</div>
-					<span className="text-2xl font-bold font-mono text-gray-900 dark:text-white block">
+					<span className="text-2xl font-bold font-mono text-foreground block">
 						{completedCount}
 					</span>
-					<span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">
+					<span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
 						Total Donations
 					</span>
 				</div>
 
-				<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+				<div className="bg-white dark:bg-card border border-border dark:border-border rounded-2xl p-5 shadow-sm">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 bg-blue-50 dark:bg-blue-950 rounded-xl flex items-center justify-center">
 							<Award className="h-5 w-5 text-blue-600" />
 						</div>
 					</div>
-					<span className="text-2xl font-bold font-mono text-gray-900 dark:text-white block">
+					<span className="text-2xl font-bold font-mono text-foreground block">
 						{points}
 					</span>
-					<span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">
+					<span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
 						Total Points
 					</span>
 				</div>
 
-				<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+				<div className="bg-white dark:bg-card border border-border dark:border-border rounded-2xl p-5 shadow-sm">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 bg-green-50 dark:bg-green-950 rounded-xl flex items-center justify-center">
 							<Heart className="h-5 w-5 text-green-600" />
 						</div>
 					</div>
-					<span className="text-2xl font-bold font-mono text-gray-900 dark:text-white block">
+					<span className="text-2xl font-bold font-mono text-foreground block">
 						{livesImpacted}
 					</span>
-					<span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">
+					<span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
 						Lives Impacted
 					</span>
 				</div>
 
-				<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+				<div className="bg-white dark:bg-card border border-border dark:border-border rounded-2xl p-5 shadow-sm">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 bg-purple-50 dark:bg-purple-950 rounded-xl flex items-center justify-center">
 							<Activity className="h-5 w-5 text-purple-600" />
 						</div>
 					</div>
-					<span className="text-2xl font-bold font-mono text-gray-900 dark:text-white block">
+					<span className="text-2xl font-bold font-mono text-foreground block">
 						{demandLoading
 							? "..."
 							: (demandStats?.totalThisMonth ?? 0)}
 					</span>
-					<span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">
+					<span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
 						Emergencies This Month
 					</span>
 				</div>
 			</div>
 
 			{demandStats && demandStats.totalThisMonth > 0 && (
-				<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+				<div className="bg-white dark:bg-card border border-border dark:border-border rounded-2xl p-5 shadow-sm">
 					<div className="flex items-center gap-2 mb-4">
 						<Activity className="h-4 w-4 text-purple-600" />
-						<span className="text-sm font-semibold text-gray-900 dark:text-white">
+						<span className="text-sm font-semibold text-foreground">
 							Local Demand — {demandStats.location}
 						</span>
 					</div>
 					<div className="flex gap-6">
 						<div>
-							<span className="text-lg font-bold font-mono text-gray-900 dark:text-white block">
+							<span className="text-lg font-bold font-mono text-foreground block">
 								{demandStats.totalThisMonth}
 							</span>
-							<span className="text-[10px] font-mono uppercase text-gray-400">
+							<span className="text-[10px] font-mono uppercase text-muted-foreground">
 								Total emergencies
 							</span>
 						</div>
 						<div>
-							<span className="text-lg font-bold font-mono text-red-600 block">
+							<span className="text-lg font-bold font-mono text-brand block">
 								{demandStats.criticalThisMonth}
 							</span>
-							<span className="text-[10px] font-mono uppercase text-gray-400">
+							<span className="text-[10px] font-mono uppercase text-muted-foreground">
 								Critical
 							</span>
 						</div>
 						<div>
-							<span className="text-lg font-bold font-mono text-gray-900 dark:text-white block">
+							<span className="text-lg font-bold font-mono text-foreground block">
 								{demandStats.totalThisMonth > 0
 									? `${Math.round(
 											(completedCount /
@@ -201,7 +201,7 @@ export default function DonorHistoryPage() {
 										)}%`
 									: "0%"}
 							</span>
-							<span className="text-[10px] font-mono uppercase text-gray-400">
+							<span className="text-[10px] font-mono uppercase text-muted-foreground">
 								Your coverage
 							</span>
 						</div>
@@ -209,18 +209,18 @@ export default function DonorHistoryPage() {
 				</div>
 			)}
 
-			<div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-				<div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-zinc-800/60 mb-4">
+			<div className="bg-white dark:bg-card border border-border dark:border-border rounded-3xl p-6 shadow-sm">
+				<div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-border/60 mb-4">
 					<div className="flex items-center gap-2">
-						<Award className="h-5 w-5 text-red-600" />
-						<h2 className="text-base font-bold text-gray-900 dark:text-white">
+						<Award className="h-5 w-5 text-brand" />
+						<h2 className="text-base font-bold text-foreground">
 							Donation History
 						</h2>
 					</div>
 				</div>
 
 				{!historyData || historyData.records.length === 0 ? (
-					<div className="text-sm text-gray-400 p-6 text-center">
+					<div className="text-sm text-muted-foreground p-6 text-center">
 						No donation history yet. Complete an emergency response
 						to start tracking your impact.
 					</div>
@@ -229,7 +229,7 @@ export default function DonorHistoryPage() {
 						<div className="overflow-x-auto">
 							<table className="w-full text-xs text-left">
 								<thead>
-									<tr className="border-b border-gray-100 dark:border-zinc-800 text-gray-400 font-mono uppercase">
+									<tr className="border-b border-border dark:border-border text-muted-foreground font-mono uppercase">
 										<th className="py-3 px-2">Date</th>
 										<th className="py-3 px-2">Hospital</th>
 										<th className="py-3 px-2">
@@ -244,12 +244,12 @@ export default function DonorHistoryPage() {
 									{historyData.records.map((rec) => (
 										<tr
 											key={rec.id}
-											className="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20"
+											className="hover:bg-muted/50 dark:hover:bg-zinc-850/20"
 										>
-											<td className="py-3.5 px-2 font-mono text-gray-500">
+											<td className="py-3.5 px-2 font-mono text-muted-foreground">
 												{rec.date}
 											</td>
-											<td className="py-3.5 px-2 font-semibold text-gray-900 dark:text-white">
+											<td className="py-3.5 px-2 font-semibold text-foreground">
 												{rec.hospitalName}
 											</td>
 											<td className="py-3.5 px-2 font-mono">
@@ -267,17 +267,17 @@ export default function DonorHistoryPage() {
 						</div>
 
 						{historyData.totalPages > 1 && (
-							<div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800">
+							<div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-border dark:border-border">
 								<button
 									onClick={() =>
 										setPage((p) => Math.max(1, p - 1))
 									}
 									disabled={page <= 1}
-									className="p-2 rounded-xl border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+									className="p-2 rounded-xl border border-border dark:border-zinc-700 hover:bg-muted dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
 								>
 									<ChevronLeft className="h-4 w-4" />
 								</button>
-								<span className="text-sm text-gray-500 font-mono">
+								<span className="text-sm text-muted-foreground font-mono">
 									Page {historyData.page} of{" "}
 									{historyData.totalPages}
 								</span>
@@ -291,7 +291,7 @@ export default function DonorHistoryPage() {
 										)
 									}
 									disabled={page >= historyData.totalPages}
-									className="p-2 rounded-xl border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+									className="p-2 rounded-xl border border-border dark:border-zinc-700 hover:bg-muted dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
 								>
 									<ChevronRight className="h-4 w-4" />
 								</button>
@@ -300,16 +300,16 @@ export default function DonorHistoryPage() {
 					</>
 				)}
 
-				<div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 text-xs text-gray-400 flex items-center gap-2">
+				<div className="mt-4 pt-4 border-t border-border dark:border-border text-xs text-muted-foreground flex items-center gap-2">
 					<span>
-						<strong className="font-semibold text-gray-700 dark:text-gray-300">
+						<strong className="font-semibold text-foreground dark:text-muted-foreground">
 							{historyData?.total ?? 0}
 						</strong>{" "}
 						total donation{historyData?.total !== 1 ? "s" : ""}
 					</span>
 					<span>&bull;</span>
 					<span>
-						<strong className="font-semibold text-gray-700 dark:text-gray-300">
+						<strong className="font-semibold text-foreground dark:text-muted-foreground">
 							100
 						</strong>{" "}
 						points per donation

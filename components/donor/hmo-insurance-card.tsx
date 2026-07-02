@@ -22,18 +22,18 @@ export function HmoInsuranceCard({
 }: HmoInsuranceCardProps) {
 	return (
 		<Card className="bg-gradient-to-br from-zinc-900 to-black text-white rounded-3xl p-6 relative overflow-hidden shadow-xl border border-zinc-800">
-			<div className="absolute right-0 bottom-0 w-36 h-36 bg-red-600/10 rounded-full blur-2xl pointer-events-none" />
+			<div className="absolute right-0 bottom-0 w-36 h-36 bg-brand/10 rounded-full blur-2xl pointer-events-none" />
 
 			<div className="flex justify-between items-start mb-8">
 				<div>
-					<span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[8px] font-mono tracking-widest uppercase text-red-400 border border-white/5">
+					<span className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[8px] font-mono tracking-widest uppercase text-brand-muted border border-white/5">
 						BioMatch Insurance Hub
 					</span>
 					<h3 className="text-sm font-bold tracking-tight text-white/90 mt-2.5">
 						Reliance Health HMO
 					</h3>
 				</div>
-				<Shield className="h-6 w-6 text-red-500 fill-current" />
+				<Shield className="h-6 w-6 text-brand fill-current" />
 			</div>
 
 			<div className="space-y-4 mb-6 relative">
@@ -76,7 +76,7 @@ export function HmoInsuranceCard({
 
 				<div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
 					<div
-						className="h-full bg-gradient-to-r from-red-600 to-green-400 rounded-full transition-all duration-500"
+						className="h-full bg-gradient-to-r from-brand to-green-400 rounded-full transition-all duration-500"
 						style={{
 							width: `${Math.min(100, (completedCount / 3) * 100)}%`,
 						}}

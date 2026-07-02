@@ -11,7 +11,7 @@ const STATS = [
 		label: "Avg Response Speed",
 		value: "8.7 mins",
 		sub: "Request creation to first confirmation",
-		color: "text-red-600",
+		color: "text-brand",
 		icon: Clock,
 	},
 	{
@@ -46,10 +46,10 @@ export function AnalyticsDashboard() {
 					return (
 						<Card
 							key={i}
-							className="bg-white dark:bg-zinc-900 border border-gray-100 rounded-2xl p-6"
+							className="bg-card border-border rounded-2xl p-6"
 						>
 							<div className="flex justify-between items-start mb-4">
-								<span className="text-xs font-mono uppercase tracking-widest text-gray-400">
+								<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
 									{stat.label}
 								</span>
 								<Icon className={`h-5 w-5 ${stat.color}`} />
@@ -59,7 +59,7 @@ export function AnalyticsDashboard() {
 							>
 								{stat.value}
 							</h4>
-							<p className="text-xs text-gray-400 mt-2 leading-relaxed">
+							<p className="text-xs text-muted-foreground mt-2 leading-relaxed">
 								{stat.sub}
 							</p>
 						</Card>
@@ -67,20 +67,20 @@ export function AnalyticsDashboard() {
 				})}
 			</div>
 
-			<Card className="bg-white dark:bg-zinc-900 border border-gray-100 rounded-3xl p-6">
-				<div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
+			<Card className="bg-card border-border rounded-3xl p-6">
+				<div className="flex justify-between items-center pb-4 border-b border-border mb-6">
 					<div>
 						<CardTitle className="text-base font-bold flex items-center gap-2">
-							<BarChart className="h-5 w-5 text-red-600" />
+							<BarChart className="h-5 w-5 text-brand" />
 							Aggregate Response Performance Timeline
 						</CardTitle>
-						<CardDescription className="text-xs text-gray-400">
+						<CardDescription className="text-xs text-muted-foreground">
 							Weekly average response time in minutes
 						</CardDescription>
 					</div>
 
 					<button
-						className="px-3.5 py-1.5 border border-gray-200 hover:bg-gray-50 text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm transition"
+						className="px-3.5 py-1.5 border-border hover:bg-muted text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm transition"
 						onClick={() =>
 							alert("Donation logs successfully exported as CSV!")
 						}
@@ -90,25 +90,25 @@ export function AnalyticsDashboard() {
 					</button>
 				</div>
 
-				<div className="h-64 flex flex-col justify-end pt-4 font-mono text-[10px] text-gray-400">
-					<div className="flex-1 w-full flex items-end justify-between px-6 gap-4 border-b border-gray-100 pb-2 relative">
-						<div className="absolute left-0 bottom-10 w-full border-t border-gray-100/50" />
-						<div className="absolute left-0 bottom-24 w-full border-t border-gray-100/50" />
-						<div className="absolute left-0 bottom-44 w-full border-t border-gray-100/50" />
+				<div className="h-64 flex flex-col justify-end pt-4 font-mono text-[10px] text-muted-foreground">
+					<div className="flex-1 w-full flex items-end justify-between px-6 gap-4 border-b border-border pb-2 relative">
+						<div className="absolute left-0 bottom-10 w-full border-t border-border/50" />
+						<div className="absolute left-0 bottom-24 w-full border-t border-border/50" />
+						<div className="absolute left-0 bottom-44 w-full border-t border-border/50" />
 
 						{WEEKLY_DATA.map((item, idx) => (
 							<div
 								key={idx}
 								className="flex-1 flex flex-col items-center gap-2 group relative z-10"
 							>
-								<span className="font-bold text-red-600 text-[11px] group-hover:scale-110 transition-transform">
+								<span className="font-bold text-brand text-[11px] group-hover:scale-110 transition-transform">
 									{item.speed} min
 								</span>
 								<div
-									className="w-12 bg-red-600 hover:bg-red-700 rounded-t-lg transition-all duration-1000 ease-out"
+									className="w-12 bg-brand hover:bg-brand-hover rounded-t-lg transition-all duration-1000 ease-out"
 									style={{ height: `${item.height}%` }}
 								/>
-								<span className="text-gray-400 uppercase text-[9px] font-semibold mt-1">
+								<span className="text-muted-foreground uppercase text-[9px] font-semibold mt-1">
 									{item.week}
 								</span>
 							</div>

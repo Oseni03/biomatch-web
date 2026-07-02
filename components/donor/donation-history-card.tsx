@@ -16,20 +16,20 @@ interface DonationHistoryCardProps {
 
 export function DonationHistoryCard({ records }: DonationHistoryCardProps) {
 	return (
-		<Card className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-			<CardHeader className="p-0 pb-4 border-b border-gray-50 dark:border-zinc-800/60 mb-6">
+		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm">
+			<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 				<CardTitle className="text-base font-bold flex items-center gap-2">
-					<Award className="h-5 w-5 text-red-600" />
+					<Award className="h-5 w-5 text-brand" />
 					Personal Donation History
 				</CardTitle>
-				<CardDescription className="text-xs text-gray-500 dark:text-zinc-400">
+				<CardDescription className="text-xs text-muted-foreground">
 					Complete record of your verified life-saving contributions
 				</CardDescription>
 			</CardHeader>
 
 			<CardContent className="p-0">
 				{records.length === 0 ? (
-					<div className="text-sm text-gray-400 p-6 text-center">
+					<div className="text-sm text-muted-foreground p-6 text-center">
 						You haven&apos;t logged any donations yet. Go on your
 						first active mission to start tracking your impact!
 					</div>
@@ -37,7 +37,7 @@ export function DonationHistoryCard({ records }: DonationHistoryCardProps) {
 					<div className="overflow-x-auto">
 						<table className="w-full text-xs text-left">
 							<thead>
-								<tr className="border-b border-gray-100 dark:border-zinc-800 text-gray-400 font-mono uppercase">
+								<tr className="border-border text-muted-foreground font-mono uppercase">
 									<th className="py-3 px-2">Date</th>
 									<th className="py-3 px-2">Hospital</th>
 									<th className="py-3 px-2">Group</th>
@@ -50,12 +50,12 @@ export function DonationHistoryCard({ records }: DonationHistoryCardProps) {
 								{records.map((rec) => (
 									<tr
 										key={rec.id}
-										className="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20"
+										className="hover:bg-muted"
 									>
-										<td className="py-3.5 px-2 font-mono text-gray-500">
+										<td className="py-3.5 px-2 font-mono text-muted-foreground">
 											{rec.date}
 										</td>
-										<td className="py-3.5 px-2 font-semibold text-gray-900 dark:text-white">
+										<td className="py-3.5 px-2 font-semibold text-foreground">
 											{rec.hospitalName}
 										</td>
 										<td className="py-3.5 px-2 font-mono">

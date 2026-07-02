@@ -215,7 +215,7 @@ export default function HealthProfilePage() {
 	if (loading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+				<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
@@ -229,15 +229,15 @@ export default function HealthProfilePage() {
 	}
 
 	const inputClass =
-		"mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-rose-400";
+		"mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring";
 
 	return (
 		<div className="max-w-3xl space-y-8">
 			<header>
-				<h1 className="text-2xl font-bold text-gray-900">
+				<h1 className="text-2xl font-bold text-foreground">
 					Health Profile
 				</h1>
-				<p className="mt-1 text-sm text-gray-500">
+				<p className="mt-1 text-sm text-muted-foreground">
 					Keep this accurate — hospitals rely on it to confirm safe,
 					eligible matches.
 				</p>
@@ -406,14 +406,14 @@ export default function HealthProfilePage() {
 									isActive: !e.target.checked,
 								})
 							}
-							className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-400"
+							className="h-4 w-4 rounded border-input text-brand focus:ring-ring"
 						/>
-						<span className="flex items-center gap-1.5 text-sm text-gray-700">
-							<Bell className="h-3.5 w-3.5 text-gray-400" />
+						<span className="flex items-center gap-1.5 text-sm text-foreground">
+							<Bell className="h-3.5 w-3.5 text-muted-foreground" />
 							Pause emergency alerts
 						</span>
 					</label>
-					<p className="mt-1.5 text-xs text-gray-400">
+					<p className="mt-1.5 text-xs text-muted-foreground">
 						When paused, you won&apos;t receive emergency donation
 						requests.
 					</p>
@@ -594,7 +594,7 @@ export default function HealthProfilePage() {
 					<button
 						type="submit"
 						disabled={saving}
-						className="flex items-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-60"
+						className="flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
 					>
 						{saving ? (
 							<Loader2 className="h-4 w-4 animate-spin" />
@@ -628,7 +628,7 @@ function Field({
 }) {
 	return (
 		<label className={`block ${className ?? ""}`}>
-			<span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+			<span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
 				{Icon && <Icon className="h-3.5 w-3.5" />}
 				{label}
 			</span>
@@ -647,12 +647,12 @@ function Checkbox({
 	onChange: (value: boolean) => void;
 }) {
 	return (
-		<label className="flex items-center gap-2.5 text-sm text-gray-700">
+		<label className="flex items-center gap-2.5 text-sm text-foreground">
 			<input
 				type="checkbox"
 				checked={checked}
 				onChange={(e) => onChange(e.target.checked)}
-				className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-400"
+				className="h-4 w-4 rounded border-input text-brand focus:ring-ring"
 			/>
 			{label}
 		</label>

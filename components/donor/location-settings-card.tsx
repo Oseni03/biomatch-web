@@ -45,13 +45,13 @@ export function LocationSettingsCard({
 	onSave,
 }: LocationSettingsCardProps) {
 	return (
-		<Card className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-			<CardHeader className="p-0 pb-4 border-b border-gray-50 dark:border-zinc-800/60 mb-6">
+		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm">
+			<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 				<CardTitle className="text-base font-bold flex items-center gap-2">
-					<MapPin className="h-5 w-5 text-red-600" />
+					<MapPin className="h-5 w-5 text-brand" />
 					Location and Availability Settings
 				</CardTitle>
-				<CardDescription className="text-xs text-gray-500 dark:text-zinc-400">
+				<CardDescription className="text-xs text-muted-foreground">
 					Update your location and alert settings in real time
 				</CardDescription>
 			</CardHeader>
@@ -65,7 +65,7 @@ export function LocationSettingsCard({
 
 				<form onSubmit={onSave} className="space-y-4">
 					<div>
-						<label className="block text-[10px] font-mono uppercase text-gray-400 mb-1.5 tracking-wider text-left">
+						<label className="block text-[10px] font-mono uppercase text-muted-foreground mb-1.5 tracking-wider text-left">
 							Availability Status:
 						</label>
 						<select
@@ -73,7 +73,7 @@ export function LocationSettingsCard({
 							onChange={(e) =>
 								onStatusChange(e.target.value as DonorStatus)
 							}
-							className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none"
+							className="w-full px-3 py-2 bg-muted border-border rounded-xl text-xs focus:outline-none"
 						>
 							<option value="available">
 								Available -- Receives alerts
@@ -88,13 +88,13 @@ export function LocationSettingsCard({
 					</div>
 
 					<div>
-						<label className="block text-[10px] font-mono uppercase text-gray-400 mb-1.5 tracking-wider text-left">
+						<label className="block text-[10px] font-mono uppercase text-muted-foreground mb-1.5 tracking-wider text-left">
 							Current Location (Lagos Area):
 						</label>
 						<select
 							value={donorLocation}
 							onChange={(e) => onLocationChange(e.target.value)}
-							className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none"
+							className="w-full px-3 py-2 bg-muted border-border rounded-xl text-xs focus:outline-none"
 						>
 							{LOCATIONS.map((loc) => (
 								<option key={loc} value={loc}>
@@ -105,9 +105,9 @@ export function LocationSettingsCard({
 					</div>
 
 					<div>
-						<div className="flex justify-between items-center text-[10px] font-mono uppercase text-gray-400 mb-1 tracking-wider">
+						<div className="flex justify-between items-center text-[10px] font-mono uppercase text-muted-foreground mb-1 tracking-wider">
 							<span>Alert Radius Limit:</span>
-							<span className="text-red-600 font-bold">
+							<span className="text-brand font-bold">
 								{maxRadius} km
 							</span>
 						</div>
@@ -120,20 +120,20 @@ export function LocationSettingsCard({
 							onChange={(e) =>
 								onRadiusChange(Number(e.target.value))
 							}
-							className="w-full h-1 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-red-600"
+							className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-brand"
 						/>
-						<div className="flex justify-between text-[8px] text-gray-400 font-mono mt-1">
+						<div className="flex justify-between text-[8px] text-muted-foreground font-mono mt-1">
 							<span>5 KM</span>
 							<span>50 KM</span>
 						</div>
 					</div>
 
-					<div className="pt-2 flex items-center justify-between border-t border-gray-50 dark:border-zinc-800/50">
+					<div className="pt-2 flex items-center justify-between border-t border-border">
 						<div className="text-left">
-							<span className="text-[10px] font-mono uppercase text-gray-400 block tracking-wider">
+							<span className="text-[10px] font-mono uppercase text-muted-foreground block tracking-wider">
 								SMS Fallback Alert
 							</span>
-							<span className="text-[9px] text-gray-400">
+							<span className="text-[9px] text-muted-foreground">
 								Receive SMS if push unopened in 2m
 							</span>
 						</div>
@@ -143,13 +143,13 @@ export function LocationSettingsCard({
 							onChange={(e) =>
 								onSmsFallbackChange(e.target.checked)
 							}
-							className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500 accent-red-600"
+							className="h-4 w-4 rounded border-input text-brand focus:ring-ring accent-brand"
 						/>
 					</div>
 
 					<button
 						type="submit"
-						className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl transition shadow active:scale-95"
+						className="w-full py-2.5 bg-brand hover:bg-brand-hover text-white font-semibold text-xs rounded-xl transition shadow active:scale-95"
 					>
 						Save Profile Settings
 					</button>

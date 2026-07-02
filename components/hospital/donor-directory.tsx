@@ -113,13 +113,13 @@ export function DonorDirectory() {
 	});
 
 	return (
-		<Card className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm animate-in fade-in duration-300 text-left">
-			<CardHeader className="p-0 pb-4 border-b border-gray-100 mb-6">
+		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm animate-in fade-in duration-300 text-left">
+			<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 				<CardTitle className="text-lg font-bold flex items-center gap-2">
-					<Users className="h-5 w-5 text-red-600" />
+					<Users className="h-5 w-5 text-brand" />
 					Proactive Volunteer Registry Search
 				</CardTitle>
-				<CardDescription className="text-xs text-gray-500">
+				<CardDescription className="text-xs text-muted-foreground">
 					Query, filter, and proactively contact matching nearby
 					voluntary donors before or during emergencies
 				</CardDescription>
@@ -127,7 +127,7 @@ export function DonorDirectory() {
 
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
 				<div className="relative md:col-span-2">
-					<span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
+					<span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
 						<Search className="h-4 w-4" />
 					</span>
 					<input
@@ -135,7 +135,7 @@ export function DonorDirectory() {
 						placeholder="Search by name or phone..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs"
+						className="w-full pl-10 pr-4 py-2.5 bg-muted border-border rounded-xl text-xs"
 					/>
 				</div>
 
@@ -143,7 +143,7 @@ export function DonorDirectory() {
 					<select
 						value={searchBlood}
 						onChange={(e) => setSearchBlood(e.target.value)}
-						className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium"
+						className="w-full px-3 py-2.5 bg-muted border-border rounded-xl text-xs font-medium"
 					>
 						<option value="All">All Blood Types</option>
 						{BLOOD_GROUPS.map((v) => (
@@ -158,7 +158,7 @@ export function DonorDirectory() {
 					<select
 						value={searchLoc}
 						onChange={(e) => setSearchLoc(e.target.value)}
-						className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium"
+						className="w-full px-3 py-2.5 bg-muted border-border rounded-xl text-xs font-medium"
 					>
 						<option value="All">All Regions (Lagos)</option>
 						{LOCATIONS.map((v) => (
@@ -173,7 +173,7 @@ export function DonorDirectory() {
 			<div className="overflow-x-auto">
 				<table className="w-full text-xs text-left">
 					<thead>
-						<tr className="border-b border-gray-150 text-gray-400 uppercase font-mono tracking-wider">
+						<tr className="border-border text-muted-foreground uppercase font-mono tracking-wider">
 							<th className="py-3 px-3">Donor Name</th>
 							<th className="py-3 px-3">Blood Type</th>
 							<th className="py-3 px-3">Region</th>
@@ -181,12 +181,12 @@ export function DonorDirectory() {
 							<th className="py-3 px-3 text-right">Actions</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-gray-100">
+					<tbody className="divide-y divide-border">
 						{filteredDonors.length === 0 ? (
 							<tr>
 								<td
 									colSpan={5}
-									className="py-10 text-center text-gray-400 text-sm"
+									className="py-10 text-center text-muted-foreground text-sm"
 								>
 									No matching registered donors found. Adjust
 									filters to broaden your query scope.
@@ -196,22 +196,22 @@ export function DonorDirectory() {
 							filteredDonors.map((donor, idx) => (
 								<tr
 									key={idx}
-									className="hover:bg-gray-50 transition"
+									className="hover:bg-muted transition"
 								>
 									<td className="py-4 px-3">
-										<span className="font-semibold text-gray-900 block">
+										<span className="font-semibold text-foreground block">
 											{donor.name}
 										</span>
-										<span className="text-[10px] text-gray-400 font-mono">
+										<span className="text-[10px] text-muted-foreground font-mono">
 											{donor.email}
 										</span>
 									</td>
 									<td className="py-4 px-3">
-										<span className="px-2.5 py-0.5 bg-red-50 text-red-700 font-mono font-bold rounded-md">
+										<span className="px-2.5 py-0.5 bg-brand-light text-brand font-mono font-bold rounded-md">
 											{donor.bloodType}
 										</span>
 									</td>
-									<td className="py-4 px-3 font-medium text-gray-600">
+									<td className="py-4 px-3 font-medium text-muted-foreground">
 										{donor.location}
 									</td>
 									<td className="py-4 px-3">
@@ -235,7 +235,7 @@ export function DonorDirectory() {
 									<td className="py-4 px-3 text-right">
 										<a
 											href={`tel:${donor.phone}`}
-											className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-[11px] inline-flex items-center gap-1 shadow-sm transition"
+											className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white font-semibold rounded-xl text-[11px] inline-flex items-center gap-1 shadow-sm transition"
 										>
 											<Phone className="h-3 w-3" />
 											Alert: {donor.phone}

@@ -28,13 +28,13 @@ export function DeferralStatusCard({
 	deferralPercent,
 }: DeferralStatusCardProps) {
 	return (
-		<Card className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-			<CardHeader className="p-0 pb-4 border-b border-gray-50 dark:border-zinc-800/60 mb-6">
+		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm">
+			<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 				<CardTitle className="text-base font-bold flex items-center gap-2">
-					<Calendar className="h-5 w-5 text-red-600" />
+					<Calendar className="h-5 w-5 text-brand" />
 					Donation Deferral Status
 				</CardTitle>
-				<CardDescription className="text-xs text-gray-500 dark:text-zinc-400">
+				<CardDescription className="text-xs text-muted-foreground">
 					{ELIGIBILITY_DAYS}-day standard voluntary recovery countdown
 				</CardDescription>
 			</CardHeader>
@@ -46,7 +46,7 @@ export function DeferralStatusCard({
 							cx="80"
 							cy="80"
 							r="70"
-							className="stroke-gray-100 dark:stroke-zinc-800"
+							className="stroke-border"
 							strokeWidth="10"
 							fill="transparent"
 						/>
@@ -54,7 +54,7 @@ export function DeferralStatusCard({
 							cx="80"
 							cy="80"
 							r="70"
-							className="stroke-red-600 dark:stroke-red-500 transition-all duration-1000"
+							className="stroke-brand transition-all duration-1000"
 							strokeWidth="10"
 							strokeDasharray={439.8}
 							strokeDashoffset={
@@ -67,10 +67,10 @@ export function DeferralStatusCard({
 					<div className="absolute inset-0 flex flex-col items-center justify-center text-center">
 						{!eligibility.eligible ? (
 							<>
-								<span className="text-4xl font-bold font-mono tracking-tighter text-red-600 dark:text-red-400">
+								<span className="text-4xl font-bold font-mono tracking-tighter text-brand">
 									{eligibility.daysRemaining}
 								</span>
-								<span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mt-0.5">
+								<span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-0.5">
 									Days Left
 								</span>
 							</>
@@ -86,20 +86,20 @@ export function DeferralStatusCard({
 				</div>
 
 				<div className="w-full space-y-4">
-					<div className="p-3.5 bg-gray-50 dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-2xl text-xs space-y-2 text-left">
+					<div className="p-3.5 bg-muted border-border rounded-2xl text-xs space-y-2 text-left">
 						<div className="flex justify-between">
-							<span className="text-gray-400 font-mono">
+							<span className="text-muted-foreground font-mono">
 								LAST DONATION:
 							</span>
-							<span className="font-semibold text-gray-800 dark:text-white font-mono">
+							<span className="font-semibold text-foreground font-mono">
 								{lastDonationDate ?? "N/A"}
 							</span>
 						</div>
 						<div className="flex justify-between">
-							<span className="text-gray-400 font-mono">
+							<span className="text-muted-foreground font-mono">
 								ELIGIBLE DATE:
 							</span>
-							<span className="font-semibold text-gray-800 dark:text-white font-mono">
+							<span className="font-semibold text-foreground font-mono">
 								{lastDonationDate
 									? (() => {
 											const d = new Date(
@@ -118,7 +118,7 @@ export function DeferralStatusCard({
 					</div>
 
 					<div>
-						<label className="block text-[10px] font-mono uppercase text-gray-400 mb-2 tracking-wider text-left">
+						<label className="block text-[10px] font-mono uppercase text-muted-foreground mb-2 tracking-wider text-left">
 							Manually Update Last Donation Date:
 						</label>
 						<input
@@ -126,7 +126,7 @@ export function DeferralStatusCard({
 							value={lastDonationDateInput}
 							onChange={(e) => onDateChange(e.target.value)}
 							max={new Date().toISOString().split("T")[0]}
-							className="w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs font-mono"
+							className="w-full px-4 py-2.5 bg-muted border-border rounded-xl text-xs font-mono"
 						/>
 					</div>
 				</div>

@@ -66,19 +66,19 @@ export default function DonorFinderPage() {
 	return (
 		<div className="space-y-6">
 			<header>
-				<h1 className="text-2xl font-bold text-gray-900">
+				<h1 className="text-2xl font-bold text-foreground">
 					BioMatch Donor Finder
 				</h1>
-				<p className="mt-1 text-sm text-gray-500">
+				<p className="mt-1 text-sm text-muted-foreground">
 					Search and filter eligible donors by blood group, location,
 					or name.
 				</p>
 			</header>
 
-			<div className="rounded-xl border border-gray-200 bg-white p-4">
+			<div className="rounded-xl border border-border bg-white p-4">
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					<div>
-						<label className="mb-1.5 block text-xs font-medium text-gray-500">
+						<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
 							Blood Group
 						</label>
 						<Select
@@ -103,7 +103,7 @@ export default function DonorFinderPage() {
 					</div>
 
 					<div>
-						<label className="mb-1.5 block text-xs font-medium text-gray-500">
+						<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
 							Location
 						</label>
 						<Input
@@ -115,7 +115,7 @@ export default function DonorFinderPage() {
 					</div>
 
 					<div>
-						<label className="mb-1.5 block text-xs font-medium text-gray-500">
+						<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
 							Donor Name
 						</label>
 						<Input
@@ -127,7 +127,7 @@ export default function DonorFinderPage() {
 					</div>
 
 					<div className="flex items-end gap-3">
-						<label className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 has-checked:border-rose-300 has-checked:bg-rose-50 has-checked:text-rose-700">
+						<label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted has-checked:border-rose-300 has-checked:bg-brand-light has-checked:text-brand">
 							<input
 								type="checkbox"
 								checked={eligibleOnly}
@@ -135,14 +135,14 @@ export default function DonorFinderPage() {
 									setEligibleOnly(e.target.checked);
 									setPage(1);
 								}}
-								className="size-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+								className="size-4 rounded border-input text-brand focus:ring-ring"
 							/>
 							Eligible only (56+ days)
 						</label>
 						<button
 							onClick={handleSearch}
 							disabled={isFetching}
-							className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-rose-600 px-3 text-sm font-medium text-white transition-colors hover:bg-rose-700 disabled:opacity-50"
+							className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand px-3 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-50"
 						>
 							<Search className="h-4 w-4" />
 							Search
@@ -152,36 +152,36 @@ export default function DonorFinderPage() {
 			</div>
 
 			{isLoading ? (
-				<div className="rounded-xl border border-gray-200 bg-white p-5">
-					<div className="mb-4 h-5 w-48 animate-pulse rounded bg-gray-100" />
+				<div className="rounded-xl border border-border bg-white p-5">
+					<div className="mb-4 h-5 w-48 animate-pulse rounded bg-muted" />
 					<div className="space-y-3">
 						{Array.from({ length: 5 }).map((_, i) => (
 							<div
 								key={i}
-								className="h-12 animate-pulse rounded bg-gray-50"
+								className="h-12 animate-pulse rounded bg-muted"
 							/>
 						))}
 					</div>
 				</div>
 			) : donors.length === 0 ? (
-				<div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-16">
-					<Users className="mb-3 h-10 w-10 text-gray-300" />
-					<h3 className="text-sm font-semibold text-gray-900">
+				<div className="flex flex-col items-center justify-center rounded-xl border border-border bg-white px-5 py-16">
+					<Users className="mb-3 h-10 w-10 text-muted-foreground" />
+					<h3 className="text-sm font-semibold text-foreground">
 						No donors match your search
 					</h3>
-					<p className="mt-1 text-sm text-gray-500">
+					<p className="mt-1 text-sm text-muted-foreground">
 						Try adjusting your filters or search criteria.
 					</p>
 				</div>
 			) : (
 				<>
-					<p className="text-sm text-gray-500">
+					<p className="text-sm text-muted-foreground">
 						Showing{" "}
-						<span className="font-medium text-gray-900">
+						<span className="font-medium text-foreground">
 							{donors.length}
 						</span>{" "}
 						of{" "}
-						<span className="font-medium text-gray-900">
+						<span className="font-medium text-foreground">
 							{total}
 						</span>{" "}
 						donor
@@ -197,7 +197,7 @@ export default function DonorFinderPage() {
 									setPage((p) => Math.max(1, p - 1))
 								}
 								disabled={page <= 1}
-								className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+								className="inline-flex h-8 items-center gap-1 rounded-lg border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
 							>
 								<ChevronLeft className="h-4 w-4" />
 								Previous
@@ -223,8 +223,8 @@ export default function DonorFinderPage() {
 											onClick={() => setPage(pageNum)}
 											className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm transition-colors ${
 												pageNum === page
-													? "bg-rose-600 text-white"
-													: "text-gray-600 hover:bg-gray-100"
+													? "bg-brand text-white"
+													: "text-muted-foreground hover:bg-muted"
 											}`}
 										>
 											{pageNum}
@@ -238,7 +238,7 @@ export default function DonorFinderPage() {
 									setPage((p) => Math.min(totalPages, p + 1))
 								}
 								disabled={page >= totalPages}
-								className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+								className="inline-flex h-8 items-center gap-1 rounded-lg border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
 							>
 								Next
 								<ChevronRight className="h-4 w-4" />
