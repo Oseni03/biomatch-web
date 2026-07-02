@@ -19,6 +19,7 @@ import {
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
 	Sidebar,
 	SidebarContent,
@@ -117,6 +118,9 @@ export function SidebarLayout({
 						<h1 className="text-sm font-medium">
 							{SECTION_LABELS[role]}
 						</h1>
+					</div>
+					<div className="ml-auto flex items-center px-4">
+						<ThemeToggle />
 					</div>
 				</header>
 				<div className="flex flex-1 flex-col gap-4 p-4">{children}</div>

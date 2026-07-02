@@ -103,9 +103,8 @@
 ## Auth Flow
 
 1. **Signup** → `servers/auth.ts:signUpWithProfile()` calls `better-auth` API, creates Wallet for donors
-2. **Login** → `servers/auth.ts:loginWithRole()` calls `better-auth` API, redirects to role dashboard
-3. **Proxy** → `proxy.ts` checks session via `auth.api.getSession(request.headers)`, enforces role-based access, redirects unauthenticated users to `/auth/login`
-4. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
+2. **Login** → `app/auth/login/page.tsx` calls `authClient.signIn.email()` directly, redirects client-side to role dashboard
+3. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
 
 ## Design System (Prospeo)
 

@@ -10,15 +10,6 @@ import {
 } from "@/components/ui/card";
 import type { DonorStatus } from "@/lib/donor-types";
 
-const LOCATIONS = [
-	"Ikeja, Lagos",
-	"Yaba, Lagos",
-	"Lekki, Lagos",
-	"Surulere, Lagos",
-	"Victoria Island, Lagos",
-	"Idi-Araba, Lagos",
-];
-
 interface LocationSettingsCardProps {
 	donorStatus: DonorStatus;
 	onStatusChange: (status: DonorStatus) => void;
@@ -30,6 +21,7 @@ interface LocationSettingsCardProps {
 	onSmsFallbackChange: (enabled: boolean) => void;
 	settingsSuccess: string;
 	onSave: (e: React.FormEvent) => void;
+	locations: string[];
 }
 
 export function LocationSettingsCard({
@@ -43,6 +35,7 @@ export function LocationSettingsCard({
 	onSmsFallbackChange,
 	settingsSuccess,
 	onSave,
+	locations,
 }: LocationSettingsCardProps) {
 	return (
 		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm">
@@ -96,7 +89,10 @@ export function LocationSettingsCard({
 							onChange={(e) => onLocationChange(e.target.value)}
 							className="w-full px-3 py-2 bg-muted border-border rounded-xl text-xs focus:outline-none"
 						>
-							{LOCATIONS.map((loc) => (
+							{locations.length === 0 && (
+								<option value="">No locations available</option>
+							)}
+							{locations.map((loc) => (
 								<option key={loc} value={loc}>
 									{loc}
 								</option>

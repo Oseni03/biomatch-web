@@ -24,8 +24,11 @@ const GROUPS = [
 const DISPLAY_DATA = [
 	{ blood: "O+", key: "O_PLUS" },
 	{ blood: "O-", key: "O_MINUS" },
-	{ blood: "B-", key: "B_MINUS" },
 	{ blood: "A+", key: "A_PLUS" },
+	{ blood: "A-", key: "A_MINUS" },
+	{ blood: "B+", key: "B_PLUS" },
+	{ blood: "B-", key: "B_MINUS" },
+	{ blood: "AB+", key: "AB_PLUS" },
 	{ blood: "AB-", key: "AB_MINUS" },
 ];
 

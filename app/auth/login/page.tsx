@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
 	Heart,
 	ArrowLeft,
 	Eye,
 	EyeOff,
-	ShieldCheck,
 	Mail,
 	Lock,
 } from "lucide-react";
@@ -19,9 +19,10 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
-import { loginWithRole } from "@/servers/auth";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
+	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
@@ -33,13 +34,24 @@ export default function LoginPage() {
 		setError("");
 		setIsLoading(true);
 
-		const result = await loginWithRole(email, password);
+		const { data, error: authError } = await authClient.signIn.email({
+			email,
+			password,
+		});
 
-		if (result?.error) {
-			setError(result.error);
+		if (authError) {
+			setError(typeof authError === "string" ? authError : (authError as any)?.message ?? "Invalid credentials");
+			setIsLoading(false);
+			return;
+		}
+
+		const userRole = (data?.user as { role?: string } | undefined)?.role;
+		if (userRole) {
+			router.push(`/${userRole}`);
+		} else {
+			setError("Login succeeded but unable to determine your role.");
 			setIsLoading(false);
 		}
-		// If successful, middleware will redirect to role dashboard
 	};
 
 	return (

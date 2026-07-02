@@ -22,6 +22,8 @@ import {
 import { getEligibility, ELIGIBILITY_DAYS } from "@/lib/eligibility";
 import { displayBloodGroup } from "@/lib/donor-types";
 
+const POINTS_PER_DONATION = 100;
+
 export default function DonorHistoryPage() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
@@ -258,7 +260,7 @@ export default function DonorHistoryPage() {
 												)}
 											</td>
 											<td className="py-3.5 px-2 text-right font-mono text-green-600 font-semibold">
-												100
+												{POINTS_PER_DONATION}
 											</td>
 										</tr>
 									))}
@@ -310,7 +312,7 @@ export default function DonorHistoryPage() {
 					<span>&bull;</span>
 					<span>
 						<strong className="font-semibold text-foreground dark:text-muted-foreground">
-							100
+							{POINTS_PER_DONATION}
 						</strong>{" "}
 						points per donation
 					</span>

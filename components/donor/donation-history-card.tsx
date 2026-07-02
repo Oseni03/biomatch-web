@@ -8,6 +8,7 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { displayBloodGroup } from "@/lib/donor-types";
 import type { DonationRecord } from "@/lib/donor-types";
 
 interface DonationHistoryCardProps {
@@ -42,7 +43,7 @@ export function DonationHistoryCard({ records }: DonationHistoryCardProps) {
 									<th className="py-3 px-2">Hospital</th>
 									<th className="py-3 px-2">Group</th>
 									<th className="py-3 px-2 text-right">
-										Status
+										Pints
 									</th>
 								</tr>
 							</thead>
@@ -59,12 +60,10 @@ export function DonationHistoryCard({ records }: DonationHistoryCardProps) {
 											{rec.hospitalName}
 										</td>
 										<td className="py-3.5 px-2 font-mono">
-											{rec.bloodType}
+											{displayBloodGroup(rec.bloodGroup)}
 										</td>
 										<td className="py-3.5 px-2 text-right">
-											<span className="px-2 py-0.5 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400 rounded-md font-mono text-[9px] uppercase font-bold border border-green-100 dark:border-green-900/40">
-												{rec.status}
-											</span>
+											{rec.unitsNeeded}
 										</td>
 									</tr>
 								))}

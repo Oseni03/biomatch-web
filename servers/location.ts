@@ -74,6 +74,17 @@ export async function getCommonAncestorDepth(
 	return depth;
 }
 
+export async function getAllCityLabels(): Promise<string[]> {
+	const cities = await prisma.location.findMany({
+		where: { type: "city" },
+		include: { parent: true },
+		orderBy: { name: "asc" },
+	});
+	return cities
+		.filter((c) => c.parent !== null)
+		.map((c) => `${c.name}, ${c.parent!.name}`);
+}
+
 export async function getLocationTree(): Promise<LocationWithChildren[]> {
 	const all = await prisma.location.findMany({ orderBy: { name: "asc" } });
 	const map = new Map<string, LocationWithChildren>();

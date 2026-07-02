@@ -14,13 +14,6 @@ export function displayBloodGroup(bg: string | null | undefined): string {
 	return BLOOD_GROUP_MAP[bg] ?? bg;
 }
 
-export const HOSPITALS_FOR_HISTORY = [
-	"Ikeja General Hospital",
-	"Lagos State University Teaching Hospital (LASUTH)",
-	"Federal Medical Centre, Ebute Metta",
-	"Red Cross Emergency Clinic",
-];
-
 export interface EmergencyMatchRequest {
 	id: string;
 	hospitalName: string;
@@ -37,9 +30,9 @@ export interface DonationRecord {
 	id: string;
 	date: string;
 	hospitalName: string;
-	bloodType: string;
-	status: "verified";
-	pints: number;
+	hospitalLocation: string | null;
+	bloodGroup: string;
+	unitsNeeded: number;
 }
 
 export type DonorStatus = "available" | "busy" | "inactive";

@@ -5,15 +5,15 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
+import { useDonorHistory } from "@/hooks/use-donor-history";
 import { getAllHospitalBanks } from "@/servers/hospital";
+import { getAllCityLabels } from "@/servers/location";
 import { updateUserProfile } from "@/servers/user";
 import { respondToAlert, updateAlertStatus } from "@/servers/emergency";
 import { getEligibility, ELIGIBILITY_DAYS } from "@/lib/eligibility";
 import {
 	displayBloodGroup,
-	HOSPITALS_FOR_HISTORY,
 	type EmergencyMatchRequest,
-	type DonationRecord,
 	type DonorStatus,
 } from "@/lib/donor-types";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
@@ -42,6 +42,11 @@ export default function DonorDashboardPage() {
 		queryFn: () => getAllHospitalBanks(),
 	});
 	const { data: alerts } = useDonorAlerts(session?.user?.id);
+	const { data: historyData } = useDonorHistory(1);
+	const { data: cityLabels = [] } = useQuery({
+		queryKey: ["city-labels"],
+		queryFn: () => getAllCityLabels(),
+	});
 
 	const bloodType = displayBloodGroup(user?.bloodGroup);
 	const lastDonationDate = user?.lastDonationDate
@@ -54,7 +59,7 @@ export default function DonorDashboardPage() {
 
 	const [donorStatus, setDonorStatus] = useState<DonorStatus>("available");
 	const [donorLocation, setDonorLocation] = useState<string>(
-		user?.location || "Ikeja, Lagos",
+		user?.location || "",
 	);
 	const [maxRadius, setMaxRadius] = useState<number>(15);
 	const [smsFallbackEnabled, setSmsFallbackEnabled] = useState<boolean>(true);
@@ -113,65 +118,11 @@ export default function DonorDashboardPage() {
 			a.status === "en_route",
 	).length;
 
-	const donorApprovedRequests = (alerts ?? [])
-		.filter(
-			(a: { status: string }) =>
-				a.status === "accepted" ||
-				a.status === "en_route" ||
-				a.status === "arrived" ||
-				a.status === "completed",
-		)
-		.map((a: { id: string }) => a.id);
-
-	const [activeTrackingId, setActiveTrackingId] = useState<string | null>(
-		null,
-	);
-	const [trackingProgress, setTrackingProgress] = useState(0);
-	const [trackingStatus, setTrackingStatus] = useState<
-		"accepted" | "en_route" | "arrived"
-	>("accepted");
-	const [etaMinutes, setEtaMinutes] = useState(15);
-	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-	const [completedCountLocal, setCompletedCountLocal] =
-		useState(completedCount);
-
 	useEffect(() => {
 		if (user?.location) setDonorLocation(user.location);
 		if (lastDonationDate) setLastDonationDateInput(lastDonationDate);
 		if (user?.isActive === false) setDonorStatus("inactive");
 	}, [user, lastDonationDate]);
-
-	useEffect(() => {
-		setCompletedCountLocal(completedCount);
-	}, [completedCount]);
-
-	useEffect(() => {
-		let timer: NodeJS.Timeout;
-		if (activeTrackingId) {
-			timer = setInterval(() => {
-				setTrackingProgress((prev) => {
-					if (prev >= 100) {
-						clearInterval(timer);
-						setTrackingStatus("arrived");
-						setEtaMinutes(0);
-						return 100;
-					}
-					const next = prev + 5;
-					if (next >= 15 && next < 80) {
-						setTrackingStatus("en_route");
-						setEtaMinutes(
-							Math.max(1, Math.round(15 * (1 - next / 100))),
-						);
-					} else if (next >= 80) {
-						setTrackingStatus("arrived");
-						setEtaMinutes(0);
-					}
-					return next;
-				});
-			}, 1000);
-		}
-		return () => clearInterval(timer);
-	}, [activeTrackingId]);
 
 	const deferralPercent = Math.min(
 		100,
@@ -183,13 +134,13 @@ export default function DonorDashboardPage() {
 	);
 
 	const getHmoTier = useCallback(() => {
-		if (completedCountLocal === 0)
+		if (completedCount === 0)
 			return {
 				name: "Inactive",
 				level: 0,
 				desc: "Donate once to activate your Basic coverage",
 			};
-		if (completedCountLocal < 3)
+		if (completedCount < 3)
 			return {
 				name: "Basic Plan Activated",
 				level: 1,
@@ -200,10 +151,9 @@ export default function DonorDashboardPage() {
 			level: 2,
 			desc: "Covers comprehensive surgeries, medication, and fully upgraded HMO coverage",
 		};
-	}, [completedCountLocal]);
+	}, [completedCount]);
 
 	const hmoTier = getHmoTier();
-
 	const queryClient = useQueryClient();
 
 	const handleSaveSettings = useCallback(
@@ -214,25 +164,43 @@ export default function DonorDashboardPage() {
 				await updateUserProfile(session.user.id, {
 					location: donorLocation || undefined,
 					isActive: donorStatus !== "inactive",
+					lastDonationDate: lastDonationDateInput
+						? new Date(lastDonationDateInput)
+						: undefined,
 				});
 				setSettingsSuccess(
 					"Preferences updated successfully! Match filters updated in real-time.",
 				);
 				setTimeout(() => setSettingsSuccess(""), 4000);
+				queryClient.invalidateQueries({
+					queryKey: ["donor-dashboard"],
+				});
 				toast.success("Settings saved");
 			} catch {
 				toast.error("Failed to save settings");
 			}
 		},
-		[session?.user?.id, donorLocation, donorStatus],
+		[
+			session?.user?.id,
+			donorLocation,
+			donorStatus,
+			lastDonationDateInput,
+			queryClient,
+		],
 	);
+
+	const [activeTrackingId, setActiveTrackingId] = useState<string | null>(
+		null,
+	);
+	const [trackingStatus, setTrackingStatus] = useState<
+		"accepted" | "en_route" | "arrived"
+	>("accepted");
+	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
 	const handleRespond = useCallback(
 		async (reqId: string) => {
 			setActiveTrackingId(reqId);
-			setTrackingProgress(0);
 			setTrackingStatus("accepted");
-			setEtaMinutes(15);
 			try {
 				await respondToAlert(reqId, "accepted");
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
@@ -275,8 +243,6 @@ export default function DonorDashboardPage() {
 			try {
 				await updateAlertStatus(reqId, "arrived");
 				setTrackingStatus("arrived");
-				setTrackingProgress(100);
-				setEtaMinutes(0);
 				setIsSuccessModalOpen(true);
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 			} catch {
@@ -291,39 +257,21 @@ export default function DonorDashboardPage() {
 			try {
 				await updateAlertStatus(activeTrackingId, "completed");
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+				queryClient.invalidateQueries({
+					queryKey: ["donor-dashboard"],
+				});
 			} catch {
 				toast.error("Failed to update donation status");
 			}
 		}
-		setCompletedCountLocal((prev) => prev + 1);
 		setActiveTrackingId(null);
-		setTrackingProgress(0);
+		setIsSuccessModalOpen(false);
 		const today = new Date().toISOString().split("T")[0];
 		setLastDonationDateInput(today);
-		setIsSuccessModalOpen(false);
 		toast.success("Donation recorded. Deferral period reset.");
 	}, [activeTrackingId, queryClient]);
 
-	const generateHistory = useCallback((): DonationRecord[] => {
-		const list: DonationRecord[] = [];
-		for (let i = 0; i < completedCountLocal; i++) {
-			const dateOffset = (i + 1) * 60;
-			const date = new Date();
-			date.setDate(date.getDate() - dateOffset);
-			list.push({
-				id: `rec-${i}`,
-				date: date.toISOString().split("T")[0],
-				hospitalName:
-					HOSPITALS_FOR_HISTORY[i % HOSPITALS_FOR_HISTORY.length],
-				bloodType,
-				status: "verified",
-				pints: 1,
-			});
-		}
-		return list;
-	}, [completedCountLocal, bloodType]);
-
-	const donationRecords = generateHistory();
+	const donationRecords = historyData?.records ?? [];
 	const activeRequest = requests.find((r) => r.id === activeTrackingId);
 	const isLoading = sessionLoading || userLoading;
 
@@ -369,15 +317,14 @@ export default function DonorDashboardPage() {
 					<ActiveMissionTracker
 						request={activeRequest}
 						trackingStatus={trackingStatus}
-						trackingProgress={trackingProgress}
-						etaMinutes={etaMinutes}
 						donorLocation={donorLocation}
 						onAbort={() => {
 							setActiveTrackingId(null);
-							setTrackingProgress(0);
 						}}
 						onSimulateArrival={() =>
-							handleMarkArrived(activeTrackingId)
+							trackingStatus === "accepted"
+								? handleMarkEnRoute(activeTrackingId)
+								: handleMarkArrived(activeTrackingId)
 						}
 					/>
 				)}
@@ -395,7 +342,7 @@ export default function DonorDashboardPage() {
 						<HmoInsuranceCard
 							userName={session.user.name ?? "BioMatch User"}
 							userId={user?.id ?? ""}
-							completedCount={completedCountLocal}
+							completedCount={completedCount}
 							hmoTier={hmoTier}
 						/>
 
@@ -410,6 +357,7 @@ export default function DonorDashboardPage() {
 							onSmsFallbackChange={setSmsFallbackEnabled}
 							settingsSuccess={settingsSuccess}
 							onSave={handleSaveSettings}
+							locations={cityLabels}
 						/>
 					</div>
 
@@ -435,7 +383,7 @@ export default function DonorDashboardPage() {
 
 				<SuccessModal
 					isOpen={isSuccessModalOpen}
-					completedCount={completedCountLocal}
+					completedCount={completedCount}
 					onUpdateRecords={handleManualComplete}
 				/>
 			</div>

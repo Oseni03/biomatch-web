@@ -15,7 +15,7 @@ biomatch/
 │   │   └── signup/page.tsx         # Registration form (donor/hospital toggle)
 │   ├── donor/                      # Donor section (role=donor)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="donor"
-│   │   ├── page.tsx                #   Dashboard — orchestrates 8 extracted components: ActiveMissionTracker, DeferralStatusCard, HmoInsuranceCard, LocationSettingsCard, EmergencyAlertsFeed, BloodSupplyChart, DonationHistoryCard, SuccessModal. React Query + local state for simulation
+│   │   ├── page.tsx                #   Dashboard — orchestrates 8 extracted components: ActiveMissionTracker, DeferralStatusCard, HmoInsuranceCard, LocationSettingsCard (locations loaded from DB via getAllCityLabels), EmergencyAlertsFeed, BloodSupplyChart (all 8 blood groups), DonationHistoryCard, SuccessModal. React Query + local state. donorStatus + lastDonationDate persisted to backend via updateUserProfile
 │   │   ├── health-profile/page.tsx #   Health/medical form — Tailwind classes, React Query initial load
 │   │   ├── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
 │   │   └── history/page.tsx        #   Donation history & impact — paginated history table, personal impact stats (donations/points/lives), local monthly demand, eligibility banner
@@ -54,12 +54,12 @@ biomatch/
 │   │   └── staff-accounts.tsx      #   Authorized staff list + "add practitioner" form
 │   ├── donor/                      # Donor dashboard components (extracted from page.tsx)
 │   │   ├── active-mission-tracker.tsx #   Red tracking card during active emergency response
-│   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart by group
-│   │   ├── deferral-status-card.tsx #   Circular eligibility countdown + date input
-│   │   ├── donation-history-card.tsx #   Donation history table (legacy — used in dashboard, driven by fake data)
+│   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart — all 8 blood groups from bank inventory
+│   │   ├── deferral-status-card.tsx #   Circular eligibility countdown + date input (persisted to backend on save)
+│   │   ├── donation-history-card.tsx #   Donation history table (legacy — used in dashboard, real data from getDonorHistory)
 │   │   ├── emergency-alerts-feed.tsx #   Live emergency request cards with accept/decline
 │   │   ├── hmo-insurance-card.tsx  #   Dark HMO insurance card with milestone progress
-│   │   ├── location-settings-card.tsx #   Availability, location, radius, SMS settings form
+│   │   ├── location-settings-card.tsx #   Availability, location (loaded from DB via getAllCityLabels), radius, SMS settings form
 │   │   ├── success-modal.tsx       #   Mission completion modal overlay
 │   │   └── eligible-donors-list.tsx #   Donor table — blood group, genotype, location, eligibility badge; reusable by inventory + donor-finder
 │   ├── landing/                    # Landing page sections (8 files)
@@ -137,7 +137,7 @@ biomatch/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
 │   ├── auth-client.ts              # createAuthClient() for browser
 │   ├── blood-compatibility.ts      # Blood group compatibility matrix (universal donor/recipient)
-│   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup(), HOSPITALS_FOR_HISTORY
+│   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup()
 │   ├── eligibility.ts              # getEligibility() + ELIGIBILITY_DAYS (extracted from donor page)
 │   ├── email.ts                    # Resend client + sendEmail() wrapper — sends React Email templates; mock mode when no RESEND_API_KEY
 │   ├── prisma.ts                   # Singleton PrismaClient
@@ -150,7 +150,7 @@ biomatch/
 │   ├── emergency.ts                # createEmergencyRequest() — ancestor-based scoring, expandSearchRadius() — radius tier via getCommonAncestorDepth()
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank() (incl. locationId), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
-│   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getLocationTree()
+│   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getAllCityLabels(), getLocationTree()
 │   ├── notification.ts             # sendEmergencyAlertEmail() — sends emergency alert via Resend, logs to NotificationLog
 │   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. locationId), updateUserRole(), listDonors() (paginated, location filter), getDonorHistory() (paginated), getLocalDemandStats()
 │   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
@@ -300,6 +300,24 @@ Shared patterns:
 | Landing page (hero, navbar, stats, mission, services, impact, join, footer) fully migrated | Done |
 | Fixed pre-existing `Tooltip must be used within TooltipProvider` runtime error in sidebar | Done |
 | Fixed sidebar overlap/transparency — replaced Tailwind v4 `w-(--sidebar-width)` syntax with v3 `w-[var(--sidebar-width)]` in `components/ui/sidebar.tsx` | Done |
+| Login uses client-side `authClient.signIn.email()` instead of server action — fixes session cookie not being set through redirect | Done |
+| Donor dashboard: removed fake `generateHistory()`, uses real `getDonorHistory()` from server | Done |
+| Donor dashboard: removed `completedCountLocal` state, HMO tier computed from real wallet `lifetimeDonations` | Done |
+| Donor dashboard: removed simulated mission timer, status progression is manual via server actions | Done |
+| Donor dashboard: removed `"Ikeja, Lagos"` fallback, uses user's real location from DB | Done |
+| DonationRecord type updated to match `getDonorHistory()` response shape; DonationHistoryCard updated accordingly | Done |
+| ActiveMissionTracker simplified: removed fake progress bar/ETA, shows real status with manual action buttons | Done |
+
+## Resolved — Full Backend Integration
+
+| Issue | Severity | Status |
+|---|---|---|
+| LocationSettingsCard hardcodes 6 Lagos locations | High | ✅ Replaced with `getAllCityLabels()` server action — loads real city+state labels from Location table |
+| Location dropdown shows stale/limited options | Medium | ✅ Now dynamically loads from DB, shows all cities with state names |
+| donorStatus not persisted to backend | Medium | ✅ `handleSaveSettings` now saves `isActive` map from donorStatus to backend |
+| Manual date input not persisted | Medium | ✅ `lastDonationDate` now saved alongside location and status via `updateUserProfile` |
+| BloodSupplyChart only shows 5 of 8 blood groups | Low | ✅ Now shows all 8 blood groups (O+, O-, A+, A-, B+, B-, AB+, AB-) |
+| Hardcoded 100 points in history page | Low | ✅ Replaced with `POINTS_PER_DONATION` constant matching `confirmDonation` (100) |
 
 ## Remaining Issues
 
@@ -307,3 +325,5 @@ Shared patterns:
 | --------------------------------------------------- | -------- | ------------------------------------------------- |
 | `inventory` JSON blob — no type safety, can't query | Medium   | `prisma/schema.prisma`                            |
 | Sidebar `userName` prop never passed by layouts     | Low      | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
+| Hospital phone not in User schema — contactPhone always "N/A" in emergency feed | Low | `prisma/schema.prisma` |
+| maxRadius and smsFallbackEnabled not persisted (no DB fields) | Low | `app/donor/page.tsx`, `components/donor/location-settings-card.tsx` |
