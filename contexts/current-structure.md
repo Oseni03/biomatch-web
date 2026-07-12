@@ -103,6 +103,11 @@ biomatch/
 ├── emails/                         # React Email templates
 │   └── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
 │
+├── docs/
+│   └── agents/                      # Engineering skill configuration
+│       ├── issue-tracker.md
+│       ├── triage-labels.md
+│       └── domain.md
 ├── contexts/                       # AI context & plans directory
 │   ├── architecture.md             # Tech stack, data model, routing, patterns
 │   ├── current-structure.md        # This file — full file tree
@@ -120,9 +125,16 @@ biomatch/
 │       ├── 06-donation-confirmation.md
 │       ├── 07-hmo-incentive-integration.md
 │       ├── 08-donor-registration-enhancements.md
-│       ├── 09-donor-history-impact.md
-│       ├── 10-hospital-admin-features.md
-│       └── 11-institutional-partner-management.md
+│               ├── 09-donor-history-impact.md
+│               ├── 10-hospital-admin-features.md
+│               ├── 11-institutional-partner-management.md
+│               ├── 12-design-foundation.md
+│               ├── 13-landing-hero-navbar.md
+│               ├── 14-landing-stats-how-it-works-testimonials.md
+│               ├── 15-landing-services-impact-footer.md
+│               ├── 16-dashboard-sidebar-topbar.md
+│               ├── 17-dashboard-bento-widgets.md
+│               └── 18-hospital-blood-search-cards.md
 │
 ├── hooks/
 │   ├── use-scroll-reveal.ts        # IntersectionObserver scroll animation hook

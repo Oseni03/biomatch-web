@@ -135,3 +135,31 @@ See `contexts/` directory for the detailed improvement plan:
 | 11 | Institutional Partner Management | HITL | 08 |
 
 **HITL issues** (05, 07, 10, 11) require human decisions on provider choices, partner contracts, and role definitions before AFK agents can implement them.
+
+## Redesign Issues (from grilling session)
+
+7 vertical-slice issues derived from the redesign plan. Listed in dependency order.
+
+| # | Title | Type | Blocked By |
+|---|---|---|---|
+| 12 | Design Foundation | AFK | — |
+| 13 | Landing Hero + Navbar | AFK | 12 |
+| 14 | Landing Stats + How It Works + Testimonials | AFK | 12 |
+| 15 | Landing Services + Impact + Footer | AFK | 12 |
+| 16 | Dashboard Sidebar + Top Bar | AFK | 12 |
+| 17 | Dashboard Bento Widget Restyle | AFK | 16 |
+| 18 | Hospital Blood Search Cards | AFK | 16 |
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as local markdown files under `contexts/issues/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical roles map to the same-named strings (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo; the authoritative doc is `contexts/architecture.md`. See `docs/agents/domain.md`.
