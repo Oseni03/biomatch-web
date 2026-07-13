@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Heart, Twitter, Linkedin, Mail } from "lucide-react";
 
 const FOOTER_LINKS = {
 	product: [
 		{ label: "Why BioMatch", href: "#stats" },
-		{ label: "How It Works", href: "#services" },
+		{ label: "How It Works", href: "#how-it-works" },
 		{ label: "Pricing", href: "#" },
 		{ label: "Status", href: "#" },
 	],
@@ -30,125 +31,76 @@ const FOOTER_LINKS = {
 };
 
 export function Footer() {
-	return (
-		<footer className="relative bg-slate-950 dark:bg-black border-t border-slate-800/50 overflow-hidden">
-			{/* Decorative Background */}
-			<div className="absolute inset-0 overflow-hidden pointer-events-none">
-				<div className="absolute top-0 right-0 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
-			</div>
-
-			<div className="relative">
-				{/* Main Footer Content */}
-				<div className="max-w-6xl mx-auto px-4 py-16 md:py-20">
-					<div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
-						{/* Brand Column */}
-						<div className="col-span-1">
-							<Link
-								href="/"
-								className="flex items-center gap-2 mb-6"
-							>
-								<div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
-									<Heart className="h-4 w-4 text-white fill-current" />
-								</div>
-								<span className="font-bold text-lg text-white">
-									BioMatch
-								</span>
-							</Link>
-							<p className="text-sm text-slate-400 leading-relaxed">
-								Emergency blood matching at scale. Saving lives
-								across Africa.
-							</p>
-						</div>
-
-						{/* Product Links */}
-						<div>
-							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
-								Product
-							</h3>
-							<ul className="space-y-3">
-								{FOOTER_LINKS.product.map((link, i) => (
-									<li key={i}>
-										<Link
-											href={link.href}
-											className="text-slate-400 hover:text-white text-sm transition-colors duration-200"
-										>
-											{link.label}
-										</Link>
-									</li>
-								))}
-							</ul>
-						</div>
-
-						{/* Company Links */}
-						<div>
-							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
-								Company
-							</h3>
-							<ul className="space-y-3">
-								{FOOTER_LINKS.company.map((link, i) => (
-									<li key={i}>
-										<Link
-											href={link.href}
-											className="text-slate-400 hover:text-white text-sm transition-colors duration-200"
-										>
-											{link.label}
-										</Link>
-									</li>
-								))}
-							</ul>
-						</div>
-
-						{/* Legal Links */}
-						<div>
-							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
-								Legal
-							</h3>
-							<ul className="space-y-3">
-								{FOOTER_LINKS.legal.map((link, i) => (
-									<li key={i}>
-										<Link
-											href={link.href}
-											className="text-slate-400 hover:text-white text-sm transition-colors duration-200"
-										>
-											{link.label}
-										</Link>
-									</li>
-								))}
-							</ul>
-						</div>
+  return (
+    <footer className="border-t border-neutral-800 bg-neutral-950">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto max-w-6xl px-4 py-16 md:py-20"
+      >
+				<div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-5">
+					<div className="col-span-1">
+						<Link href="/" className="mb-6 flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
+								<Heart className="h-4 w-4 fill-current text-white" />
+							</div>
+							<span className="text-lg font-bold text-white">
+								BioMatch
+							</span>
+						</Link>
+						<p className="text-sm leading-relaxed text-neutral-400">
+							Emergency blood matching at scale. Saving lives
+							across Africa.
+						</p>
 					</div>
 
-					{/* Divider */}
-					<div className="border-t border-slate-800/50 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
-						{/* Left */}
-						<div className="text-sm text-slate-400">
-							<p>
-								&copy; {new Date().getFullYear()} BioMatch. All
-								rights reserved.
-							</p>
+					{(["product", "company", "legal"] as const).map((group) => (
+						<div key={group}>
+							<h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">
+								{group}
+							</h3>
+							<ul className="space-y-3">
+								{FOOTER_LINKS[group].map((link, i) => (
+									<li key={i}>
+										<Link
+											href={link.href}
+											className="text-sm text-neutral-400 transition-colors duration-200 hover:text-brand"
+										>
+											{link.label}
+										</Link>
+									</li>
+								))}
+							</ul>
 						</div>
+					))}
+				</div>
 
-						{/* Social Icons */}
-						<div className="flex items-center gap-6">
-							{FOOTER_LINKS.social.map((item, i) => {
-								const Icon = item.icon;
-								return (
-									<Link
-										key={i}
-										href={item.href}
-										aria-label={item.label}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all duration-200"
-									>
-										<Icon className="h-5 w-5" />
-									</Link>
-								);
-							})}
-						</div>
+				<div className="flex flex-col items-center justify-between gap-6 border-t border-neutral-800 pt-8 md:flex-row">
+					<p className="text-sm text-neutral-400">
+						&copy; {new Date().getFullYear()} BioMatch. All rights
+						reserved.
+					</p>
+					<div className="flex items-center gap-4">
+						{FOOTER_LINKS.social.map((item, i) => {
+							const Icon = item.icon;
+							return (
+								<Link
+									key={i}
+									href={item.href}
+									aria-label={item.label}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-900 text-neutral-400 transition-all duration-200 hover:bg-neutral-800 hover:text-brand"
+								>
+									<Icon className="h-5 w-5" />
+								</Link>
+							);
+						})}
 					</div>
 				</div>
-			</div>
+			</motion.div>
 		</footer>
 	);
 }

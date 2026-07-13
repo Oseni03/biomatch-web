@@ -18,7 +18,7 @@ export default function HomePage() {
 			<Testimonials />
 			<Services />
 			<Impact />
-			{/* <Join /> */}
+			<Join />
 			<Footer />
 		</>
 	);
