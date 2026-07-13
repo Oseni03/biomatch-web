@@ -52,6 +52,14 @@
 | 13a | Redesign Navbar: clean palette, new CTAs, framer-motion entrance | ✅ |
 | 13b | Redesign Hero: flat design, new headline, bento icon-card grid | ✅ |
 
+### Redesign — Issue 14 (Landing Stats + How It Works + Testimonials) ✅
+| # | Task | Status |
+|---|---|---|
+| 14a | Redesign Stats: animated scroll counters, 5 bento cards, `useInView` | ✅ |
+| 14b | Create How It Works: 3-step card layout, icons, scroll reveal | ✅ |
+| 14c | Create Testimonials: 3 persona cards with quotes and avatars | ✅ |
+| 14d | Delete Mission section, update composition and anchors | ✅ |
+
 ## Non-goals (decided)
 - No `Donation` model (deferred)
 - No geospatial coordinates (text `location` field instead)

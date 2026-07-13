@@ -363,6 +363,19 @@ Shared patterns:
 | Hero layout: text left + bento right on desktop, stacked on mobile | Done |
 | Hero framer-motion: staggered card entrance (x-slide text, staggerChildren cards) | Done |
 
+## Resolved in Issue 14 — Landing Stats + How It Works + Testimonials
+
+| Change | Status |
+|---|---|
+| Stats section rewritten: 5 bento cards (Active Donors, Partner Hospitals, Blood Requests, Lives Saved, Available Blood Units) with `useInView` animated number counters | Done |
+| How It Works section created: 3-step cards (Register, Find or Donate Blood, Save Lives) with lucide icons and scroll reveal | Done |
+| Testimonials section created: 3 persona cards (hospital admin, donor, patient family) with avatar initials and quotes | Done |
+| `mission.tsx` deleted — all references purged from `app/page.tsx`, `navbar.tsx`, `footer.tsx` | Done |
+| Section anchors updated: `#mission` → `#stats`, `#services` → `#how-it-works` | Done |
+| Page composition: Navbar → Hero → Stats → How It Works → Testimonials → Services → Impact → Footer | Done |
+| All sections have framer-motion `whileInView` scroll-triggered animations with stagger | Done |
+| Responsive: grid stacks to single column on mobile for all three sections | Done |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |

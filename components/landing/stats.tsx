@@ -9,7 +9,7 @@ const STATS = [
 	{ end: 92, suffix: "", label: "Partner Hospitals", icon: Building },
 	{ end: 3847, suffix: "", label: "Blood Requests", icon: Droplets },
 	{ end: 14210, suffix: "+", label: "Lives Saved", icon: Heart },
-	{ end: 8640, suffix: "+", label: "Available Units", icon: Activity },
+	{ end: 8640, suffix: "+", label: "Available Blood Units", icon: Activity },
 ];
 
 function AnimatedCounter({

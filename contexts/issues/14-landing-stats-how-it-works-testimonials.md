@@ -41,12 +41,12 @@ Redesign the middle section of the landing page: replace the Stats section with 
 
 ## Acceptance criteria
 
-- [ ] Stats counters animate from zero to final value on scroll
-- [ ] How It Works section shows exactly 3 steps with icons, titles, descriptions
-- [ ] Testimonials section shows 3-4 cards with names, roles, quotes
-- [ ] Old Mission component is removed — no references remain
-- [ ] All sections have framer-motion scroll-reveal animations
-- [ ] Responsive layout at mobile breakpoints
+- [x] Stats counters animate from zero to final value on scroll
+- [x] How It Works section shows exactly 3 steps with icons, titles, descriptions
+- [x] Testimonials section shows 3-4 cards with names, roles, quotes
+- [x] Old Mission component is removed — no references remain
+- [x] All sections have framer-motion scroll-reveal animations
+- [x] Responsive layout at mobile breakpoints
 
 ## Blocked by
 
