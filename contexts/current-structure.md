@@ -37,7 +37,6 @@ biomatch/
 │   │   ├── eyebrow.tsx             #   Section eyebrow label (11px, brand, uppercase)
 │   │   ├── stat-block.tsx          #   Stat value + label + optional icon
 │   │   ├── section.tsx             #   Section wrapper (light or dark bg, max-w-6xl)
-│   │   ├── blob-decoration.tsx     #   Hero background blur blobs
 │   │   └── logo-bar.tsx            #   Social proof logo strip
 │   ├── dashboard/                  # Shared dashboard components (Phase 1)
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
@@ -300,7 +299,7 @@ Shared patterns:
 | `expandSearchRadius` uses string matching for radius tiers | Medium | ✅ Now uses ancestor depth with radius-tier thresholds (depth >= 4 within 5km, >= 3 within 15km, >= 1 within 25km) |
 | `getLocalDemandStats` uses `contains` filter | Medium | ✅ Now filters by state-level ancestor chain from `locationId` |
 
-## Design System Integration (Prospeo)
+## Design System Integration
 
 | Change | Status |
 |---|---|
@@ -308,7 +307,7 @@ Shared patterns:
 | `tailwind.config.ts` extended with brand colors, display/stat font sizes, 2xl/3xl/4xl radii, card/brand shadows | Done |
 | `button.tsx` overridden with Prospeo variants (brand default, shadow-brand, hover scale) | Done |
 | `card.tsx` simplified to Prospeo card (rounded-2xl, border-border, shadow-card, hover shadow) | Done |
-| `components/prospeo/` — shared Eyebrow, StatBlock, Section, BlobDecoration, LogoBar | Done |
+| `components/prospeo/` — shared Eyebrow, StatBlock, Section, LogoBar | Done |
 | Landing page (hero, navbar, stats, mission, services, impact, join, footer) fully migrated | Done |
 | Fixed pre-existing `Tooltip must be used within TooltipProvider` runtime error in sidebar | Done |
 | Fixed sidebar overlap/transparency — replaced Tailwind v4 `w-(--sidebar-width)` syntax with v3 `w-[var(--sidebar-width)]` in `components/ui/sidebar.tsx` | Done |
@@ -330,6 +329,22 @@ Shared patterns:
 | Manual date input not persisted | Medium | ✅ `lastDonationDate` now saved alongside location and status via `updateUserProfile` |
 | BloodSupplyChart only shows 5 of 8 blood groups | Low | ✅ Now shows all 8 blood groups (O+, O-, A+, A-, B+, B-, AB+, AB-) |
 | Hardcoded 100 points in history page | Low | ✅ Replaced with `POINTS_PER_DONATION` constant matching `confirmDonation` (100) |
+
+## Resolved in Issue 12 — Design Foundation
+
+| Change | Status |
+|---|---|
+| Geist font installed and configured in `app/layout.tsx` (replaces Inter) | Done |
+| Geist Mono configured as `--font-mono` with `font-mono` Tailwind utility | Done |
+| `framer-motion` added to dependencies | Done (already present) |
+| `globals.css` updated: all HSL variables changed from `3 79% 54%` to `356 83% 41%` (new brand red `#C1121F`) | Done |
+| `--background`/`--foreground` hue shifted from `60` to `40` (warmer neutral) | Done |
+| `tailwind.config.ts` — brand colors updated to `#C1121F` / `#9C0E19` / `#FDF2F3` / `#F97171` | Done |
+| `tailwind.config.ts` — `shadow-brand` updated to `rgba(193,18,31,0.25)` | Done |
+| `tailwind.config.ts` — fontFamily uses CSS variables (`var(--font-sans)`, `var(--font-mono)`) | Done |
+| `BlobDecoration.tsx` removed (dead component, unused) | Done |
+| Old brand color `#E8342A` and `#C9281F` purged from codebase | Done |
+| `@tremor/react` verified as not imported anywhere | Done |
 
 ## Remaining Issues
 

@@ -7,7 +7,7 @@
 | Framework | Next.js 16 (App Router) |
 | Language | TypeScript 5.5 |
 | Styling | Tailwind CSS 3.4 + shadcn/ui (Radix Nova) |
-| Font | Inter via `next/font` |
+| Font | Geist via `next/font/google` (Geist + Geist_Mono) |
 | Icons | lucide-react |
 | ORM | Prisma 7 + `@prisma/adapter-pg` |
 | Database | PostgreSQL |
@@ -106,26 +106,27 @@
 2. **Login** → `app/auth/login/page.tsx` calls `authClient.signIn.email()` directly, redirects client-side to role dashboard
 3. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
 
-## Design System (Prospeo)
+## Design System (BioMatch)
 
-The app uses the **Prospeo Design System** for all visual styling, built on top of shadcn/ui CSS variables.
+The app uses a custom design system built on shadcn/ui CSS variables with the brand color `#C1121F` (`hsl(356, 83%, 41%)`).
 
 ### Color System
-- **Brand**: `#E8342A` (--color-brand) for CTAs, accent, icons
+- **Brand**: `#C1121F` (--color-brand) for CTAs, accent, icons
 - **Background**: `#FAFAF8` (warm white) page bg, `#FFFFFF` card bg
 - **Text**: `#111110` primary, `#555550` secondary, `#888882` muted
 - **Dark Section**: `#0F0F0E` bg, `#1C1C1A` surface, `#2A2A28` border
 - CSS variables use HSL format in `:root` / `.dark` blocks in `globals.css`
 
 ### Typography
-- Font: Inter (via next/font, configured in `app/layout.tsx`)
+- Font: Geist (via next/font/google, configured in `app/layout.tsx`)
+- Monospace: Geist Mono (via next/font/google, `--font-mono`)
 - Custom sizes in tailwind config: `display-xl` (3.25rem), `display-lg` (2.5rem), `stat` (2.75rem)
 - Eyebrow labels: 11px bold uppercase, `tracking-widest`, brand color
 
 ### Component Architecture
-- **shadcn/ui primitives** (`components/ui/`) — Button, Card, etc. overridden with Prospeo variants
-- **Prospeo shared components** (`components/prospeo/`) — Eyebrow, StatBlock, Section, BlobDecoration, LogoBar
-- **Landing sections** (`components/landing/`) — all updated to use Prospeo tokens
+- **shadcn/ui primitives** (`components/ui/`) — Button, Card, etc. with custom variants
+- **Shared components** (`components/prospeo/`) — Eyebrow, StatBlock, Section, LogoBar
+- **Landing sections** (`components/landing/`) — all use brand tokens
 
 ### Spacing
 - 8px base grid. Common: 16px (standard), 24px (card), 64px (section mobile), 80px+ (section desktop)
@@ -133,7 +134,7 @@ The app uses the **Prospeo Design System** for all visual styling, built on top 
 ### Shadows
 - `shadow-card`: `0 2px 8px rgba(0,0,0,0.07)`
 - `shadow-card-hover`: `0 8px 32px rgba(0,0,0,0.12)`
-- `shadow-brand`: `0 4px 20px rgba(232,52,42,0.25)`
+- `shadow-brand`: `0 4px 20px rgba(193,18,31,0.25)`
 
 ### Border Radius
 - `rounded-[10px]` buttons/inputs, `rounded-2xl` (14px) cards, `rounded-3xl` (20px) feature cards, `rounded-full` badges
@@ -143,7 +144,7 @@ The app uses the **Prospeo Design System** for all visual styling, built on top 
 - **Layout**: Each role section (`/donor`, `/hospital`, `/admin`) has a `layout.tsx` that wraps children in `<SidebarLayout role="...">`
 - **Server Actions**: All DB logic in `servers/*.ts` with `"use server"` directive. Pages import and call directly.
 - **Data Fetching**: React Query hooks in `hooks/` wrap server actions. Pages use `useQuery`/`useMutation` directly. `QueryClientProvider` in root layout with SSR-safe `makeQueryClient()`.
-- **Styling**: Tailwind utility classes throughout. Prospeo design system drives all color, typography, spacing.
+- **Styling**: Tailwind utility classes throughout. Custom design system (brand color `#C1121F`) drives all color, typography, spacing.
 - **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
 - **Location Scoring**: Nigerian location hierarchy via `Location` model self-referential FK. Signup/health profile use cascading dropdowns (Region → State → City). Emergency scoring uses `getCommonAncestorDepth()` — same city = 3, state = 2, region = 1. Fallback string matching for users without `locationId`.
 - **Email**: Resend SDK via `lib/email.ts` — sends React Email templates. Set `RESEND_API_KEY` env var for production; logs warning + returns mock ID when absent.

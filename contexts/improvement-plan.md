@@ -36,6 +36,16 @@
 | 15 | Create `useInventoryStream` hook | `hooks/use-inventory-stream.ts` |
 | 16 | Replace polling with SSE subscription | `app/hospital/inventory/page.tsx` |
 
+### Redesign — Issue 12 (Design Foundation) ✅
+| # | Task | Status |
+|---|---|---|
+| 12a | Install Geist + framer-motion | ✅ (already present) |
+| 12b | Replace Inter with Geist in layout.tsx | ✅ |
+| 12c | Update globals.css with #C1121F palette (light + dark) | ✅ |
+| 12d | Update tailwind.config.ts brand colors + fontFamily | ✅ |
+| 12e | Remove BlobDecoration.tsx and barrel export | ✅ |
+| 12f | Remove @tremor/react if unused | ✅ (not installed) |
+
 ## Non-goals (decided)
 - No `Donation` model (deferred)
 - No geospatial coordinates (text `location` field instead)

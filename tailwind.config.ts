@@ -59,10 +59,10 @@ const config: Config = {
 					foreground: "hsl(var(--card-foreground))",
 				},
 				brand: {
-					DEFAULT: "#E8342A",
-					hover: "#C9281F",
-					light: "#FEF2F2",
-					muted: "#F87171",
+					DEFAULT: "#C1121F",
+					hover: "#9C0E19",
+					light: "#FDF2F3",
+					muted: "#F97171",
 				},
 				dark: {
 					bg: "#0F0F0E",
@@ -71,8 +71,8 @@ const config: Config = {
 				},
 			},
 			fontFamily: {
-				sans: ["Inter", "system-ui", "sans-serif"],
-				display: ["Inter", "system-ui", "sans-serif"],
+				sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+				mono: ["var(--font-mono)", "monospace"],
 			},
 			fontSize: {
 				"display-xl": ["3.25rem", { lineHeight: "1.1", letterSpacing: "-0.03em", fontWeight: "700" }],
@@ -87,7 +87,7 @@ const config: Config = {
 			boxShadow: {
 				"card": "0 2px 8px rgba(0,0,0,0.07)",
 				"card-hover": "0 8px 32px rgba(0,0,0,0.12)",
-				"brand": "0 4px 20px rgba(232,52,42,0.25)",
+				"brand": "0 4px 20px rgba(193,18,31,0.25)",
 			},
 		},
 	},

@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const geistSans = Geist({
+	variable: "--font-sans",
+});
+
+const geistMono = Geist_Mono({
+	variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
 	title: "BioMatch — Blood Management System",
@@ -20,7 +26,7 @@ export default function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={cn("font-sans", inter.variable)}
+			className={cn("font-sans", geistSans.variable, geistMono.variable)}
 			suppressHydrationWarning
 		>
 			<body className="antialiased text-foreground">

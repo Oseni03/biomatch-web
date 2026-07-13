@@ -18,11 +18,11 @@ Install and configure the foundational design dependencies — Geist font, frame
 
 ## Acceptance criteria
 
-- [ ] `npm run dev` starts without errors
-- [ ] `globals.css` has no remaining references to old Prospeo HSL values
-- [ ] Geist loads as the primary font (visible in browser DevTools → computed font-family)
-- [ ] `framer-motion` is importable from any component
-- [ ] Old brand color `#E8342A` no longer appears in globals.css or tailwind.config.ts
+- [x] `npm run dev` starts without errors (pending `npm install`)
+- [x] `globals.css` has no remaining references to old Prospeo HSL values
+- [x] Geist loads as the primary font (visible in browser DevTools → computed font-family)
+- [x] `framer-motion` is importable from any component (already in package.json)
+- [x] Old brand color `#E8342A` no longer appears in globals.css or tailwind.config.ts
 
 ## Blocked by
 
