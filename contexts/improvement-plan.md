@@ -46,6 +46,12 @@
 | 12e | Remove BlobDecoration.tsx and barrel export | ✅ |
 | 12f | Remove @tremor/react if unused | ✅ (not installed) |
 
+### Redesign — Issue 13 (Landing Hero + Navbar) ✅
+| # | Task | Status |
+|---|---|---|
+| 13a | Redesign Navbar: clean palette, new CTAs, framer-motion entrance | ✅ |
+| 13b | Redesign Hero: flat design, new headline, bento icon-card grid | ✅ |
+
 ## Non-goals (decided)
 - No `Donation` model (deferred)
 - No geospatial coordinates (text `location` field instead)

@@ -33,11 +33,11 @@ Redesign the landing page top section — Navbar and Hero — with the new desig
 
 ## Acceptance criteria
 
-- [ ] Navbar shows "Find Blood" linking to `/auth/login` and "Become a Donor" linking to `/auth/signup`
-- [ ] Hero shows a bento grid of 4 icon-cards with micro-stats on desktop, stacked on mobile
-- [ ] No remaining gradient backgrounds, blur blobs, or glassmorphism in hero/navbar
-- [ ] Framer Motion entrance animations play on page load
-- [ ] Responsive: navbar collapses to hamburger menu on mobile
+- [x] Navbar shows "Find Blood" linking to `/auth/login` and "Become a Donor" linking to `/auth/signup`
+- [x] Hero shows a bento grid of 4 icon-cards with micro-stats on desktop, stacked on mobile
+- [x] No remaining gradient backgrounds, blur blobs, or glassmorphism in hero/navbar
+- [x] Framer Motion entrance animations play on page load
+- [x] Responsive: navbar collapses to hamburger menu on mobile
 
 ## Blocked by
 

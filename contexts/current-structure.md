@@ -346,6 +346,23 @@ Shared patterns:
 | Old brand color `#E8342A` and `#C9281F` purged from codebase | Done |
 | `@tremor/react` verified as not imported anywhere | Done |
 
+## Resolved in Issue 13 — Landing Hero + Navbar
+
+| Change | Status |
+|---|---|
+| Navbar redesigned: clean palette (`bg-background/95`), brand logo (solid `#C1121F`), removed gradient/glassmorphism | Done |
+| Navbar CTAs: "Find Blood" → `/auth/login` (brand button), "Become a Donor" → `/auth/signup` (outline button) | Done |
+| Navbar desktop links: Why Us, How It Works, Impact (scroll-to-section) | Done |
+| Navbar session-aware: Console link + Sign Out when logged in | Done |
+| Navbar mobile: hamburger menu with framer-motion AnimatePresence slide-down | Done |
+| Navbar framer-motion fade-in-down entrance animation on mount | Done |
+| Hero redesigned: flat design, no gradients/blurs/glassmorphism, `bg-background` solid | Done |
+| Hero headline: "Digital Blood Banking for Everyone" | Done |
+| Hero CTAs: "Find Blood" (large brand + arrow) and "Become a Donor" (large outline) | Done |
+| Hero bento grid (2x2): 4 icon-cards with micro-stats (Droplets/Building2/Users/HeartPulse) | Done |
+| Hero layout: text left + bento right on desktop, stacked on mobile | Done |
+| Hero framer-motion: staggered card entrance (x-slide text, staggerChildren cards) | Done |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |
