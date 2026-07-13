@@ -68,6 +68,27 @@
 | 15c | Redesign Join: clean dark design, new palette, uncommented in page | ✅ |
 | 15d | Redesign Footer: flat dark bg, brand logo/hover, no decorative blurs | ✅ |
 
+### Redesign — Issue 16 (Dashboard Sidebar + Top Bar) ✅
+| # | Task | Status |
+|---|---|---|
+| 16a | Apply brand palette to sidebar, rounded nav items, brand active state | ✅ |
+| 16b | Redesign sidebar BioMatch logo/header with Geist font and brand color | ✅ |
+| 16c | Move NavUser from sidebar footer to top-right of top bar | ✅ |
+| 16d | Add Notifications bell with badge count to top bar | ✅ |
+| 16e | Add Emergency Alert SOS button with pulse animation to top bar | ✅ |
+| 16f | Add sidebar skeleton loader on initial mount | ✅ |
+| 16g | Update nav-main.tsx and nav-user.tsx visual styling | ✅ |
+
+### Redesign — Issue 17 (Dashboard Bento Widget Restyle)
+| # | Task | Status |
+|---|---|---|
+| 17 | Restyle dashboard bento grid widgets with new palette | ⬜ |
+
+### Redesign — Issue 18 (Hospital Blood Search Cards)
+| # | Task | Status |
+|---|---|---|
+| 18 | Restyle hospital blood search cards with new palette | ⬜ |
+
 ## Non-goals (decided)
 - No `Donation` model (deferred)
 - No geospatial coordinates (text `location` field instead)

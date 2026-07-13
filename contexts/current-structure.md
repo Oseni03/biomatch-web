@@ -388,6 +388,22 @@ Shared patterns:
 | Footer link "How It Works" updated to point to `#how-it-works` | Done |
 | Footer framer-motion scroll reveal added | Done |
 
+## Resolved in Issue 16 — Dashboard Sidebar + Top Bar
+
+| Change | Status |
+|---|---|
+| Sidebar nav items: `rounded-xl`, brand-colored active state (`bg-brand/10 text-brand`), soft hover transitions | Done |
+| Sidebar BioMatch logo/header: brand bg (`bg-brand`), `rounded-xl`, Geist `font-semibold tracking-tight`, cleaner subtitle | Done |
+| `NavUser` moved from sidebar footer to top-right of top bar with avatar-only trigger (`rounded-full`) | Done |
+| Notifications bell icon added to top bar with unread badge count via `BadgeCount` helper | Done |
+| Emergency Alert Button (red SOS `AlertTriangle`) with `animate-pulse` when alerts active — links to `/hospital/emergency` or `/donor` | Done |
+| Sidebar skeleton loader on initial mount using `SidebarMenuSkeleton` with `showIcon` | Done |
+| Role-specific nav items preserved (donor/hospital/admin) | Done |
+| `nav-main.tsx`: `cn()` for `rounded-xl` + brand active state classes | Done |
+| `nav-user.tsx`: `variant` prop (`"sidebar" | "topbar"`), topbar mode uses `Button` trigger with `rounded-full` avatar | Done |
+| `nav-user.tsx`: `ChevronsUpDown` restored in sidebar variant for dropdown affordance | Done |
+| Top bar restyled: `bg-background`, clean border-b, consistent gap/padding | Done |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |
