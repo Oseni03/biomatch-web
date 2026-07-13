@@ -37,12 +37,12 @@ Restyle the remaining landing page sections — Services (features grid), Impact
 
 ## Acceptance criteria
 
-- [ ] Services section shows 6 feature cards with flat design, brand-colored icons, no gradients
-- [ ] Impact section shows 3 metric cards with clean dark styling
-- [ ] Join CTA section is uncommented and visible on page
-- [ ] Footer uses the new palette, all links functional
-- [ ] No remaining gradient backgrounds, glassmorphism, or blurs in any of these sections
-- [ ] Framer-motion scroll-reveal animations work on all sections
+- [x] Services section shows 6 feature cards with flat design, brand-colored icons, no gradients
+- [x] Impact section shows 3 metric cards with clean dark styling
+- [x] Join CTA section is uncommented and visible on page
+- [x] Footer uses the new palette, all links functional
+- [x] No remaining gradient backgrounds, glassmorphism, or blurs in any of these sections
+- [x] Framer-motion scroll-reveal animations work on all sections
 
 ## Blocked by
 

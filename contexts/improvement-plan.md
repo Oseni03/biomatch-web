@@ -60,6 +60,14 @@
 | 14c | Create Testimonials: 3 persona cards with quotes and avatars | ✅ |
 | 14d | Delete Mission section, update composition and anchors | ✅ |
 
+### Redesign — Issue 15 (Landing Services + Impact + Join + Footer) ✅
+| # | Task | Status |
+|---|---|---|
+| 15a | Redesign Services: flat feature cards, brand icons, framer-motion, no gradients | ✅ |
+| 15b | Redesign Impact: neutral dark bg, flat metric cards, clean CTA | ✅ |
+| 15c | Redesign Join: clean dark design, new palette, uncommented in page | ✅ |
+| 15d | Redesign Footer: flat dark bg, brand logo/hover, no decorative blurs | ✅ |
+
 ## Non-goals (decided)
 - No `Donation` model (deferred)
 - No geospatial coordinates (text `location` field instead)

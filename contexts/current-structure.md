@@ -376,6 +376,18 @@ Shared patterns:
 | All sections have framer-motion `whileInView` scroll-triggered animations with stagger | Done |
 | Responsive: grid stacks to single column on mobile for all three sections | Done |
 
+## Resolved in Issue 15 — Landing Services + Impact + Join + Footer
+
+| Change | Status |
+|---|---|
+| Services section rewritten: 6 flat feature cards with brand-colored lucide icons, framer-motion stagger scroll reveal, no gradient backgrounds or decorative blurs | Done |
+| Impact section rewritten: neutral dark bg (`bg-neutral-950`), 3 flat metric cards (2.3x / 94% / 99.2%), clean CTA card with brand buttons, no animated grid or pulsing blurs | Done |
+| Join section rewritten: clean dark design with framer-motion entrance, updated palette tokens, uncommented in `page.tsx` | Done |
+| Footer rewritten: flat dark bg, brand-colored logo, brand hover states on all links and social icons, no decorative blur background | Done |
+| All gradient backgrounds, glassmorphism, and blur elements removed from all four sections | Done |
+| Footer link "How It Works" updated to point to `#how-it-works` | Done |
+| Footer framer-motion scroll reveal added | Done |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |
