@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -52,6 +53,11 @@ export function NavMain({
 								asChild
 								tooltip={item.title}
 								isActive={item.isActive}
+								className={cn(
+									"rounded-xl transition-all duration-150",
+									item.isActive &&
+										"bg-brand/10 text-brand font-medium hover:bg-brand/15 hover:text-brand data-active:bg-brand/10 data-active:text-brand",
+								)}
 							>
 								<Link href={item.url}>
 									<item.icon />

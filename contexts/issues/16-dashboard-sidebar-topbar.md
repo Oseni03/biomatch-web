@@ -36,14 +36,14 @@ Visually redesign the dashboard sidebar and top navigation bar across all roles 
 
 ## Acceptance criteria
 
-- [ ] Sidebar nav items use `rounded-xl`, brand-colored active state, soft hover
-- [ ] Sidebar BioMatch logo/header uses Geist font and new palette
-- [ ] User avatar appears in top-right of top bar instead of sidebar footer
-- [ ] Notifications bell shows in top bar with unread badge count
-- [ ] Emergency Alert Button (red SOS) appears in top bar
-- [ ] Skeleton loader shows while sidebar is loading
-- [ ] All role-specific nav items preserved and functional
-- [ ] Responsive: sidebar collapses on mobile
+- [x] Sidebar nav items use `rounded-xl`, brand-colored active state, soft hover
+- [x] Sidebar BioMatch logo/header uses Geist font and new palette
+- [x] User avatar appears in top-right of top bar instead of sidebar footer
+- [x] Notifications bell shows in top bar with unread badge count
+- [x] Emergency Alert Button (red SOS) appears in top bar with pulse animation
+- [x] Skeleton loader shows while sidebar is loading
+- [x] All role-specific nav items preserved and functional
+- [x] Responsive: sidebar collapses on mobile (existing behavior, unchanged)
 
 ## Blocked by
 
