@@ -5,7 +5,7 @@ import { Heart, Twitter, Linkedin, Mail } from "lucide-react";
 
 const FOOTER_LINKS = {
 	product: [
-		{ label: "Why BioMatch", href: "#mission" },
+		{ label: "Why BioMatch", href: "#stats" },
 		{ label: "How It Works", href: "#services" },
 		{ label: "Pricing", href: "#" },
 		{ label: "Status", href: "#" },
@@ -26,7 +26,7 @@ const FOOTER_LINKS = {
 		{ icon: Twitter, href: "https://twitter.com", label: "Twitter" },
 		{ icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
 		{ icon: Mail, href: "mailto:hello@biomatch.org", label: "Email" },
-	]
+	],
 };
 
 export function Footer() {
@@ -43,24 +43,32 @@ export function Footer() {
 					<div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
 						{/* Brand Column */}
 						<div className="col-span-1">
-							<Link href="/" className="flex items-center gap-2 mb-6">
+							<Link
+								href="/"
+								className="flex items-center gap-2 mb-6"
+							>
 								<div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
 									<Heart className="h-4 w-4 text-white fill-current" />
 								</div>
-								<span className="font-bold text-lg text-white">BioMatch</span>
+								<span className="font-bold text-lg text-white">
+									BioMatch
+								</span>
 							</Link>
 							<p className="text-sm text-slate-400 leading-relaxed">
-								Emergency blood matching at scale. Saving lives across Africa.
+								Emergency blood matching at scale. Saving lives
+								across Africa.
 							</p>
 						</div>
 
 						{/* Product Links */}
 						<div>
-							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Product</h3>
+							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+								Product
+							</h3>
 							<ul className="space-y-3">
 								{FOOTER_LINKS.product.map((link, i) => (
 									<li key={i}>
-										<Link 
+										<Link
 											href={link.href}
 											className="text-slate-400 hover:text-white text-sm transition-colors duration-200"
 										>
@@ -73,11 +81,13 @@ export function Footer() {
 
 						{/* Company Links */}
 						<div>
-							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Company</h3>
+							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+								Company
+							</h3>
 							<ul className="space-y-3">
 								{FOOTER_LINKS.company.map((link, i) => (
 									<li key={i}>
-										<Link 
+										<Link
 											href={link.href}
 											className="text-slate-400 hover:text-white text-sm transition-colors duration-200"
 										>
@@ -90,11 +100,13 @@ export function Footer() {
 
 						{/* Legal Links */}
 						<div>
-							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Legal</h3>
+							<h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+								Legal
+							</h3>
 							<ul className="space-y-3">
 								{FOOTER_LINKS.legal.map((link, i) => (
 									<li key={i}>
-										<Link 
+										<Link
 											href={link.href}
 											className="text-slate-400 hover:text-white text-sm transition-colors duration-200"
 										>
@@ -110,7 +122,10 @@ export function Footer() {
 					<div className="border-t border-slate-800/50 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
 						{/* Left */}
 						<div className="text-sm text-slate-400">
-							<p>&copy; {new Date().getFullYear()} BioMatch. All rights reserved.</p>
+							<p>
+								&copy; {new Date().getFullYear()} BioMatch. All
+								rights reserved.
+							</p>
 						</div>
 
 						{/* Social Icons */}

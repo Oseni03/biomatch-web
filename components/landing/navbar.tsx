@@ -49,15 +49,15 @@ export function Navbar() {
 
 				<div className="hidden md:flex items-center gap-10 text-sm">
 					<a
-						href="#mission"
-						onClick={(e) => handleNavLink(e, "mission")}
+						href="#stats"
+						onClick={(e) => handleNavLink(e, "stats")}
 						className="font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
-						Why Us
+						Stats
 					</a>
 					<a
-						href="#services"
-						onClick={(e) => handleNavLink(e, "services")}
+						href="#how-it-works"
+						onClick={(e) => handleNavLink(e, "how-it-works")}
 						className="font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
 						How It Works
@@ -125,15 +125,17 @@ export function Navbar() {
 					>
 						<div className="space-y-4 bg-background px-6 py-6">
 							<a
-								href="#mission"
-								onClick={(e) => handleNavLink(e, "mission")}
+								href="#stats"
+								onClick={(e) => handleNavLink(e, "stats")}
 								className="block font-medium text-foreground transition-colors hover:text-brand"
 							>
-								Why Us
+								Stats
 							</a>
 							<a
-								href="#services"
-								onClick={(e) => handleNavLink(e, "services")}
+								href="#how-it-works"
+								onClick={(e) =>
+									handleNavLink(e, "how-it-works")
+								}
 								className="block font-medium text-foreground transition-colors hover:text-brand"
 							>
 								How It Works
@@ -172,7 +174,9 @@ export function Navbar() {
 											Find Blood
 										</Link>
 										<Button className="w-full" asChild>
-											<Link href="/auth/signup">Become a Donor</Link>
+											<Link href="/auth/signup">
+												Become a Donor
+											</Link>
 										</Button>
 									</>
 								)}

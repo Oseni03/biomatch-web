@@ -1,7 +1,8 @@
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { Stats } from "@/components/landing/stats";
-import { Mission } from "@/components/landing/mission";
+import { HowItWorks } from "@/components/landing/how-it-works";
+import { Testimonials } from "@/components/landing/testimonials";
 import { Services } from "@/components/landing/services";
 import { Impact } from "@/components/landing/impact";
 import { Join } from "@/components/landing/join";
@@ -13,7 +14,8 @@ export default function HomePage() {
 			<Navbar />
 			<Hero />
 			<Stats />
-			<Mission />
+			<HowItWorks />
+			<Testimonials />
 			<Services />
 			<Impact />
 			{/* <Join /> */}
