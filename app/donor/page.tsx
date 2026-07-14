@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
@@ -295,41 +296,66 @@ export default function DonorDashboardPage() {
 		);
 	}
 
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: { staggerChildren: 0.08 },
+		},
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 16 },
+		visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+	};
+
 	return (
 		<AlertCountProvider value={activeAlertCount}>
-			<div className="space-y-8">
+			<motion.div
+				className="space-y-8"
+				variants={containerVariants}
+				initial="hidden"
+				animate="visible"
+			>
 				{eligibility.eligible && lastDonationDate && (
-					<div className="bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 rounded-2xl p-4 flex items-center gap-3">
-						<CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
-						<div>
-							<p className="text-sm font-semibold text-green-800 dark:text-green-300">
-								You are eligible to donate again!
-							</p>
-							<p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-								Your 56-day deferral period has ended. Check for
-								active emergency requests above.
-							</p>
+					<motion.div variants={itemVariants}>
+						<div className="bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 rounded-2xl p-4 flex items-center gap-3">
+							<CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+							<div>
+								<p className="text-sm font-semibold text-green-800 dark:text-green-300">
+									You are eligible to donate again!
+								</p>
+								<p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+									Your 56-day deferral period has ended. Check
+									for active emergency requests above.
+								</p>
+							</div>
 						</div>
-					</div>
+					</motion.div>
 				)}
 
 				{activeTrackingId && activeRequest && (
-					<ActiveMissionTracker
-						request={activeRequest}
-						trackingStatus={trackingStatus}
-						donorLocation={donorLocation}
-						onAbort={() => {
-							setActiveTrackingId(null);
-						}}
-						onSimulateArrival={() =>
-							trackingStatus === "accepted"
-								? handleMarkEnRoute(activeTrackingId)
-								: handleMarkArrived(activeTrackingId)
-						}
-					/>
+					<motion.div variants={itemVariants}>
+						<ActiveMissionTracker
+							request={activeRequest}
+							trackingStatus={trackingStatus}
+							donorLocation={donorLocation}
+							onAbort={() => {
+								setActiveTrackingId(null);
+							}}
+							onSimulateArrival={() =>
+								trackingStatus === "accepted"
+									? handleMarkEnRoute(activeTrackingId)
+									: handleMarkArrived(activeTrackingId)
+							}
+						/>
+					</motion.div>
 				)}
 
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<motion.div
+					variants={itemVariants}
+					className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+				>
 					<div className="space-y-8 lg:col-span-1">
 						<DeferralStatusCard
 							eligibility={eligibility}
@@ -379,14 +405,14 @@ export default function DonorDashboardPage() {
 
 						<DonationHistoryCard records={donationRecords} />
 					</div>
-				</div>
+				</motion.div>
 
 				<SuccessModal
 					isOpen={isSuccessModalOpen}
 					completedCount={completedCount}
 					onUpdateRecords={handleManualComplete}
 				/>
-			</div>
+			</motion.div>
 		</AlertCountProvider>
 	);
 }

@@ -72,7 +72,7 @@ export function EmergencyRequestForm({
 	}
 
 	return (
-		<Card className="bg-card border-border rounded-3xl p-8 mb-8 animate-in slide-in-from-top-4 duration-300 shadow-lg">
+		<Card className="bg-card border-border rounded-xl p-8 mb-8 animate-in slide-in-from-top-4 duration-300 shadow-lg transition-shadow hover:shadow-card-hover">
 			<h2 className="text-xl font-bold tracking-tight mb-2">
 				Publish Immediate Emergency Match Request
 			</h2>

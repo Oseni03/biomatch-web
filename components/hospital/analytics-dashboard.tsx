@@ -46,7 +46,7 @@ export function AnalyticsDashboard() {
 					return (
 						<Card
 							key={i}
-							className="bg-card border-border rounded-2xl p-6"
+							className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover"
 						>
 							<div className="flex justify-between items-start mb-4">
 								<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
@@ -67,7 +67,7 @@ export function AnalyticsDashboard() {
 				})}
 			</div>
 
-			<Card className="bg-card border-border rounded-3xl p-6">
+			<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
 				<div className="flex justify-between items-center pb-4 border-b border-border mb-6">
 					<div>
 						<CardTitle className="text-base font-bold flex items-center gap-2">

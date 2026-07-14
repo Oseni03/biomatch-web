@@ -33,7 +33,7 @@ export function ActiveMissionTracker({
 				: "Arrived and Checking In";
 
 	return (
-		<Card className="border-brand/20 bg-brand-light rounded-3xl p-6 shadow-md relative overflow-hidden animate-in slide-in-from-top-4 duration-300">
+		<Card className="border-brand/20 bg-brand-light rounded-xl p-6 shadow-md relative overflow-hidden animate-in slide-in-from-top-4 duration-300 transition-shadow hover:shadow-card-hover">
 			<div className="absolute right-0 top-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 
 			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-brand/10">
@@ -77,14 +77,14 @@ export function ActiveMissionTracker({
 				<div className="flex gap-2">
 					<button
 						onClick={onAbort}
-						className="px-4 py-2 border-brand/20 text-brand hover:bg-brand-light rounded-xl font-medium transition"
+						className="px-4 py-2 border-brand/20 text-brand hover:bg-brand-light rounded-lg font-medium transition"
 					>
 						Abort Drive
 					</button>
 					{trackingStatus !== "arrived" && (
 						<button
 							onClick={onSimulateArrival}
-							className="px-4 py-2 bg-brand text-white hover:bg-brand-hover rounded-xl font-medium transition"
+							className="px-4 py-2 bg-brand text-white hover:bg-brand-hover rounded-lg font-medium transition"
 						>
 							{trackingStatus === "accepted"
 								? "Mark En Route"

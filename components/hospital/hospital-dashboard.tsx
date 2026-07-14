@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import {
 	Bell,
 	Users,
@@ -8,6 +9,9 @@ import {
 	UserPlus,
 	Clock,
 	History,
+	Activity,
+	CheckCircle2,
+	AlertTriangle,
 } from "lucide-react";
 import type { EmergencyMatchRequest } from "@/lib/donor-types";
 import { EXPANSION_TIMEOUT_MS } from "@/lib/radius-expansion";
@@ -26,6 +30,7 @@ import {
 	usePendingEmergencyRequests,
 	useExpandSearchRadius,
 } from "@/hooks/use-emergency-requests";
+import { StatCard } from "@/components/dashboard/stat-card";
 
 interface HospitalProfile {
 	location: string;
@@ -252,8 +257,66 @@ export default function HospitalDashboard({
 		});
 	};
 
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: { staggerChildren: 0.08 },
+		},
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 16 },
+		visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+	};
+
+	const totalAlerts = requests.length;
+	const activeAlerts = requests.filter(
+		(r) => r.status === "pending" || r.status === "matched",
+	).length;
+	const fulfilledAlerts = requests.filter(
+		(r) => r.status === "completed",
+	).length;
+
 	return (
-		<div className="space-y-8 text-left">
+		<motion.div
+			className="space-y-8 text-left"
+			variants={containerVariants}
+			initial="hidden"
+			animate="visible"
+		>
+			<motion.div
+				variants={itemVariants}
+				className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+			>
+				<StatCard
+					icon={Activity}
+					label="Total Requests"
+					value={String(totalAlerts)}
+				/>
+				<StatCard
+					icon={AlertTriangle}
+					label="Active Alerts"
+					value={String(activeAlerts)}
+					tone={activeAlerts > 0 ? "warning" : "default"}
+				/>
+				<StatCard
+					icon={Users}
+					label="Donors Responding"
+					value={String(
+						pendingServerReqs.reduce(
+							(sum, r) => sum + r.alerts.length,
+							0,
+						),
+					)}
+				/>
+				<StatCard
+					icon={CheckCircle2}
+					label="Fulfilled"
+					value={String(fulfilledAlerts)}
+				/>
+			</motion.div>
+
 			<div className="flex border-b border-border pb-px gap-6 overflow-x-auto">
 				{TABS.map((tab) => {
 					const Icon = tab.icon;
@@ -275,7 +338,7 @@ export default function HospitalDashboard({
 			</div>
 
 			{activeTab === "broadcasts" && (
-				<div className="space-y-8 animate-in fade-in duration-300">
+				<motion.div variants={itemVariants} className="space-y-8">
 					{hasPendingServerReq && expandingRequestId && (
 						<RadiusExpansionCard
 							hospitalLocation={userDetails?.location || "Lagos"}
@@ -318,7 +381,7 @@ export default function HospitalDashboard({
 						)}
 
 						{hospitalRequests.length === 0 ? (
-							<div className="bg-card border rounded-3xl p-10 text-center text-muted-foreground">
+							<div className="bg-card border border-border rounded-xl p-10 text-center text-muted-foreground">
 								You haven't launched any emergency requests
 								yet. Click "Launch Emergency Match Request"
 								above to trigger a live matching query.
@@ -347,18 +410,32 @@ export default function HospitalDashboard({
 							})
 						)}
 					</div>
-				</div>
+				</motion.div>
 			)}
 
 			{activeTab === "history" && hospitalUserId && (
-				<EmergencyHistory hospitalId={hospitalUserId} />
+				<motion.div variants={itemVariants}>
+					<EmergencyHistory hospitalId={hospitalUserId} />
+				</motion.div>
 			)}
 
-			{activeTab === "directory" && <DonorDirectory />}
+			{activeTab === "directory" && (
+				<motion.div variants={itemVariants}>
+					<DonorDirectory />
+				</motion.div>
+			)}
 
-			{activeTab === "analytics" && <AnalyticsDashboard />}
+			{activeTab === "analytics" && (
+				<motion.div variants={itemVariants}>
+					<AnalyticsDashboard />
+				</motion.div>
+			)}
 
-			{activeTab === "staff" && <StaffAccounts />}
-		</div>
+			{activeTab === "staff" && (
+				<motion.div variants={itemVariants}>
+					<StaffAccounts />
+				</motion.div>
+			)}
+		</motion.div>
 	);
 }

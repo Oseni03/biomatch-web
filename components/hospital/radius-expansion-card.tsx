@@ -24,7 +24,7 @@ export function RadiusExpansionCard({
 	requestId: _requestId,
 }: RadiusExpansionCardProps) {
 	return (
-		<Card className="bg-brand-light/50 border-brand/20 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+		<Card className="bg-brand-light/50 border-brand/20 rounded-xl p-6 shadow-sm relative overflow-hidden transition-shadow hover:shadow-card-hover">
 			<div className="absolute right-0 top-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
 				<div>
@@ -66,7 +66,7 @@ export function RadiusExpansionCard({
 					<button
 						onClick={onWidenRadius}
 						disabled={alertRadius >= maxRadius}
-						className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-800 text-white font-medium text-xs rounded-xl transition flex items-center gap-1.5 disabled:opacity-40"
+						className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-800 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5 disabled:opacity-40"
 					>
 						<MapPin className="h-3.5 w-3.5" />
 						Expand Now

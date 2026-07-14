@@ -54,7 +54,7 @@ export function StaffAccounts() {
 
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
-			<Card className="bg-card border-border rounded-3xl p-6 lg:col-span-2 text-left shadow-sm">
+			<Card className="bg-card border-border rounded-xl p-6 lg:col-span-2 text-left shadow-sm transition-shadow hover:shadow-card-hover">
 				<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 					<CardTitle className="text-base font-bold flex items-center gap-2">
 						<Users className="h-5 w-5 text-brand" />
@@ -88,7 +88,7 @@ export function StaffAccounts() {
 				</div>
 			</Card>
 
-			<Card className="bg-card border-border rounded-3xl p-6 lg:col-span-1 text-left shadow-sm">
+			<Card className="bg-card border-border rounded-xl p-6 lg:col-span-1 text-left shadow-sm transition-shadow hover:shadow-card-hover">
 				<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 					<CardTitle className="text-base font-bold">
 						Authorize Practitioner

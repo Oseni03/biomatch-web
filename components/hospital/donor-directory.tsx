@@ -113,7 +113,7 @@ export function DonorDirectory() {
 	});
 
 	return (
-		<Card className="bg-card border-border rounded-3xl p-6 shadow-sm animate-in fade-in duration-300 text-left">
+		<Card className="bg-card border-border rounded-xl p-6 shadow-sm animate-in fade-in duration-300 text-left transition-shadow hover:shadow-card-hover">
 			<CardHeader className="p-0 pb-4 border-b border-border mb-6">
 				<CardTitle className="text-lg font-bold flex items-center gap-2">
 					<Users className="h-5 w-5 text-brand" />

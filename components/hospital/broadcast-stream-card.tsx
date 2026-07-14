@@ -24,7 +24,7 @@ export function BroadcastStreamCard({
 }: BroadcastStreamCardProps) {
 	return (
 		<div
-			className={`bg-card border-border rounded-3xl p-6 shadow-sm transition-all duration-300 relative ${
+			className={`bg-card border-border rounded-xl p-6 shadow-sm transition-all duration-300 relative hover:shadow-card-hover ${
 				req.status === "completed" ? "opacity-75 border-border" : ""
 			}`}
 		>

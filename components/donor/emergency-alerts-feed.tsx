@@ -63,7 +63,7 @@ export function EmergencyAlertsFeed({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex justify-between items-center bg-card border-border rounded-2xl p-6 shadow-sm">
+			<div className="flex justify-between items-center bg-card border-border rounded-xl p-6 shadow-sm transition-shadow hover:shadow-card-hover">
 				<div>
 					<h3 className="font-bold flex items-center gap-2 text-brand">
 						<Bell className="h-5 w-5" />
@@ -83,7 +83,7 @@ export function EmergencyAlertsFeed({
 
 			<div className="space-y-4">
 				{requests.length === 0 ? (
-					<div className="bg-card border-border rounded-3xl p-10 text-center text-muted-foreground">
+					<div className="bg-card border-border rounded-xl p-10 text-center text-muted-foreground">
 						No active emergency alerts currently matching your
 						criteria. Thank you for your availability!
 					</div>
@@ -103,7 +103,7 @@ export function EmergencyAlertsFeed({
 							return (
 								<div
 									key={req.id}
-									className="bg-muted border-border rounded-3xl p-4"
+									className="bg-muted border-border rounded-xl p-4"
 								>
 									<button
 										onClick={() => toggleDeclined(req.id)}
@@ -130,7 +130,7 @@ export function EmergencyAlertsFeed({
 						return (
 							<div
 								key={req.id}
-								className={`bg-card border border-gray-150 dark:border-zinc-800 rounded-3xl p-6 transition-all duration-300 relative overflow-hidden ${
+								className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 relative overflow-hidden hover:shadow-card-hover ${
 									isApproved
 										? "border-green-300 dark:border-green-900/50"
 										: ""
@@ -296,7 +296,7 @@ export function EmergencyAlertsFeed({
 													onClick={() =>
 														onDecline(req.id)
 													}
-													className="px-4 py-2 border-border text-muted-foreground hover:text-brand hover:bg-muted transition"
+													className="px-4 py-2 border-border text-muted-foreground hover:text-brand hover:bg-muted rounded-lg transition"
 												>
 													Decline
 												</button>

@@ -21,7 +21,7 @@ export function HmoInsuranceCard({
 	hmoTier,
 }: HmoInsuranceCardProps) {
 	return (
-		<Card className="bg-gradient-to-br from-zinc-900 to-black text-white rounded-3xl p-6 relative overflow-hidden shadow-xl border border-zinc-800">
+		<Card className="bg-gradient-to-br from-zinc-900 to-black text-white rounded-xl p-6 relative overflow-hidden shadow-xl border border-zinc-800 transition-shadow hover:shadow-card-hover">
 			<div className="absolute right-0 bottom-0 w-36 h-36 bg-brand/10 rounded-full blur-2xl pointer-events-none" />
 
 			<div className="flex justify-between items-start mb-8">

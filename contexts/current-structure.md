@@ -404,6 +404,19 @@ Shared patterns:
 | `nav-user.tsx`: `ChevronsUpDown` restored in sidebar variant for dropdown affordance | Done |
 | Top bar restyled: `bg-background`, clean border-b, consistent gap/padding | Done |
 
+## Resolved in Issue 17 — Dashboard Bento Widget Restyle
+
+| Change | Status |
+|---|---|
+| `stat-card.tsx`: added `hover:shadow-card-hover` transition + `StatCardSkeleton` export | Done |
+| `section-card.tsx`: added `hover:shadow-card-hover` transition + `SectionCardSkeleton` export | Done |
+| Donor dashboard `app/donor/page.tsx`: framer-motion `containerVariants`/`itemVariants` staggered entrance (staggerChildren: 0.08, y: 16, duration: 0.4) wrapping eligibility banner, ActiveMissionTracker, main bento grid | Done |
+| Hospital dashboard `hospital-dashboard.tsx`: added summary stat cards bento grid row (Total Requests, Active Alerts, Donors Responding, Fulfilled) using StatCard + framer-motion staggered entrance on all tab content | Done |
+| All 7 donor dashboard components restyled: outer cards changed from `rounded-3xl` to `rounded-xl` with `transition-shadow hover:shadow-card-hover` | Done |
+| All 9 hospital dashboard components restyled: outer cards changed from `rounded-3xl` to `rounded-xl` with `transition-shadow hover:shadow-card-hover` | Done |
+| Responsive bento grid: donor grid collapses to single column on mobile (`lg:grid-cols-3` → `grid-cols-1`) | Done (pre-existing) |
+| Hospital stat cards: 2-col on mobile, 4-col on desktop (`grid-cols-2 lg:grid-cols-4`) | Done |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |

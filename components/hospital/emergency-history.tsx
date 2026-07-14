@@ -77,7 +77,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 
 	return (
 		<div className="space-y-6">
-			<div className="bg-card border-border rounded-3xl p-5 shadow-sm">
+			<div className="bg-card border-border rounded-xl p-5 shadow-sm transition-shadow hover:shadow-card-hover">
 				<div className="flex items-center gap-2 mb-4">
 					<Filter className="h-4 w-4 text-muted-foreground" />
 					<span className="text-sm font-semibold text-foreground">
@@ -157,7 +157,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 					<Clock className="h-5 w-5 animate-spin text-muted-foreground" />
 				</div>
 			) : !data || data.requests.length === 0 ? (
-				<div className="bg-card border-border rounded-3xl p-10 text-center text-muted-foreground">
+				<div className="bg-card border-border rounded-xl p-10 text-center text-muted-foreground">
 					<Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
 					<p className="text-sm font-medium">
 						No completed emergency requests found.

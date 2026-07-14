@@ -79,10 +79,10 @@
 | 16f | Add sidebar skeleton loader on initial mount | ✅ |
 | 16g | Update nav-main.tsx and nav-user.tsx visual styling | ✅ |
 
-### Redesign — Issue 17 (Dashboard Bento Widget Restyle)
+### Redesign — Issue 17 (Dashboard Bento Widget Restyle) ✅
 | # | Task | Status |
 |---|---|---|
-| 17 | Restyle dashboard bento grid widgets with new palette | ⬜ |
+| 17 | Restyle dashboard bento grid widgets with new palette | ✅ |
 
 ### Redesign — Issue 18 (Hospital Blood Search Cards)
 | # | Task | Status |
