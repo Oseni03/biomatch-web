@@ -15,7 +15,7 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 | 07 | HITL | HMO Incentive Integration | 06 | HITL | |
 | 08 | AFK | Donor Registration Enhancements | — | AFK | ✅ |
 | 09 | AFK | Donor History & Impact Dashboard | 06, 08 | AFK | ✅ |
-| 10 | HITL | Hospital Admin Features | 04, 06 | HITL | |
+| 10 | HITL | Hospital Admin Features | 04, 06 | HITL | ✅ |
 | 11 | HITL | Institutional Partner Management | 08 | HITL | |
 
 ## HITL Decisions Required
@@ -82,5 +82,5 @@ Recommended implementation order:
 7. ~Issue 05 (notifications — depends on 01, can parallel with 02-06)~ 🔶 Email notification implemented (Resend + React Email + NotificationLog). Push/SMS still pending HITL decisions.
 8. Issue 07 (HMO — depends on 06)
 9. ~~Issue 09~~ ✅ (donor history — depends on 06, 08)
-10. Issue 10 (admin — depends on 04, 06, can parallel with 09)
+10. ~~Issue 10~~ ✅ (hospital admin — date range filters + access control added)
 11. Issue 11 (partners — depends on 08)

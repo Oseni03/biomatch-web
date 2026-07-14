@@ -183,7 +183,7 @@ biomatch/
 │   ├── seed.ts                     # Seeds Nigerian location hierarchy (6 regions, 37 states, ~120 cities)
 │   └── migrations/                 # 5 migration folders
 │
-├── proxy.ts                       # Edge proxy — session check via auth.api.getSession, RBAC guard
+├── middleware.ts                   # Next.js middleware — session check via auth.api.getSession, RBAC guard
 ├── package.json                    # Dependencies & scripts
 ├── tailwind.config.ts
 ├── tsconfig.json
@@ -281,6 +281,16 @@ Shared patterns:
 | No email notification when emergency request created | High | ✅ Email sent via Resend to each matched donor immediately after alert creation; includes blood type, hospital name, distance, accept link |
 | No delivery tracking | Medium | ✅ NotificationLog model records channel, status (sent/failed), providerMessageId, errorMessage per alert |
 | No email infrastructure | High | ✅ Resend SDK + React Email template (emails/emergency-alert.tsx) + lib/email.ts wrapper |
+
+## Resolved in Issue 10 — Hospital Admin Features
+
+| Issue | Severity | Status |
+|---|---|---|
+| Analytics not filterable by date range | Medium | ✅ Added startDate/endDate filters to getHospitalAnalytics + exportDonationRecords + date picker UI in AnalyticsDashboard |
+| No access control on staff management | High | ✅ requireAdminRole() check in inviteStaffMember/updateStaffRole/removeStaffMember; StaffAccounts hides admin UI for non-admin roles |
+| CSV export had no hospital name (just UUID) | Low | ✅ Export now includes hospital name with proper CSV quoting |
+| Export didn't respect date range | Medium | ✅ exportDonationRecords now accepts optional dateRange parameter |
+| `proxy.ts` not wired as middleware (wrong filename) | High | ✅ Renamed to `middleware.ts`, export renamed to `middleware` — Next.js now runs RBAC on every request |
 
 ## Resolved in Issue 04
 

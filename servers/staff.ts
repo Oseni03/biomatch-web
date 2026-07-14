@@ -45,12 +45,26 @@ export async function getStaffMembers(
 	}));
 }
 
+async function requireAdminRole(callerUserId: string) {
+	const caller = await prisma.user.findUnique({
+		where: { id: callerUserId },
+		select: { updatedHealthInfo: true },
+	});
+	if (!caller) throw new Error("Caller not found");
+	const callerRole = (caller.updatedHealthInfo as Record<string, unknown>)
+		?.staffRole as StaffRole | undefined;
+	if (callerRole !== "admin") throw new Error("Only hospital admins can manage staff");
+}
+
 export async function inviteStaffMember(
 	hospitalId: string,
 	email: string,
 	name: string,
 	role: StaffRole,
+	callerUserId: string,
 ) {
+	await requireAdminRole(callerUserId);
+
 	const existing = await prisma.user.findUnique({ where: { email } });
 	if (existing) {
 		await prisma.user.update({
@@ -79,7 +93,13 @@ export async function inviteStaffMember(
 	return { success: true, userId: newUser.id };
 }
 
-export async function updateStaffRole(userId: string, role: StaffRole) {
+export async function updateStaffRole(
+	userId: string,
+	role: StaffRole,
+	callerUserId: string,
+) {
+	await requireAdminRole(callerUserId);
+
 	const user = await prisma.user.findUnique({ where: { id: userId } });
 	if (!user) throw new Error("Staff member not found");
 
@@ -96,7 +116,12 @@ export async function updateStaffRole(userId: string, role: StaffRole) {
 	return { success: true };
 }
 
-export async function removeStaffMember(userId: string) {
+export async function removeStaffMember(
+	userId: string,
+	callerUserId: string,
+) {
+	await requireAdminRole(callerUserId);
+
 	await prisma.user.update({
 		where: { id: userId },
 		data: { isActive: false },

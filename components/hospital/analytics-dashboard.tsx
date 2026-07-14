@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Clock, Activity, Sparkles, BarChart, Download } from "lucide-react";
 import { useHospitalAnalytics } from "@/hooks/use-analytics";
 import {
@@ -16,16 +17,27 @@ interface AnalyticsDashboardProps {
 }
 
 export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
-	const { data: analytics, isLoading } = useHospitalAnalytics(hospitalId);
+	const today = new Date().toISOString().split("T")[0];
+	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+		.toISOString()
+		.split("T")[0];
+	const [startDate, setStartDate] = useState(thirtyDaysAgo);
+	const [endDate, setEndDate] = useState(today);
+
+	const dateRange = { startDate, endDate };
+	const { data: analytics, isLoading } = useHospitalAnalytics(
+		hospitalId,
+		dateRange,
+	);
 
 	const handleExport = async () => {
 		try {
-			const csv = await exportDonationRecords(hospitalId);
+			const csv = await exportDonationRecords(hospitalId, dateRange);
 			const blob = new Blob([csv], { type: "text/csv" });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `donation-records-${new Date().toISOString().split("T")[0]}.csv`;
+			a.download = `donation-records-${today}.csv`;
 			a.click();
 			URL.revokeObjectURL(url);
 			toast.success("Donation records exported");
@@ -38,7 +50,10 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 				{Array.from({ length: 3 }).map((_, i) => (
-					<div key={i} className="h-36 animate-pulse rounded-xl bg-muted" />
+					<div
+						key={i}
+						className="h-36 animate-pulse rounded-xl bg-muted"
+					/>
 				))}
 			</div>
 		);
@@ -46,6 +61,31 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 
 	return (
 		<div className="space-y-8 animate-in fade-in duration-300">
+			<div className="flex items-center gap-4 flex-wrap">
+				<div className="flex items-center gap-2">
+					<label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+						From
+					</label>
+					<input
+						type="date"
+						value={startDate}
+						onChange={(e) => setStartDate(e.target.value)}
+						className="px-3 py-1.5 bg-muted border border-border rounded-xl text-xs font-medium"
+					/>
+				</div>
+				<div className="flex items-center gap-2">
+					<label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+						To
+					</label>
+					<input
+						type="date"
+						value={endDate}
+						onChange={(e) => setEndDate(e.target.value)}
+						className="px-3 py-1.5 bg-muted border border-border rounded-xl text-xs font-medium"
+					/>
+				</div>
+			</div>
+
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
 					<div className="flex justify-between items-start mb-4">
@@ -125,7 +165,9 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 						<div className="flex-1 w-full flex items-end justify-between px-6 gap-4 border-b border-border pb-2 relative">
 							{analytics.monthlyVolume.map((item, idx) => {
 								const maxCount = Math.max(
-									...analytics.monthlyVolume.map((m) => m.count),
+									...analytics.monthlyVolume.map(
+										(m) => m.count,
+									),
 									1,
 								);
 								const height = (item.count / maxCount) * 100;

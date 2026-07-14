@@ -2,9 +2,19 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function getHospitalAnalytics(hospitalId: string) {
+export async function getHospitalAnalytics(
+	hospitalId: string,
+	dateRange?: { startDate: string; endDate: string },
+) {
+	const where: Record<string, unknown> = { hospitalId };
+	if (dateRange?.startDate || dateRange?.endDate) {
+		const createdAt: Record<string, Date> = {};
+		if (dateRange.startDate) createdAt.gte = new Date(dateRange.startDate);
+		if (dateRange.endDate) createdAt.lte = new Date(dateRange.endDate + "T23:59:59.999Z");
+		where.createdAt = createdAt;
+	}
 	const allRequests = await prisma.emergencyRequest.findMany({
-		where: { hospitalId },
+		where,
 		include: {
 			alerts: {
 				select: {
@@ -96,10 +106,23 @@ export async function getHospitalAnalytics(hospitalId: string) {
 	};
 }
 
-export async function exportDonationRecords(hospitalId: string) {
+export async function exportDonationRecords(
+	hospitalId: string,
+	dateRange?: { startDate: string; endDate: string },
+) {
+	const where: Record<string, unknown> = { hospitalId, status: "fulfilled" };
+	if (dateRange?.startDate || dateRange?.endDate) {
+		const createdAt: Record<string, Date> = {};
+		if (dateRange.startDate) createdAt.gte = new Date(dateRange.startDate);
+		if (dateRange.endDate) createdAt.lte = new Date(dateRange.endDate + "T23:59:59.999Z");
+		where.createdAt = createdAt;
+	}
 	const requests = await prisma.emergencyRequest.findMany({
-		where: { hospitalId, status: "fulfilled" },
+		where,
 		include: {
+			hospital: {
+				select: { id: true, name: true },
+			},
 			alerts: {
 				where: { status: "completed" },
 				include: {
@@ -112,16 +135,16 @@ export async function exportDonationRecords(hospitalId: string) {
 		orderBy: { createdAt: "desc" },
 	});
 
-	const rows: string[] = ["Date,Hospital,Donor,Email,Blood Group,Units"];
+	const rows: string[] = ["Date,Hospital Name,Donor,Email,Blood Group,Units"];
 	for (const req of requests) {
 		for (const alert of req.alerts) {
 			rows.push(
 				[
 					req.createdAt.toISOString().split("T")[0],
-					req.hospitalId,
+					`"${req.hospital.name}"`,
 					alert.donor.name,
 					alert.donor.email,
-					alert.donor.bloodGroup ?? "N/A",
+					alert.donor.bloodGroup?.replace("_", " ") ?? "N/A",
 					req.unitsNeeded,
 				].join(","),
 			);
