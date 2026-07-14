@@ -22,7 +22,7 @@ biomatch/
 │   ├── hospital/                   # Hospital section (role=hospital)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="hospital"
 │   │   ├── page.tsx                #   Dashboard — HospitalDashboard orchestrator, localStorage persistence for broadcast requests, session guard
-│   │   ├── inventory/page.tsx      #   Live inventory grid — React Query auto-refetch
+│   │   ├── inventory/page.tsx      #   Blood Search — bento cards per hospital bank, search/filter bar, eligible donor cards
 │   │   ├── emergency/page.tsx      #   Emergency request creation form — blood group, units, urgency, radius; shows matched donor count
 │   │   ├── donor-finder/page.tsx   #   Donor Finder — search/filter with blood group, location, name, eligibility toggle, pagination
 │   │   └── blood-drive/page.tsx    #   STUB - Blood drive request form
@@ -50,7 +50,10 @@ biomatch/
 │   │   ├── emergency-history.tsx   #   Past requests list with filtering (date range, blood type, status), expandable rows showing full funnel breakdown, pagination
 │   │   ├── donor-directory.tsx     #   Proactive donor registry search/filter with inline call actions
 │   │   ├── analytics-dashboard.tsx #   Stats cards + bar chart timeline with CSV export
-│   │   └── staff-accounts.tsx      #   Authorized staff list + "add practitioner" form
+│   │   ├── staff-accounts.tsx      #   Authorized staff list + "add practitioner" form
+│   │   ├── blood-search-cards.tsx  #   Search/filter bar + bento card grid for hospital blood inventory
+│   │   ├── donor-cards.tsx         #   Card-style eligible donor list (replaces table)
+│   │   └── animations.ts           #   Shared framer-motion animation variants
 │   ├── donor/                      # Donor dashboard components (extracted from page.tsx)
 │   │   ├── active-mission-tracker.tsx #   Red tracking card during active emergency response
 │   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart — all 8 blood groups from bank inventory
@@ -429,6 +432,19 @@ Shared patterns:
 | All 9 hospital dashboard components restyled: outer cards changed from `rounded-3xl` to `rounded-xl` with `transition-shadow hover:shadow-card-hover` | Done |
 | Responsive bento grid: donor grid collapses to single column on mobile (`lg:grid-cols-3` → `grid-cols-1`) | Done (pre-existing) |
 | Hospital stat cards: 2-col on mobile, 4-col on desktop (`grid-cols-2 lg:grid-cols-4`) | Done |
+
+## Resolved in Issue 18 — Hospital Blood Search Cards
+
+| Change | Status |
+|---|---|
+| **`blood-search-cards.tsx`**: New component — search/filter bar (blood group dropdown, location search, available-only toggle), bento card grid per hospital bank | Done |
+| **`donor-cards.tsx`**: New component — card-style eligible donor list with staggered entrance animation, replaces table | Done |
+| **`animations.ts`**: Shared framer-motion container/card variants extracted | Done |
+| **`app/hospital/inventory/page.tsx`**: Replaced aggregate inventory grid with BloodSearchCards + DonorCards; updated title to "Blood Search"; improved loading skeleton | Done |
+| Each bank card shows: hospital name (bold), location with MapPin icon, mini 4x2 grid of all 8 blood groups with unit counts and critical-state coloring, contact email, Reserve button (mailto:) | Done |
+| Empty state with contextual message and "Clear filters" action | Done |
+| Available-only toggle disabled when "All Blood Types" selected to prevent no-op | Done |
+| `cn()` from `lib/utils` used for conditional class merging | Done |
 
 ## Resolved in Architecture Review (All 5 Candidates)
 

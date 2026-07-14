@@ -112,5 +112,5 @@ Desktop.ini
 *.bak
 *.tmp
 *.orig
-/lib/generated/prisma
-/generated/prisma
+/src/generated/
+/generated/
