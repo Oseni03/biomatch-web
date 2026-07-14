@@ -1,4 +1,6 @@
-export const ELIGIBILITY_DAYS = 56;
+import { ELIGIBILITY_DAYS } from "./constants";
+
+export { ELIGIBILITY_DAYS } from "./constants";
 
 export interface EligibilityResult {
 	eligible: boolean;

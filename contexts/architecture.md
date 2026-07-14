@@ -49,6 +49,10 @@
 
 **Session, Account, Verification** — BetterAuth internal models.
 
+### Shared Domain Constants (in `lib/constants.ts`)
+- `ELIGIBILITY_DAYS = 56`, `POINTS_PER_DONATION = 100`, `CRITICAL_THRESHOLD = 5`
+- Single source of truth — imported by all consumers
+
 ### Radius Expansion Config (in `lib/radius-expansion.ts`)
 - `INITIAL_RADIUS = 5`, `EXPANSION_INCREMENT = 5`, `MAX_RADIUS = 25`, `EXPANSION_TIMEOUT_MS = 300000`, `MAX_ALERTS_PER_REQUEST = 50`
 - `canExpand()`, `nextRadius()`, `getRadiusTier()` helpers
@@ -150,7 +154,7 @@ The app uses a custom design system built on shadcn/ui CSS variables with the br
 - **Email**: Resend SDK via `lib/email.ts` — sends React Email templates. Set `RESEND_API_KEY` env var for production; logs warning + returns mock ID when absent.
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
 - **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
-- **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state, funnel seed data, radius expansion countdown, and donor-response simulation; delegates rendering to 8 extracted sub-components in `components/hospital/` including LiveStatusPanel (per-request funnel with donor lists, 5s polling) and EmergencyHistory (filterable/paginated past requests).
+- **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state and radius expansion countdown; delegates to LiveStatusPanel, EmergencyHistory, DonorDirectory (wired to listDonors), AnalyticsDashboard (wired to getHospitalAnalytics), and StaffAccounts (wired to CRUD server actions). No localStorage — all state in React Query cache.
 - **Live Status Panel**: `components/hospital/live-status-panel.tsx` shows funnel metrics (alerted/opened/accepted/declined/en_route/arrived/completed) with expandable donor lists per status; uses `useEmergencyRequestStatus` hook polling every 5s.
 - **Request History**: `components/hospital/emergency-history.tsx` shows past requests with date range, blood type, and status filters; expandable rows show full funnel breakdown with shortfall indicators; paginated via `useEmergencyHistory` hook.
 - **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.

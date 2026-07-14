@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
-import { getWalletByUserId } from "@/servers/wallet";
+import { getWalletByUserId } from "@/servers/user";
 
 export function useWallet() {
 	const { data: session } = authClient.useSession();

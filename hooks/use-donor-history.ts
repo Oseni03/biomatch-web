@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
-import { getDonorHistory, getLocalDemandStats } from "@/servers/user";
+import { getDonorHistory, getLocalDemandStats } from "@/servers/emergency";
 
 export function useDonorHistory(page = 1) {
 	const { data: session } = authClient.useSession();

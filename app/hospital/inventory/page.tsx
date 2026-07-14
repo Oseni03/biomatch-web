@@ -6,6 +6,7 @@ import { useInventory } from "@/hooks/use-inventory";
 import { useEligibleDonors } from "@/hooks/use-eligible-donors";
 import { EligibleDonorsList } from "@/components/donor/eligible-donors-list";
 import type { EligibleDonor } from "@/components/donor/eligible-donors-list";
+import { CRITICAL_THRESHOLD } from "@/lib/constants";
 
 const BLOOD_GROUPS = [
 	"A+",
@@ -17,7 +18,6 @@ const BLOOD_GROUPS = [
 	"O+",
 	"O-",
 ] as const;
-const CRITICAL_THRESHOLD = 5;
 
 export default function HospitalInventoryPage() {
 	const { data: session, isPending: sessionLoading } =

@@ -19,10 +19,9 @@ import {
 	useDonorHistory,
 	useLocalDemandStats,
 } from "@/hooks/use-donor-history";
-import { getEligibility, ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { getEligibility } from "@/lib/eligibility";
 import { displayBloodGroup } from "@/lib/donor-types";
-
-const POINTS_PER_DONATION = 100;
+import { ELIGIBILITY_DAYS, POINTS_PER_DONATION } from "@/lib/constants";
 
 export default function DonorHistoryPage() {
 	const { data: session, isPending: sessionLoading } =

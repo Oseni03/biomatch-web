@@ -136,10 +136,11 @@ biomatch/
 │               └── 18-hospital-blood-search-cards.md
 │
 ├── hooks/
+│   ├── use-analytics.ts            # React Query: useHospitalAnalytics() — wraps getHospitalAnalytics
 │   ├── use-scroll-reveal.ts        # IntersectionObserver scroll animation hook
 │   ├── use-donor-dashboard.ts      # React Query: wraps getUserById (incl. wallet)
-│   ├── use-donor-history.ts        # React Query: useDonorHistory(), useLocalDemandStats()
-│   ├── use-wallet.ts               # React Query: wraps getWalletByUserId
+│   ├── use-donor-history.ts        # React Query: useDonorHistory(), useLocalDemandStats() (imports from servers/emergency)
+│   ├── use-wallet.ts               # React Query: wraps getWalletByUserId (from servers/user)
 │   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
 │   ├── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
 │   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts(), useRespondToAlert(), useUpdateAlertStatus(), usePendingEmergencyRequests(), useExpandSearchRadius(), useEmergencyRequestStatus(), useEmergencyHistory(), useConfirmDonation() — auto-refetch 15s (5s for status panel)
@@ -148,8 +149,9 @@ biomatch/
 │   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
 │   ├── auth-client.ts              # createAuthClient() for browser
 │   ├── blood-compatibility.ts      # Blood group compatibility matrix (universal donor/recipient)
+│   ├── constants.ts                # Shared domain constants: ELIGIBILITY_DAYS, POINTS_PER_DONATION, CRITICAL_THRESHOLD
 │   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup()
-│   ├── eligibility.ts              # getEligibility() + ELIGIBILITY_DAYS (extracted from donor page)
+│   ├── eligibility.ts              # getEligibility() (imports ELIGIBILITY_DAYS from constants.ts)
 │   ├── email.ts                    # Resend client + sendEmail() wrapper — sends React Email templates; mock mode when no RESEND_API_KEY
 │   ├── prisma.ts                   # Singleton PrismaClient
 │   ├── radius-expansion.ts         # Radius expansion config: INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, EXPANSION_TIMEOUT_MS, MAX_ALERTS_PER_REQUEST, canExpand(), nextRadius(), getRadiusTier()
@@ -157,14 +159,15 @@ biomatch/
 │   └── utils.ts                    # cn() clsx+tailwind-merge helper
 │
 ├── servers/                        # Server Actions ("use server")
+│   ├── analytics.ts                # getHospitalAnalytics() — response time, response rate, coverage gaps; exportDonationRecords() — CSV generation
 │   ├── auth.ts                     # signUpWithProfile() (incl. locationId, availability, isActive), loginWithRole()
-│   ├── emergency.ts                # createEmergencyRequest() — ancestor-based scoring, expandSearchRadius() — radius tier via getCommonAncestorDepth()
+│   ├── emergency.ts                # Deep module. scoreProximity, computeAlertAggregates, applyDonationRewards (private helpers). createEmergencyRequest(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), respondToAlert(), updateAlertStatus(), confirmDonation(). Also exports getDonorHistory(), getLocalDemandStats() (moved from user.ts)
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank() (incl. locationId), updateHospitalBankInventory()
 │   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
-│   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getAllCityLabels(), getLocationTree()
+│   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getAllCityLabels(), getLocationTree(), scoreDonorProximity(), proximityPassesThreshold()
 │   ├── notification.ts             # sendEmergencyAlertEmail() — sends emergency alert via Resend, logs to NotificationLog
-│   ├── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. locationId), updateUserRole(), listDonors() (paginated, location filter), getDonorHistory() (paginated), getLocalDemandStats()
-│   └── wallet.ts                   # getWalletByUserId(), awardPoints(), deductPoints()
+│   ├── staff.ts                    # getStaffMembers(), inviteStaffMember(), updateStaffRole(), removeStaffMember() — hospital staff CRUD
+│   └── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. locationId), updateUserRole(), getWalletByUserId() (moved from wallet.ts), listDonors() (paginated, location filter, imports ELIGIBILITY_DAYS from constants)
 │
 ├── generated/
 │   └── prisma/                     # Prisma 7 client output
@@ -417,6 +420,23 @@ Shared patterns:
 | Responsive bento grid: donor grid collapses to single column on mobile (`lg:grid-cols-3` → `grid-cols-1`) | Done (pre-existing) |
 | Hospital stat cards: 2-col on mobile, 4-col on desktop (`grid-cols-2 lg:grid-cols-4`) | Done |
 
+## Resolved in Architecture Review (All 5 Candidates)
+
+| Issue | Severity | Status |
+|---|---|---|
+| Donor scoring duplicated across createEmergencyRequest and expandSearchRadius | High | ✅ Extracted `scoreDonorProximity()` into location.ts |
+| Alert aggregates computed twice (getEmergencyRequestStatus + getEmergencyHistory) | Medium | ✅ Extracted `computeAlertAggregates()` private helper |
+| Wallet mutation inlined in confirmDonation while awardPoints sat dead in wallet.ts | Medium | ✅ Deleted wallet.ts, moved getWalletByUserId to user.ts |
+| getDonorHistory + getLocalDemandStats lived in user.ts despite querying only emergency models | Medium | ✅ Moved to emergency.ts |
+| ELIGIBILITY_DAYS duplicated in user.ts | Medium | ✅ Removed duplicate, imports from lib/constants.ts |
+| POINTS_PER_DONATION redefined in history page | Low | ✅ Imports from lib/constants.ts |
+| CRITICAL_THRESHOLD hardcoded in inventory page | Low | ✅ Imports from lib/constants.ts |
+| createEmergencyRequest default radius 15 vs INITIAL_RADIUS 5 (bug) | Medium | ✅ Changed to INITIAL_RADIUS |
+| Hospital dashboard localStorage race condition | High | ✅ Removed localStorage, uses React Query exclusively |
+| DonorDirectory hardcoded mock data | Medium | ✅ Integrated to listDonors() via useEligibleDonors hook |
+| AnalyticsDashboard static hardcoded stats | Medium | ✅ Real server action + hook computes from EmergencyAlert/EmergencyRequest |
+| StaffAccounts in-memory CRUD with no persistence | Medium | ✅ Real server actions: getStaffMembers, inviteStaffMember, updateStaffRole, removeStaffMember |
+
 ## Remaining Issues
 
 | Issue                                               | Severity | File(s)                                           |
@@ -425,3 +445,4 @@ Shared patterns:
 | Sidebar `userName` prop never passed by layouts     | Low      | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
 | Hospital phone not in User schema — contactPhone always "N/A" in emergency feed | Low | `prisma/schema.prisma` |
 | maxRadius and smsFallbackEnabled not persisted (no DB fields) | Low | `app/donor/page.tsx`, `components/donor/location-settings-card.tsx` |
+| Hospital staff roles and hospitalId not in schema (stored in updatedHealthInfo JSON) | Low | `prisma/schema.prisma`, `servers/staff.ts` |

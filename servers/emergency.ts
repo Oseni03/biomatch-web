@@ -4,15 +4,98 @@ import { prisma } from "@/lib/prisma";
 import { getCompatibleDonorGroups } from "@/lib/blood-compatibility";
 import { ELIGIBILITY_DAYS } from "@/lib/eligibility";
 import {
-	EXPANSION_INCREMENT,
-	MAX_RADIUS,
+	INITIAL_RADIUS,
 	MAX_ALERTS_PER_REQUEST,
 	nextRadius,
 	canExpand,
 } from "@/lib/radius-expansion";
 import type { DonorAlertWithRequest } from "@/lib/donor-types";
 import { sendEmergencyAlertEmail } from "./notification";
-import { getCommonAncestorDepth } from "./location";
+import { scoreDonorProximity } from "./location";
+
+function computeAlertAggregates(alerts: { status: string }[]) {
+	return {
+		alerted: alerts.filter((a) => a.status === "alerted").length,
+		opened: alerts.filter((a) => a.status === "opened").length,
+		accepted: alerts.filter((a) => a.status === "accepted").length,
+		declined: alerts.filter((a) => a.status === "declined").length,
+		en_route: alerts.filter((a) => a.status === "en_route").length,
+		arrived: alerts.filter((a) => a.status === "arrived").length,
+		completed: alerts.filter((a) => a.status === "completed").length,
+	};
+}
+
+async function applyDonationRewards(userId: string) {
+	await prisma.wallet.upsert({
+		where: { userId },
+		create: {
+			userId,
+			points: 100,
+			lifetimeDonations: 1,
+		},
+		update: {
+			points: { increment: 100 },
+			lifetimeDonations: { increment: 1 },
+		},
+	});
+}
+
+async function matchDonors(
+	bloodGroup: string,
+	hospitalId: string,
+): Promise<{
+	donors: {
+		id: string;
+		location: string | null;
+		locationId: string | null;
+		name: string;
+		score: number;
+	}[];
+	hospitalLocation: {
+		location: string | null;
+		locationId: string | null;
+		name: string | null;
+	} | null;
+}> {
+	const compatibleGroups = getCompatibleDonorGroups(bloodGroup);
+	const cutoffDate = new Date();
+	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
+
+	const [matchedDonors, requestLocation] = await Promise.all([
+		prisma.user.findMany({
+			where: {
+				role: "donor",
+				isActive: true,
+				bloodGroup: { in: compatibleGroups as any },
+				OR: [
+					{ lastDonationDate: null },
+					{ lastDonationDate: { lt: cutoffDate } },
+				],
+			},
+			select: { id: true, location: true, locationId: true, name: true },
+		}),
+		prisma.user.findUnique({
+			where: { id: hospitalId },
+			select: { location: true, locationId: true, name: true },
+		}),
+	]);
+
+	const scored = await Promise.all(
+		matchedDonors.map(async (donor) => {
+			const score = await scoreDonorProximity(
+				donor.locationId,
+				donor.location,
+				requestLocation?.locationId ?? null,
+				requestLocation?.location ?? null,
+			);
+			return { ...donor, score };
+		}),
+	);
+
+	scored.sort((a, b) => b.score - a.score);
+
+	return { donors: scored, hospitalLocation: requestLocation };
+}
 
 export async function createEmergencyRequest(data: {
 	hospitalId: string;
@@ -27,64 +110,15 @@ export async function createEmergencyRequest(data: {
 			bloodGroup: data.bloodGroup as any,
 			unitsNeeded: data.unitsNeeded,
 			urgencyLevel: data.urgencyLevel as any,
-			searchRadius: data.searchRadius ?? 15,
+			searchRadius: data.searchRadius ?? INITIAL_RADIUS,
 			status: "pending",
 		},
 	});
 
-	const compatibleGroups = getCompatibleDonorGroups(data.bloodGroup);
-	const cutoffDate = new Date();
-	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
-
-	const matchedDonors = await prisma.user.findMany({
-		where: {
-			role: "donor",
-			isActive: true,
-			bloodGroup: { in: compatibleGroups as any },
-			OR: [
-				{ lastDonationDate: null },
-				{ lastDonationDate: { lt: cutoffDate } },
-			],
-		},
-		select: { id: true, location: true, locationId: true, name: true },
-	});
-
-	const requestLocation = await prisma.user.findUnique({
-		where: { id: data.hospitalId },
-		select: { location: true, locationId: true, name: true },
-	});
-
-	const scored = await Promise.all(
-		matchedDonors.map(async (donor) => {
-			let score = 0;
-
-			if (donor.locationId && requestLocation?.locationId) {
-				score = await getCommonAncestorDepth(
-					donor.locationId,
-					requestLocation.locationId,
-				);
-			} else {
-				const donorArea = (donor.location ?? "").toLowerCase();
-				const hospitalArea = (
-					requestLocation?.location ?? ""
-				).toLowerCase();
-				if (donorArea && donorArea === hospitalArea) {
-					score = 2;
-				} else if (
-					donorArea &&
-					hospitalArea &&
-					(donorArea.includes(hospitalArea) ||
-						hospitalArea.includes(donorArea))
-				) {
-					score = 1;
-				}
-			}
-
-			return { ...donor, score };
-		}),
+	const { donors: scored, hospitalLocation } = await matchDonors(
+		data.bloodGroup,
+		data.hospitalId,
 	);
-
-	scored.sort((a, b) => b.score - a.score);
 
 	if (scored.length > 0) {
 		await prisma.emergencyAlert.createMany({
@@ -117,7 +151,7 @@ export async function createEmergencyRequest(data: {
 	return {
 		request,
 		matchedDonorCount: scored.length,
-		hospitalName: requestLocation?.name ?? "Unknown",
+		hospitalName: hospitalLocation?.name ?? "Unknown",
 	};
 }
 
@@ -262,73 +296,37 @@ export async function expandSearchRadius(requestId: string) {
 	const newRadius = nextRadius(request.searchRadius);
 	const alreadyAlertedIds = request.alerts.map((a) => a.donorId);
 
-	const compatibleGroups = getCompatibleDonorGroups(request.bloodGroup);
+	const { donors: potential } = await matchDonors(
+		request.bloodGroup,
+		request.hospital.id,
+	);
 
-	const cutoffDate = new Date();
-	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
-
-	const potentialDonors = await prisma.user.findMany({
-		where: {
-			role: "donor",
-			isActive: true,
-			bloodGroup: { in: compatibleGroups as any },
-			id: { notIn: alreadyAlertedIds },
-			OR: [
-				{ lastDonationDate: null },
-				{ lastDonationDate: { lt: cutoffDate } },
-			],
-		},
-		select: { id: true, location: true, locationId: true, name: true },
-	});
-
-	const hospitalId = request.hospital.id;
-	const hospitalLoc = await prisma.user.findUnique({
-		where: { id: hospitalId },
-		select: { locationId: true, location: true },
-	});
-
-	const newDonors = await Promise.all(
-		potentialDonors.map(async (donor) => {
-			let score = 0;
-
-			if (donor.locationId && hospitalLoc?.locationId) {
-				score = await getCommonAncestorDepth(
-					donor.locationId,
-					hospitalLoc.locationId,
-				);
-			}
-
-			if (score === 0) {
+	const filteredNewDonors = potential
+		.filter((donor) => !alreadyAlertedIds.includes(donor.id))
+		.filter((donor) => {
+			if (donor.score === 0) {
 				const donorArea = (donor.location ?? "").toLowerCase();
 				const hospitalArea = (
-					hospitalLoc?.location ?? ""
+					request.hospital.location ?? ""
 				).toLowerCase();
-				if (!donorArea) return null;
-				if (request.searchRadius <= 5) {
-					return donorArea === hospitalArea ? donor : null;
-				}
-				if (request.searchRadius <= 15) {
-					return donorArea.includes(hospitalArea) ||
+				if (!donorArea) return false;
+				if (request.searchRadius <= 5)
+					return donorArea === hospitalArea;
+				if (request.searchRadius <= 15)
+					return (
+						donorArea.includes(hospitalArea) ||
 						hospitalArea.includes(donorArea)
-						? donor
-						: null;
-				}
-				return donor;
+					);
+				return true;
 			}
-
 			const radiusThreshold =
 				request.searchRadius <= 5
 					? 4
 					: request.searchRadius <= 15
 						? 3
 						: 1;
-			return score >= radiusThreshold ? donor : null;
-		}),
-	);
-
-	const filteredNewDonors = newDonors.filter(
-		(d): d is (typeof potentialDonors)[number] => d !== null,
-	);
+			return donor.score >= radiusThreshold;
+		});
 
 	if (filteredNewDonors.length > 0) {
 		await prisma.emergencyAlert.createMany({
@@ -381,18 +379,7 @@ export async function getEmergencyRequestStatus(requestId: string) {
 		throw new Error("Emergency request not found");
 	}
 
-	const aggregates = {
-		alerted: request.alerts.filter((a) => a.status === "alerted").length,
-		opened: request.alerts.filter((a) => a.status === "opened").length,
-		accepted: request.alerts.filter((a) => a.status === "accepted").length,
-		declined: request.alerts.filter((a) => a.status === "declined").length,
-		en_route: request.alerts.filter((a) => a.status === "en_route").length,
-		arrived: request.alerts.filter((a) => a.status === "arrived").length,
-		completed: request.alerts.filter((a) => a.status === "completed")
-			.length,
-	};
-
-	return { ...request, aggregates };
+	return { ...request, aggregates: computeAlertAggregates(request.alerts) };
 }
 
 export async function getEmergencyHistory(
@@ -453,19 +440,10 @@ export async function getEmergencyHistory(
 		prisma.emergencyRequest.count({ where: where as any }),
 	]);
 
-	const requestsWithAggregates = requests.map((req) => {
-		const aggregates = {
-			alerted: req.alerts.filter((a) => a.status === "alerted").length,
-			opened: req.alerts.filter((a) => a.status === "opened").length,
-			accepted: req.alerts.filter((a) => a.status === "accepted").length,
-			declined: req.alerts.filter((a) => a.status === "declined").length,
-			en_route: req.alerts.filter((a) => a.status === "en_route").length,
-			arrived: req.alerts.filter((a) => a.status === "arrived").length,
-			completed: req.alerts.filter((a) => a.status === "completed")
-				.length,
-		};
-		return { ...req, aggregates };
-	});
+	const requestsWithAggregates = requests.map((req) => ({
+		...req,
+		aggregates: computeAlertAggregates(req.alerts),
+	}));
 
 	return {
 		requests: requestsWithAggregates,
@@ -639,4 +617,95 @@ export async function confirmDonation(alertId: string) {
 			unitsNeeded: alert.request.unitsNeeded,
 		};
 	});
+}
+
+export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
+	const skip = (page - 1) * pageSize;
+
+	const [alerts, total] = await Promise.all([
+		prisma.emergencyAlert.findMany({
+			where: { donorId: userId, status: "completed" },
+			include: {
+				request: {
+					select: {
+						bloodGroup: true,
+						unitsNeeded: true,
+						createdAt: true,
+						hospital: {
+							select: { name: true, location: true },
+						},
+					},
+				},
+			},
+			orderBy: { updatedAt: "desc" },
+			skip,
+			take: pageSize,
+		}),
+		prisma.emergencyAlert.count({
+			where: { donorId: userId, status: "completed" },
+		}),
+	]);
+
+	const records = alerts.map((a) => ({
+		id: a.id,
+		date: a.updatedAt.toISOString().split("T")[0],
+		hospitalName: a.request.hospital.name,
+		hospitalLocation: a.request.hospital.location,
+		bloodGroup: a.request.bloodGroup,
+		unitsNeeded: a.request.unitsNeeded,
+	}));
+
+	return {
+		records,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+	};
+}
+
+export async function getLocalDemandStats(userId: string) {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { location: true, locationId: true },
+	});
+
+	const startOfMonth = new Date();
+	startOfMonth.setDate(1);
+	startOfMonth.setHours(0, 0, 0, 0);
+
+	const baseWhere: Record<string, unknown> = {
+		createdAt: { gte: startOfMonth },
+	};
+
+	if (user?.locationId) {
+		const state = await prisma.location.findUnique({
+			where: { id: user.locationId },
+			select: { parentId: true },
+		});
+		const stateId = state?.parentId;
+
+		baseWhere.hospital = {
+			locationRel: stateId
+				? { parentId: stateId }
+				: { id: user.locationId },
+		};
+	} else if (user?.location) {
+		baseWhere.hospital = {
+			location: { contains: user.location, mode: "insensitive" },
+		};
+	}
+
+	const [totalThisMonth, criticalThisMonth] = await Promise.all([
+		prisma.emergencyRequest.count({ where: baseWhere as any }),
+		prisma.emergencyRequest.count({
+			where: { ...baseWhere, urgencyLevel: "critical" } as any,
+		}),
+	]);
+
+	return {
+		totalThisMonth,
+		criticalThisMonth,
+		location: user?.location ?? "Unknown",
+	};
 }

@@ -1,70 +1,103 @@
+"use client";
+
 import { Clock, Activity, Sparkles, BarChart, Download } from "lucide-react";
+import { useHospitalAnalytics } from "@/hooks/use-analytics";
 import {
 	Card,
 	CardHeader,
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { exportDonationRecords } from "@/servers/analytics";
+import { toast } from "sonner";
 
-const STATS = [
-	{
-		label: "Avg Response Speed",
-		value: "8.7 mins",
-		sub: "Request creation to first confirmation",
-		color: "text-brand",
-		icon: Clock,
-	},
-	{
-		label: "Donor Alert Conversion",
-		value: "68.2%",
-		sub: "% alerts opened & matched",
-		color: "text-green-600",
-		icon: Activity,
-	},
-	{
-		label: "Lagos Coverage Level",
-		value: "92%",
-		sub: "High demand blood types met",
-		color: "text-blue-600",
-		icon: Sparkles,
-	},
-];
+interface AnalyticsDashboardProps {
+	hospitalId: string;
+}
 
-const WEEKLY_DATA = [
-	{ week: "Week 1", speed: 14.5, height: 40 },
-	{ week: "Week 2", speed: 12.1, height: 50 },
-	{ week: "Week 3", speed: 9.8, height: 68 },
-	{ week: "Week 4", speed: 8.7, height: 85 },
-];
+export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
+	const { data: analytics, isLoading } = useHospitalAnalytics(hospitalId);
 
-export function AnalyticsDashboard() {
+	const handleExport = async () => {
+		try {
+			const csv = await exportDonationRecords(hospitalId);
+			const blob = new Blob([csv], { type: "text/csv" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `donation-records-${new Date().toISOString().split("T")[0]}.csv`;
+			a.click();
+			URL.revokeObjectURL(url);
+			toast.success("Donation records exported");
+		} catch {
+			toast.error("Failed to export records");
+		}
+	};
+
+	if (isLoading) {
+		return (
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+				{Array.from({ length: 3 }).map((_, i) => (
+					<div key={i} className="h-36 animate-pulse rounded-xl bg-muted" />
+				))}
+			</div>
+		);
+	}
+
 	return (
 		<div className="space-y-8 animate-in fade-in duration-300">
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				{STATS.map((stat, i) => {
-					const Icon = stat.icon;
-					return (
-						<Card
-							key={i}
-							className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover"
-						>
-							<div className="flex justify-between items-start mb-4">
-								<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-									{stat.label}
-								</span>
-								<Icon className={`h-5 w-5 ${stat.color}`} />
-							</div>
-							<h4
-								className={`text-3xl font-bold font-mono tracking-tight ${stat.color}`}
-							>
-								{stat.value}
-							</h4>
-							<p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-								{stat.sub}
-							</p>
-						</Card>
-					);
-				})}
+				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
+					<div className="flex justify-between items-start mb-4">
+						<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+							Avg Response Speed
+						</span>
+						<Clock className="h-5 w-5 text-brand" />
+					</div>
+					<h4 className="text-3xl font-bold font-mono tracking-tight text-brand">
+						{analytics?.avgResponseTime ?? 0} min
+					</h4>
+					<p className="text-xs text-muted-foreground mt-2">
+						Request creation to first acceptance
+					</p>
+				</Card>
+
+				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
+					<div className="flex justify-between items-start mb-4">
+						<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+							Donor Alert Conversion
+						</span>
+						<Activity className="h-5 w-5 text-green-600" />
+					</div>
+					<h4 className="text-3xl font-bold font-mono tracking-tight text-green-600">
+						{analytics?.responseRate ?? 0}%
+					</h4>
+					<p className="text-xs text-muted-foreground mt-2">
+						Alerts accepted by donors
+					</p>
+				</Card>
+
+				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
+					<div className="flex justify-between items-start mb-4">
+						<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+							Fulfillment Rate
+						</span>
+						<Sparkles className="h-5 w-5 text-blue-600" />
+					</div>
+					<h4 className="text-3xl font-bold font-mono tracking-tight text-blue-600">
+						{analytics && analytics.totalRequests > 0
+							? Math.round(
+									(analytics.fulfilledRequests /
+										analytics.totalRequests) *
+										100,
+								)
+							: 0}
+						%
+					</h4>
+					<p className="text-xs text-muted-foreground mt-2">
+						Requests fully fulfilled
+					</p>
+				</Card>
 			</div>
 
 			<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
@@ -72,50 +105,84 @@ export function AnalyticsDashboard() {
 					<div>
 						<CardTitle className="text-base font-bold flex items-center gap-2">
 							<BarChart className="h-5 w-5 text-brand" />
-							Aggregate Response Performance Timeline
+							Request Volume Over Time
 						</CardTitle>
 						<CardDescription className="text-xs text-muted-foreground">
-							Weekly average response time in minutes
+							Monthly emergency request volume
 						</CardDescription>
 					</div>
-
 					<button
-						className="px-3.5 py-1.5 border-border hover:bg-muted text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm transition"
-						onClick={() =>
-							alert("Donation logs successfully exported as CSV!")
-						}
+						onClick={handleExport}
+						className="px-3.5 py-1.5 border-border hover:bg-muted text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer"
 					>
 						<Download className="h-3.5 w-3.5" />
-						Export Reports
+						Export CSV
 					</button>
 				</div>
 
 				<div className="h-64 flex flex-col justify-end pt-4 font-mono text-[10px] text-muted-foreground">
-					<div className="flex-1 w-full flex items-end justify-between px-6 gap-4 border-b border-border pb-2 relative">
-						<div className="absolute left-0 bottom-10 w-full border-t border-border/50" />
-						<div className="absolute left-0 bottom-24 w-full border-t border-border/50" />
-						<div className="absolute left-0 bottom-44 w-full border-t border-border/50" />
+					{analytics && analytics.monthlyVolume.length > 0 ? (
+						<div className="flex-1 w-full flex items-end justify-between px-6 gap-4 border-b border-border pb-2 relative">
+							{analytics.monthlyVolume.map((item, idx) => {
+								const maxCount = Math.max(
+									...analytics.monthlyVolume.map((m) => m.count),
+									1,
+								);
+								const height = (item.count / maxCount) * 100;
+								return (
+									<div
+										key={idx}
+										className="flex-1 flex flex-col items-center gap-2 group relative z-10"
+									>
+										<span className="font-bold text-brand text-[11px] group-hover:scale-110 transition-transform">
+											{item.count}
+										</span>
+										<div
+											className="w-12 bg-brand hover:bg-brand-hover rounded-t-lg transition-all duration-1000 ease-out"
+											style={{ height: `${height}%` }}
+										/>
+										<span className="text-muted-foreground uppercase text-[9px] font-semibold mt-1">
+											{item.month.slice(5)}
+										</span>
+									</div>
+								);
+							})}
+						</div>
+					) : (
+						<div className="flex-1 flex items-center justify-center text-muted-foreground">
+							No request data available yet
+						</div>
+					)}
+				</div>
+			</Card>
 
-						{WEEKLY_DATA.map((item, idx) => (
+			{analytics && analytics.coverageGaps.length > 0 && (
+				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
+					<CardHeader className="p-0 pb-4 border-b border-border mb-6">
+						<CardTitle className="text-base font-bold">
+							Coverage Gaps
+						</CardTitle>
+						<CardDescription className="text-xs text-muted-foreground">
+							Blood groups with unfulfilled requests
+						</CardDescription>
+					</CardHeader>
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+						{analytics.coverageGaps.map((gap) => (
 							<div
-								key={idx}
-								className="flex-1 flex flex-col items-center gap-2 group relative z-10"
+								key={gap.group}
+								className="bg-brand-light rounded-xl p-4 text-center"
 							>
-								<span className="font-bold text-brand text-[11px] group-hover:scale-110 transition-transform">
-									{item.speed} min
+								<span className="text-xl font-bold font-mono text-brand block">
+									{gap.group.replace("_", " ")}
 								</span>
-								<div
-									className="w-12 bg-brand hover:bg-brand-hover rounded-t-lg transition-all duration-1000 ease-out"
-									style={{ height: `${item.height}%` }}
-								/>
-								<span className="text-muted-foreground uppercase text-[9px] font-semibold mt-1">
-									{item.week}
+								<span className="text-xs text-muted-foreground">
+									{gap.count} unfulfilled
 								</span>
 							</div>
 						))}
 					</div>
-				</div>
-			</Card>
+				</Card>
+			)}
 		</div>
 	);
 }

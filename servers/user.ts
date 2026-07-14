@@ -4,8 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { Availability, BloodGroup, Role } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { buildLocationLabel } from "./location";
-
-const ELIGIBILITY_DAYS = 56;
+import { ELIGIBILITY_DAYS } from "@/lib/constants";
 
 export async function getUserById(id: string) {
 	return prisma.user.findUnique({
@@ -85,95 +84,10 @@ export interface ListDonorsFilters {
 	pageSize?: number;
 }
 
-export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
-	const skip = (page - 1) * pageSize;
-
-	const [alerts, total] = await Promise.all([
-		prisma.emergencyAlert.findMany({
-			where: { donorId: userId, status: "completed" },
-			include: {
-				request: {
-					select: {
-						bloodGroup: true,
-						unitsNeeded: true,
-						createdAt: true,
-						hospital: {
-							select: { name: true, location: true },
-						},
-					},
-				},
-			},
-			orderBy: { updatedAt: "desc" },
-			skip,
-			take: pageSize,
-		}),
-		prisma.emergencyAlert.count({
-			where: { donorId: userId, status: "completed" },
-		}),
-	]);
-
-	const records = alerts.map((a) => ({
-		id: a.id,
-		date: a.updatedAt.toISOString().split("T")[0],
-		hospitalName: a.request.hospital.name,
-		hospitalLocation: a.request.hospital.location,
-		bloodGroup: a.request.bloodGroup,
-		unitsNeeded: a.request.unitsNeeded,
-	}));
-
-	return {
-		records,
-		total,
-		page,
-		pageSize,
-		totalPages: Math.ceil(total / pageSize),
-	};
-}
-
-export async function getLocalDemandStats(userId: string) {
-	const user = await prisma.user.findUnique({
-		where: { id: userId },
-		select: { location: true, locationId: true },
+export async function getWalletByUserId(userId: string) {
+	return prisma.wallet.findUnique({
+		where: { userId },
 	});
-
-	const startOfMonth = new Date();
-	startOfMonth.setDate(1);
-	startOfMonth.setHours(0, 0, 0, 0);
-
-	const baseWhere: Record<string, unknown> = {
-		createdAt: { gte: startOfMonth },
-	};
-
-	if (user?.locationId) {
-		const state = await prisma.location.findUnique({
-			where: { id: user.locationId },
-			select: { parentId: true },
-		});
-		const stateId = state?.parentId;
-
-		baseWhere.hospital = {
-			locationRel: stateId
-				? { parentId: stateId }
-				: { id: user.locationId },
-		};
-	} else if (user?.location) {
-		baseWhere.hospital = {
-			location: { contains: user.location, mode: "insensitive" },
-		};
-	}
-
-	const [totalThisMonth, criticalThisMonth] = await Promise.all([
-		prisma.emergencyRequest.count({ where: baseWhere as any }),
-		prisma.emergencyRequest.count({
-			where: { ...baseWhere, urgencyLevel: "critical" } as any,
-		}),
-	]);
-
-	return {
-		totalThisMonth,
-		criticalThisMonth,
-		location: user?.location ?? "Unknown",
-	};
 }
 
 export async function listDonors(filters?: ListDonorsFilters) {

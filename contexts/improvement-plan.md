@@ -1,5 +1,19 @@
 # BioMatch — Improvement Plan (Summary)
 
+## Architecture Review (All 5 Candidates) ✅
+
+Completed 14 Jul 2026. All 5 candidates from the architecture review HTML report implemented:
+
+| Candidate | Key Changes |
+|---|---|
+| **1. Deepen Emergency pipeline** | Extracted `scoreProximity`, `computeAlertAggregates`, `applyDonationRewards` private helpers. Moved `getDonorHistory`, `getLocalDemandStats` from user.ts. Fixed default radius 15→INITIAL_RADIUS. |
+| **2. Collapse Hospital Dashboard** | Removed localStorage race condition. Integrated DonorDirectory to `listDonors()`, AnalyticsDashboard to `getHospitalAnalytics()`, StaffAccounts to CRUD server actions. |
+| **3. Unify Location seam** | Added `scoreDonorProximity()` and `proximityPassesThreshold()` to location.ts. Shared by emergency.ts callers. |
+| **4. Consolidate Wallet domain** | Deleted `servers/wallet.ts` (dead code). Moved `getWalletByUserId` to user.ts. Points constant centralized. |
+| **5. Extract shared constants** | Created `lib/constants.ts` — `ELIGIBILITY_DAYS`, `POINTS_PER_DONATION`, `CRITICAL_THRESHOLD`. All consumers import from single source. |
+
+New server files: `servers/analytics.ts`, `servers/staff.ts`. New hook: `hooks/use-analytics.ts`. Deleted: `servers/wallet.ts`.
+
 ## Phases
 
 ### Phase 1 — Foundation (React Query + shared components + cleanup) ✅

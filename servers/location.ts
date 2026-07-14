@@ -74,6 +74,37 @@ export async function getCommonAncestorDepth(
 	return depth;
 }
 
+export async function scoreDonorProximity(
+	donorLocationId: string | null,
+	donorLocation: string | null,
+	hospitalLocationId: string | null,
+	hospitalLocation: string | null,
+): Promise<number> {
+	if (donorLocationId && hospitalLocationId) {
+		return getCommonAncestorDepth(donorLocationId, hospitalLocationId);
+	}
+	const donorArea = (donorLocation ?? "").toLowerCase();
+	const hospitalArea = (hospitalLocation ?? "").toLowerCase();
+	if (!donorArea || !hospitalArea) return 0;
+	if (donorArea === hospitalArea) return 2;
+	if (donorArea.includes(hospitalArea) || hospitalArea.includes(donorArea)) return 1;
+	return 0;
+}
+
+export function proximityPassesThreshold(
+	score: number,
+	searchRadius: number,
+): boolean {
+	if (score > 0) {
+		const threshold =
+			searchRadius <= 5 ? 4
+			: searchRadius <= 15 ? 3
+			: 1;
+		return score >= threshold;
+	}
+	return true;
+}
+
 export async function getAllCityLabels(): Promise<string[]> {
 	const cities = await prisma.location.findMany({
 		where: { type: "city" },

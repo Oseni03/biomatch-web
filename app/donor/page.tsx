@@ -11,7 +11,8 @@ import { getAllHospitalBanks } from "@/servers/hospital";
 import { getAllCityLabels } from "@/servers/location";
 import { updateUserProfile } from "@/servers/user";
 import { respondToAlert, updateAlertStatus } from "@/servers/emergency";
-import { getEligibility, ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { getEligibility } from "@/lib/eligibility";
+import { ELIGIBILITY_DAYS } from "@/lib/constants";
 import {
 	displayBloodGroup,
 	type EmergencyMatchRequest,
