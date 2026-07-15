@@ -5,7 +5,6 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { Testimonials } from "@/components/landing/testimonials";
 import { Services } from "@/components/landing/services";
 import { Impact } from "@/components/landing/impact";
-import { Join } from "@/components/landing/join";
 import { Footer } from "@/components/landing/footer";
 
 export default function HomePage() {
@@ -18,7 +17,6 @@ export default function HomePage() {
 			<Testimonials />
 			<Services />
 			<Impact />
-			<Join />
 			<Footer />
 		</>
 	);

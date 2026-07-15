@@ -87,19 +87,17 @@ export async function scoreDonorProximity(
 	const hospitalArea = (hospitalLocation ?? "").toLowerCase();
 	if (!donorArea || !hospitalArea) return 0;
 	if (donorArea === hospitalArea) return 2;
-	if (donorArea.includes(hospitalArea) || hospitalArea.includes(donorArea)) return 1;
+	if (donorArea.includes(hospitalArea) || hospitalArea.includes(donorArea))
+		return 1;
 	return 0;
 }
 
-export function proximityPassesThreshold(
+export async function proximityPassesThreshold(
 	score: number,
 	searchRadius: number,
-): boolean {
+): Promise<boolean> {
 	if (score > 0) {
-		const threshold =
-			searchRadius <= 5 ? 4
-			: searchRadius <= 15 ? 3
-			: 1;
+		const threshold = searchRadius <= 5 ? 4 : searchRadius <= 15 ? 3 : 1;
 		return score >= threshold;
 	}
 	return true;

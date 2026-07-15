@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { signUpWithProfile } from "@/servers/auth";
 import { AVAILABILITY_OPTIONS } from "@/lib/availability";
-import type { Availability } from "@/generated/prisma/enums";
+import type { Availability } from "@generated/prisma/enums";
 import { getLocations } from "@/servers/location";
 import { toast } from "sonner";
 

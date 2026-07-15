@@ -23,7 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SectionCard } from "@/components/dashboard/section-card";
 import { AVAILABILITY_OPTIONS } from "@/lib/availability";
-import type { Availability } from "@/generated/prisma/enums";
+import type { Availability } from "@generated/prisma/enums";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const GENOTYPES = ["AA", "AS", "SS", "AC", "SC"];

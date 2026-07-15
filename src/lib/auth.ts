@@ -6,6 +6,15 @@ export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
+	session: {
+		expiresIn: 60 * 60 * 24 * 7,
+		updateAge: 60 * 60 * 24,
+		cookieCache: {
+			enabled: true,
+			maxAge: 60 * 60 * 24,
+			strategy: "jwt",
+		},
+	},
 	advanced: {
 		database: { generateId: () => crypto.randomUUID() },
 	},
