@@ -98,6 +98,7 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 1. Update `contexts/current-structure.md` — add new files, note changes, mark completed tasks in plan files
 2. Update `contexts/architecture.md` if the data model, routing, or patterns changed
 3. If a plan phase step is completed, update the relevant `phase-*.md` to mark it done
+4. **Immediately update the issue's Status in its tracker table** (the PRD Issue Map above, the Redesign Issues table, or the Simplification Issues table) — ✅ when fully done, 🔶 when partially done. Do this in the same session as the implementation, not as a follow-up — a stale status table is worse than no status table, since future agents trust it over re-reading every issue file.
 
 ### When implementing planned work:
 - Start with the lowest-numbered incomplete phase (Phase 1 → Phase 2 → Phase 3)
@@ -149,6 +150,23 @@ See `contexts/` directory for the detailed improvement plan:
 | 16 | Dashboard Sidebar + Top Bar | AFK | 12 |
 | 17 | Dashboard Bento Widget Restyle | AFK | 16 |
 | 18 | Hospital Blood Search Cards | AFK | 16 |
+
+## Simplification Issues (from grilling session, 2026-07-16)
+
+8 issues derived from an architecture-review grilling session that fact-checked and prioritized an overengineering audit. All are independent — no dependency chain, work in any order. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 19 | Simplify Location Matching to 3 Levels + 3 Radius Tiers | AFK | — | ✅ |
+| 20 | Collapse `opened` into `alerted` in Alert Lifecycle | AFK | — | |
+| 21 | Commit In-Progress Dead Code Removal (admin stubs, HMO, legacy) | AFK | — | 🔶 (uncommitted) |
+| 22 | Remove Dead UI Surface (blood-drive stub, scroll-reveal hook, theme toggle) | AFK | — | |
+| 23 | Promote Staff Role to Typed Schema Columns | AFK | — | |
+| 24 | Validate Hospital Inventory Writes with Zod | AFK | — | |
+| 25 | Replace `alert-context.tsx` with a Shared Query Hook | AFK | — | |
+| 26 | [Backlog] Dark-Only Theme Redesign | HITL | — (needs design decision first) | needs-triage |
+
+See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details. Issue #26 is explicitly **not** ready-for-agent — it requires a human palette/contrast decision before implementation.
 
 ## Agent skills
 

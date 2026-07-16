@@ -321,9 +321,9 @@ export async function expandSearchRadius(requestId: string) {
 			}
 			const radiusThreshold =
 				request.searchRadius <= 5
-					? 4
+					? 3
 					: request.searchRadius <= 15
-						? 3
+						? 2
 						: 1;
 			return donor.score >= radiusThreshold;
 		});

@@ -22,17 +22,6 @@ enum Availability {
   anytime
 }
 
-enum IncentiveType {
-  hmo_voucher
-  gym_discount
-}
-
-enum ClaimStatus {
-  pending
-  approved
-  redeemed
-}
-
 enum UrgencyLevel {
   standard
   critical
@@ -88,7 +77,6 @@ enum LocationType {
   region
   state
   city
-  area
 }
 
 model Location {
@@ -187,22 +175,6 @@ model EmergencyAlert {
   @@map("emergency_alerts")
 }
 
-model IncentiveClaim {
-  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String        @db.Uuid
-  type      IncentiveType
-  status    ClaimStatus   @default(pending)
-  metadata  Json          @default("{}")
-  createdAt DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([status])
-  @@map("incentives_claims")
-}
-
 model User {
   id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
@@ -227,7 +199,6 @@ model User {
   accounts     Account[]
   wallet       Wallet?
   managedBanks      HospitalBank[]
-  claims            IncentiveClaim[]
   emergencyRequests EmergencyRequest[]  @relation("HospitalRequests")
   emergencyAlerts   EmergencyAlert[]    @relation("DonorAlerts")
 

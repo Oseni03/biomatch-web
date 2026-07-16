@@ -12,7 +12,6 @@ export async function getUserById(id: string) {
 		include: {
 			wallet: true,
 			managedBanks: true,
-			claims: true,
 		},
 	});
 }

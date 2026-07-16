@@ -1,5 +1,7 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-07-16 — Issue 19 complete: removed `area` from LocationType enum, reduced radius tiers from 5 to 3 (5/15/25km), updated depth thresholds to match 3-level hierarchy.
+
 ```
 biomatch/
 ├── app/                            # Next.js App Router

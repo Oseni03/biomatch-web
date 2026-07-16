@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { AlertCountProvider } from "@/lib/alert-context";
 import { ActiveMissionTracker } from "@/components/donor/active-mission-tracker";
 import { DeferralStatusCard } from "@/components/donor/deferral-status-card";
-import { HmoInsuranceCard } from "@/components/donor/hmo-insurance-card";
 import { LocationSettingsCard } from "@/components/donor/location-settings-card";
 import { EmergencyAlertsFeed } from "@/components/donor/emergency-alerts-feed";
 import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
@@ -135,27 +134,6 @@ export default function DonorDashboardPage() {
 		),
 	);
 
-	const getHmoTier = useCallback(() => {
-		if (completedCount === 0)
-			return {
-				name: "Inactive",
-				level: 0,
-				desc: "Donate once to activate your Basic coverage",
-			};
-		if (completedCount < 3)
-			return {
-				name: "Basic Plan Activated",
-				level: 1,
-				desc: "Covers standard consultation and primary emergencies",
-			};
-		return {
-			name: "Premium Gold Plan",
-			level: 2,
-			desc: "Covers comprehensive surgeries, medication, and fully upgraded HMO coverage",
-		};
-	}, [completedCount]);
-
-	const hmoTier = getHmoTier();
 	const queryClient = useQueryClient();
 
 	const handleSaveSettings = useCallback(
@@ -364,13 +342,6 @@ export default function DonorDashboardPage() {
 							lastDonationDateInput={lastDonationDateInput}
 							onDateChange={setLastDonationDateInput}
 							deferralPercent={deferralPercent}
-						/>
-
-						<HmoInsuranceCard
-							userName={session.user.name ?? "BioMatch User"}
-							userId={user?.id ?? ""}
-							completedCount={completedCount}
-							hmoTier={hmoTier}
 						/>
 
 						<LocationSettingsCard

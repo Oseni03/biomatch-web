@@ -1,5 +1,5 @@
 export const INITIAL_RADIUS = 5;
-export const EXPANSION_INCREMENT = 5;
+export const EXPANSION_INCREMENT = 10;
 export const MAX_RADIUS = 25;
 export const EXPANSION_TIMEOUT_MS = 300_000;
 export const MAX_ALERTS_PER_REQUEST = 50;

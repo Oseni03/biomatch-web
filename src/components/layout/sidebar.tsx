@@ -8,12 +8,9 @@ import {
 	ClipboardPlus,
 	Building2,
 	Droplet,
-	FileSignature,
 	HeartPulse,
 	LayoutDashboard,
-	ListChecks,
 	Search,
-	ShieldCheck,
 	AlertTriangle,
 	Wallet,
 	type LucideIcon,
@@ -39,7 +36,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAlertCount } from "@/lib/alert-context";
 import { cn } from "@/lib/utils";
 
-type Role = "donor" | "hospital" | "admin";
+type Role = "donor" | "hospital";
 
 const NAV_ITEMS: Record<
 	Role,
@@ -76,25 +73,11 @@ const NAV_ITEMS: Record<
 			icon: ClipboardPlus,
 		},
 	],
-	admin: [
-		{ title: "System Overview", url: "/admin", icon: ShieldCheck },
-		{
-			title: "Verification Queue",
-			url: "/admin/verification",
-			icon: ListChecks,
-		},
-		{
-			title: "Partner Contracts",
-			url: "/admin/contracts",
-			icon: FileSignature,
-		},
-	],
 };
 
 const SECTION_LABELS: Record<Role, string> = {
 	donor: "Donor",
 	hospital: "Hospital",
-	admin: "Admin",
 };
 
 interface SidebarLayoutProps {
