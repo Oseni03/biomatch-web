@@ -69,7 +69,7 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 | File | Functions |
 |---|---|
 | `auth.ts` | `signUpWithProfile()`, `loginWithRole()` |
-| `emergency.ts` | `createEmergencyRequest()`, `getActiveEmergencyRequests()`, `getAlertsForDonor()`, `getEmergencyRequestsForHospital()`, `getPendingEmergencyRequestsForHospital()`, `expandSearchRadius()`, `respondToAlert()`, `updateAlertStatus()`, `getEmergencyRequestStatus()`, `getEmergencyHistory()` |
+| `emergency.ts` | `createEmergencyRequest()`, `getActiveEmergencyRequests()`, `getAlertsForDonor()`, `getEmergencyRequestsForHospital()`, `getPendingEmergencyRequestsForHospital()`, `expandSearchRadius()`, `respondToAlert()`, `updateAlertStatus()`, `markAlertOpened()`, `getEmergencyRequestStatus()`, `getEmergencyHistory()` |
 | `hospital.ts` | `getAllHospitalBanks()`, `getHospitalBankById()`, `createHospitalBank()`, `updateHospitalBankInventory()` |
 | `incentive.ts` | `createIncentiveClaim()`, `getClaimsByUserId()`, `getPendingClaims()`, `updateClaimStatus()` |
 | `user.ts` | `getUserById()`, `getUserBasicById()`, `getUserByEmail()`, `updateUserProfile()`, `updateUserRole()`, `listDonors()` |
@@ -158,7 +158,7 @@ See `contexts/` directory for the detailed improvement plan:
 | # | Title | Type | Blocked By | Status |
 |---|---|---|---|---|
 | 19 | Simplify Location Matching to 3 Levels + 3 Radius Tiers | AFK | — | ✅ |
-| 20 | Collapse `opened` into `alerted` in Alert Lifecycle | AFK | — | |
+| 20 | Collapse `opened` into `alerted` in Alert Lifecycle | AFK | — | ✅ |
 | 21 | Commit In-Progress Dead Code Removal (admin stubs, HMO, legacy) | AFK | — | 🔶 (uncommitted) |
 | 22 | Remove Dead UI Surface (blood-drive stub, scroll-reveal hook, theme toggle) | AFK | — | |
 | 23 | Promote Staff Role to Typed Schema Columns | AFK | — | |

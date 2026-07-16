@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
 	Bell,
-	Eye,
 	CheckCircle2,
 	XCircle,
 	MapPin,
@@ -31,14 +30,6 @@ const STATUS_CONFIG = [
 		color: "text-muted-foreground",
 		bg: "bg-muted",
 		border: "border-border",
-	},
-	{
-		key: "opened" as const,
-		label: "Opened",
-		icon: Eye,
-		color: "text-orange-600",
-		bg: "bg-orange-50 dark:bg-orange-950/10",
-		border: "border-orange-200 dark:border-orange-900/50",
 	},
 	{
 		key: "accepted" as const,
@@ -135,7 +126,7 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
 				{STATUS_CONFIG.map((cfg) => {
 					const Icon = cfg.icon;
 					const count = request.aggregates[cfg.key];

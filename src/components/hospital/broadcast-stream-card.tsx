@@ -3,7 +3,6 @@ import type { EmergencyMatchRequest } from "@/lib/donor-types";
 
 export interface FunnelData {
 	alerted: number;
-	opened: number;
 	accepted: number;
 	progress: number;
 	donorName: string;
@@ -53,21 +52,13 @@ export function BroadcastStreamCard({
 			</div>
 
 			{req.status !== "completed" && (
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted border-border rounded-2xl mb-6">
+				<div className="grid grid-cols-3 gap-4 p-4 bg-muted border-border rounded-2xl mb-6">
 					<div className="text-center md:border-r border-border">
 						<span className="text-[22px] font-bold font-mono text-foreground block">
 							{funnel.alerted}
 						</span>
 						<span className="text-[9px] font-mono uppercase text-muted-foreground tracking-wider">
 							Donors Alerted
-						</span>
-					</div>
-					<div className="text-center md:border-r border-border">
-						<span className="text-[22px] font-bold font-mono text-orange-600 block">
-							{funnel.opened}
-						</span>
-						<span className="text-[9px] font-mono uppercase text-muted-foreground tracking-wider">
-							Alerts Opened
 						</span>
 					</div>
 					<div className="text-center md:border-r border-border">

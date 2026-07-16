@@ -301,7 +301,7 @@ Shared patterns:
 
 | Issue | Severity | Status |
 |---|---|---|
-| No live funnel status view with per-status donor lists | High | ✅ LiveStatusPanel shows alerted/opened/accepted/declined/en_route/arrived/completed with donor names, blood groups, timestamps; 5s polling via useEmergencyRequestStatus |
+| No live funnel status view with per-status donor lists | High | ✅ LiveStatusPanel shows alerted/accepted/declined/en_route/arrived/completed with donor names, blood groups, timestamps; 5s polling via useEmergencyRequestStatus |
 | No past request history view | High | ✅ EmergencyHistory tab with date/type/status filters, expandable funnel breakdown, pagination |
 | No getEmergencyRequestStatus server action | Medium | ✅ Returns single request with alert aggregates + donor details |
 | No getEmergencyHistory server action | Medium | ✅ Paginated history with filters, returns funnel aggregates per request |

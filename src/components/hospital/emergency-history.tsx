@@ -41,7 +41,6 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 
 const FUNNEL_LABELS = [
 	{ key: "alerted" as const, label: "Alerted" },
-	{ key: "opened" as const, label: "Opened" },
 	{ key: "accepted" as const, label: "Accepted" },
 	{ key: "en_route" as const, label: "En Route" },
 	{ key: "arrived" as const, label: "Arrived" },
@@ -175,7 +174,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 							label: req.status,
 							color: "text-muted-foreground bg-muted border-border",
 						};
-						const totalFunnel = req.aggregates.alerted + req.aggregates.opened + req.aggregates.accepted + req.aggregates.en_route + req.aggregates.arrived + req.aggregates.completed;
+						const totalFunnel = req.aggregates.alerted + req.aggregates.accepted + req.aggregates.en_route + req.aggregates.arrived + req.aggregates.completed;
 						const shortfallStages = FUNNEL_LABELS.filter(
 							(f) => req.aggregates[f.key] === 0,
 						);
@@ -244,7 +243,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 
 								{isExpanded && (
 									<div className="px-5 pb-4 space-y-4 border-t border-border pt-4">
-										<div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+										<div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
 											{FUNNEL_LABELS.map((f) => {
 												const count =
 													req.aggregates[f.key];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { useDonorHistory } from "@/hooks/use-donor-history";
 import { getAllHospitalBanks } from "@/servers/hospital";
 import { getAllCityLabels } from "@/servers/location";
 import { updateUserProfile } from "@/servers/user";
-import { respondToAlert, updateAlertStatus } from "@/servers/emergency";
+import { respondToAlert, updateAlertStatus, markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
 import {
@@ -64,6 +64,7 @@ export default function DonorDashboardPage() {
 	);
 	const [maxRadius, setMaxRadius] = useState<number>(15);
 	const [smsFallbackEnabled, setSmsFallbackEnabled] = useState<boolean>(true);
+	const openedAlertIds = useRef<Set<string>>(new Set());
 	const [settingsSuccess, setSettingsSuccess] = useState<string>("");
 	const [lastDonationDateInput, setLastDonationDateInput] = useState<string>(
 		lastDonationDate ?? "",
@@ -124,6 +125,15 @@ export default function DonorDashboardPage() {
 		if (lastDonationDate) setLastDonationDateInput(lastDonationDate);
 		if (user?.isActive === false) setDonorStatus("inactive");
 	}, [user, lastDonationDate]);
+
+	useEffect(() => {
+		for (const a of alerts ?? []) {
+			if (a.status === "alerted" && !openedAlertIds.current.has(a.id)) {
+				openedAlertIds.current.add(a.id);
+				markAlertOpened(a.id).catch(() => {});
+			}
+		}
+	}, [alerts]);
 
 	const deferralPercent = Math.min(
 		100,

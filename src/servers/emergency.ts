@@ -16,13 +16,32 @@ import { scoreDonorProximity } from "./location";
 function computeAlertAggregates(alerts: { status: string }[]) {
 	return {
 		alerted: alerts.filter((a) => a.status === "alerted").length,
-		opened: alerts.filter((a) => a.status === "opened").length,
 		accepted: alerts.filter((a) => a.status === "accepted").length,
 		declined: alerts.filter((a) => a.status === "declined").length,
 		en_route: alerts.filter((a) => a.status === "en_route").length,
 		arrived: alerts.filter((a) => a.status === "arrived").length,
 		completed: alerts.filter((a) => a.status === "completed").length,
 	};
+}
+
+export async function markAlertOpened(alertId: string) {
+	const existing = await prisma.emergencyAlert.findUnique({
+		where: { id: alertId },
+		select: { openedAt: true },
+	});
+
+	if (!existing) {
+		throw new Error("Alert not found");
+	}
+
+	if (existing.openedAt) {
+		return;
+	}
+
+	await prisma.emergencyAlert.update({
+		where: { id: alertId },
+		data: { openedAt: new Date() },
+	});
 }
 
 async function applyDonationRewards(userId: string) {

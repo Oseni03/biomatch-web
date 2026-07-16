@@ -27,7 +27,7 @@
 - `LocationType`: `region | state | city | area` — for Location hierarchy
 - `UrgencyLevel`: `standard | critical` — for EmergencyRequest
 - `RequestStatus`: `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
-- `AlertStatus`: `alerted | opened | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
+- `AlertStatus`: `alerted | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
 - `EmergencyMatchRequest.status` (UI type in `lib/donor-types.ts`): `pending | matched | completed`
 - `HmoTier` (planned): `none | basic | upgraded` — for User
 - `NotificationChannel`: `email` — for NotificationLog
@@ -60,7 +60,7 @@
 ### Emergency Models (in Schema)
 
 - **EmergencyRequest** — id, hospitalId (FK to User), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt. Server actions: createEmergencyRequest(), getEmergencyRequestStatus(), getEmergencyHistory(), getPendingEmergencyRequestsForHospital(), expandSearchRadius()
-- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, respondedAt, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus()
+- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, openedAt, respondedAt, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus(), markAlertOpened()
 - **NotificationLog** — id, alertId (FK to EmergencyAlert), channel (email), status (sent/failed/delivered/opened), providerMessageId, sentAt, deliveredAt, openedAt, errorMessage. Server actions: sendEmergencyAlertEmail() in servers/notification.ts
 
 ### Planned Models (from PRD Issues)
@@ -155,6 +155,6 @@ The app uses a custom design system built on shadcn/ui CSS variables with the br
 - **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
 - **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
 - **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state and radius expansion countdown; delegates to LiveStatusPanel, EmergencyHistory, DonorDirectory (wired to listDonors), AnalyticsDashboard (wired to getHospitalAnalytics), and StaffAccounts (wired to CRUD server actions). No localStorage — all state in React Query cache.
-- **Live Status Panel**: `components/hospital/live-status-panel.tsx` shows funnel metrics (alerted/opened/accepted/declined/en_route/arrived/completed) with expandable donor lists per status; uses `useEmergencyRequestStatus` hook polling every 5s.
+- **Live Status Panel**: `components/hospital/live-status-panel.tsx` shows funnel metrics (alerted/accepted/declined/en_route/arrived/completed) with expandable donor lists per status; uses `useEmergencyRequestStatus` hook polling every 5s.
 - **Request History**: `components/hospital/emergency-history.tsx` shows past requests with date range, blood type, and status filters; expandable rows show full funnel breakdown with shortfall indicators; paginated via `useEmergencyHistory` hook.
 - **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.

@@ -37,7 +37,6 @@ enum RequestStatus {
 
 enum AlertStatus {
   alerted
-  opened
   accepted
   declined
   en_route
@@ -161,6 +160,7 @@ model EmergencyAlert {
   requestId   String       @db.Uuid
   donorId     String       @db.Uuid
   status      AlertStatus  @default(alerted)
+  openedAt    DateTime?    @db.Timestamptz(6)
   respondedAt DateTime?    @db.Timestamptz(6)
   createdAt   DateTime     @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
