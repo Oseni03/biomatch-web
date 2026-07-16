@@ -22,9 +22,7 @@
 ### Enums
 - `Role`: `donor | hospital | admin`
 - `BloodGroup`: `A_PLUS | A_MINUS | B_PLUS | B_MINUS | AB_PLUS | AB_MINUS | O_PLUS | O_MINUS`
-- `IncentiveType`: `hmo_voucher | gym_discount`
-- `ClaimStatus`: `pending | approved | redeemed`
-- `LocationType`: `region | state | city | area` — for Location hierarchy
+- `LocationType`: `region | state | city` — for Location hierarchy
 - `UrgencyLevel`: `standard | critical` — for EmergencyRequest
 - `RequestStatus`: `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
 - `AlertStatus`: `alerted | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
@@ -37,15 +35,13 @@
 
 ### Current Models
 
-**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location` (display string), `locationId` (FK to Location), `availability`, `isActive`, `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), IncentiveClaim, Location. *Planned additions: `hmoTier`, `hospitalStaffRole`, `hospitalId`.*
+**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location` (display string), `locationId` (FK to Location), `availability`, `isActive`, `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), Location. *Planned additions: `hmoTier`, `hospitalStaffRole`, `hospitalId`.*
 
 **HospitalBank** — Blood bank record. `hospitalName`, `location` (string), `locationId` (FK to Location), `inventory` (JSON blob of `Record<string, number>`), `managedBy` (optional User FK).
 
 **Location** — Nigerian location hierarchy. `name`, `type` (region/state/city/area), `parentId` (self-referential FK). Relations to: User (users), HospitalBank (hospitalBanks). Seed data in `prisma/seed.ts` covers 6 regions, 37 states, ~120 cities. Helpers in `servers/location.ts`.
 
 **Wallet** — One per donor. `points` (int), `lifetimeDonations` (int).
-
-**IncentiveClaim** — Perk redemption request. `type`, `status`, `metadata` (JSON).
 
 **Session, Account, Verification** — BetterAuth internal models.
 
@@ -129,7 +125,6 @@ The app uses a custom design system built on shadcn/ui CSS variables with the br
 
 ### Component Architecture
 - **shadcn/ui primitives** (`components/ui/`) — Button, Card, etc. with custom variants
-- **Shared components** (`components/prospeo/`) — Eyebrow, StatBlock, Section, LogoBar
 - **Landing sections** (`components/landing/`) — all use brand tokens
 
 ### Spacing

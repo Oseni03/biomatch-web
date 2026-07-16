@@ -1,15 +1,10 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-16 — Issue 19 complete: removed `area` from LocationType enum, reduced radius tiers from 5 to 3 (5/15/25km), updated depth thresholds to match 3-level hierarchy.
+> Last updated: 2026-07-16 — Issue 21 complete: removed admin stub pages, incentive server, HMO card, prospeo components, chart.tsx, supabase.ts; cleaned IncentiveClaim/IncentiveType/ClaimStatus from schema.
 
 ```
 biomatch/
 ├── app/                            # Next.js App Router
-│   ├── admin/                      # Admin section (role=admin)
-│   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="admin"
-│   │   ├── page.tsx                #   STUB - System Overview
-│   │   ├── contracts/page.tsx      #   STUB - Partner agreements
-│   │   └── verification/page.tsx   #   STUB - Verification queue
 │   ├── api/
 │   │   └── auth/[...all]/route.ts  # BetterAuth API catch-all
 │   ├── auth/
@@ -34,12 +29,6 @@ biomatch/
 │   └── page.tsx                    # Landing page (navbar, hero, stats, mission, services, impact, join, footer)
 │
 ├── components/
-│   ├── prospeo/                    # Prospeo Design System shared components
-│   │   ├── index.ts                #   Barrel export
-│   │   ├── eyebrow.tsx             #   Section eyebrow label (11px, brand, uppercase)
-│   │   ├── stat-block.tsx          #   Stat value + label + optional icon
-│   │   ├── section.tsx             #   Section wrapper (light or dark bg, max-w-6xl)
-│   │   └── logo-bar.tsx            #   Social proof logo strip
 │   ├── dashboard/                  # Shared dashboard components (Phase 1)
 │   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
 │   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
@@ -62,7 +51,6 @@ biomatch/
 │   │   ├── deferral-status-card.tsx #   Circular eligibility countdown + date input (persisted to backend on save)
 │   │   ├── donation-history-card.tsx #   Donation history table (legacy — used in dashboard, real data from getDonorHistory)
 │   │   ├── emergency-alerts-feed.tsx #   Live emergency request cards with accept/decline
-│   │   ├── hmo-insurance-card.tsx  #   Dark HMO insurance card with milestone progress
 │   │   ├── location-settings-card.tsx #   Availability, location (loaded from DB via getAllCityLabels), radius, SMS settings form
 │   │   ├── success-modal.tsx       #   Mission completion modal overlay
 │   │   └── eligible-donors-list.tsx #   Donor table — blood group, genotype, location, eligibility badge; reusable by inventory + donor-finder
@@ -84,7 +72,6 @@ biomatch/
 │   │   ├── badge.tsx
 │   │   ├── button.tsx
 │   │   ├── card.tsx
-│   │   ├── chart.tsx
 │   │   ├── checkbox.tsx
 │   │   ├── collapsible.tsx
 │   │   ├── dropdown-menu.tsx
@@ -160,7 +147,6 @@ biomatch/
 │   ├── email.ts                    # Resend client + sendEmail() wrapper — sends React Email templates; mock mode when no RESEND_API_KEY
 │   ├── prisma.ts                   # Singleton PrismaClient
 │   ├── radius-expansion.ts         # Radius expansion config: INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, EXPANSION_TIMEOUT_MS, MAX_ALERTS_PER_REQUEST, canExpand(), nextRadius(), getRadiusTier()
-│   ├── supabase.ts                 # Legacy — unused, @ts-ignore
 │   └── utils.ts                    # cn() clsx+tailwind-merge helper
 │
 ├── servers/                        # Server Actions ("use server")
@@ -168,7 +154,6 @@ biomatch/
 │   ├── auth.ts                     # signUpWithProfile() (incl. locationId, availability, isActive), loginWithRole()
 │   ├── emergency.ts                # Deep module. scoreProximity, computeAlertAggregates, applyDonationRewards (private helpers). createEmergencyRequest(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), respondToAlert(), updateAlertStatus(), confirmDonation(). Also exports getDonorHistory(), getLocalDemandStats() (moved from user.ts)
 │   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank() (incl. locationId), updateHospitalBankInventory()
-│   ├── incentive.ts                # createIncentiveClaim(), getClaimsByUserId(), getPendingClaims(), updateClaimStatus()
 │   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getAllCityLabels(), getLocationTree(), scoreDonorProximity(), proximityPassesThreshold()
 │   ├── notification.ts             # sendEmergencyAlertEmail() — sends emergency alert via Resend, logs to NotificationLog
 │   ├── staff.ts                    # getStaffMembers(), inviteStaffMember(), updateStaffRole(), removeStaffMember() — hospital staff CRUD
@@ -184,7 +169,7 @@ biomatch/
 │       └── internal/
 │
 ├── prisma/
-│   ├── schema.prisma               # Data model (User w/ locationId, HospitalBank w/ locationId, Location hierarchy, EmergencyRequest, EmergencyAlert, NotificationLog, Wallet, IncentiveClaim, Session, Account, Verification)
+│   ├── schema.prisma               # Data model (User w/ locationId, HospitalBank w/ locationId, Location hierarchy, EmergencyRequest, EmergencyAlert, NotificationLog, Wallet, Session, Account, Verification)
 │   ├── seed.ts                     # Seeds Nigerian location hierarchy (6 regions, 37 states, ~120 cities)
 │   └── migrations/                 # 5 migration folders
 │
@@ -325,7 +310,6 @@ Shared patterns:
 | `tailwind.config.ts` extended with brand colors, display/stat font sizes, 2xl/3xl/4xl radii, card/brand shadows | Done |
 | `button.tsx` overridden with Prospeo variants (brand default, shadow-brand, hover scale) | Done |
 | `card.tsx` simplified to Prospeo card (rounded-2xl, border-border, shadow-card, hover shadow) | Done |
-| `components/prospeo/` — shared Eyebrow, StatBlock, Section, LogoBar | Done |
 | Landing page (hero, navbar, stats, mission, services, impact, join, footer) fully migrated | Done |
 | Fixed pre-existing `Tooltip must be used within TooltipProvider` runtime error in sidebar | Done |
 | Fixed sidebar overlap/transparency — replaced Tailwind v4 `w-(--sidebar-width)` syntax with v3 `w-[var(--sidebar-width)]` in `components/ui/sidebar.tsx` | Done |
