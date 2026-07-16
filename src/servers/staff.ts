@@ -1,8 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import type { HospitalStaffRole } from "@generated/prisma/enums";
 
-export type StaffRole = "admin" | "requester" | "viewer";
+export type StaffRole = HospitalStaffRole;
 
 interface StaffMember {
 	id: string;
@@ -29,7 +30,7 @@ export async function getStaffMembers(
 			email: true,
 			isActive: true,
 			createdAt: true,
-			updatedHealthInfo: true,
+			hospitalStaffRole: true,
 		},
 		orderBy: { createdAt: "asc" },
 	});
@@ -38,8 +39,7 @@ export async function getStaffMembers(
 		id: s.id,
 		name: s.name,
 		email: s.email,
-		role: ((s.updatedHealthInfo as Record<string, unknown>)
-			?.staffRole as StaffRole) ?? "viewer",
+		role: s.hospitalStaffRole ?? "viewer",
 		isActive: s.isActive,
 		createdAt: s.createdAt,
 	}));
@@ -48,12 +48,11 @@ export async function getStaffMembers(
 async function requireAdminRole(callerUserId: string) {
 	const caller = await prisma.user.findUnique({
 		where: { id: callerUserId },
-		select: { updatedHealthInfo: true },
+		select: { hospitalStaffRole: true },
 	});
 	if (!caller) throw new Error("Caller not found");
-	const callerRole = (caller.updatedHealthInfo as Record<string, unknown>)
-		?.staffRole as StaffRole | undefined;
-	if (callerRole !== "admin") throw new Error("Only hospital admins can manage staff");
+	if (caller.hospitalStaffRole !== "admin")
+		throw new Error("Only hospital admins can manage staff");
 }
 
 export async function inviteStaffMember(
@@ -72,10 +71,7 @@ export async function inviteStaffMember(
 			data: {
 				role: "hospital",
 				name,
-				updatedHealthInfo: {
-					...(existing.updatedHealthInfo as Record<string, unknown>),
-					staffRole: role,
-				},
+				hospitalStaffRole: role,
 			},
 		});
 		return { success: true, userId: existing.id };
@@ -86,7 +82,7 @@ export async function inviteStaffMember(
 			email,
 			name,
 			role: "hospital",
-			updatedHealthInfo: { staffRole: role },
+			hospitalStaffRole: role,
 		},
 	});
 
@@ -105,12 +101,7 @@ export async function updateStaffRole(
 
 	await prisma.user.update({
 		where: { id: userId },
-		data: {
-			updatedHealthInfo: {
-				...(user.updatedHealthInfo as Record<string, unknown>),
-				staffRole: role,
-			},
-		},
+		data: { hospitalStaffRole: role },
 	});
 
 	return { success: true };

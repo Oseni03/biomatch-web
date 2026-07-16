@@ -22,6 +22,12 @@ enum Availability {
   anytime
 }
 
+enum HospitalStaffRole {
+  admin
+  requester
+  viewer
+}
+
 enum UrgencyLevel {
   standard
   critical
@@ -189,6 +195,7 @@ model User {
   locationId        String?     @db.Uuid
   availability      Availability?
   isActive          Boolean     @default(true)
+  hospitalStaffRole HospitalStaffRole?
   lastDonationDate  DateTime?   @db.Timestamptz(6)
   createdAt         DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime    @updatedAt @db.Timestamptz(6)

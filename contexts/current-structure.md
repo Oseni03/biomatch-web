@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-16 — Issue 22 complete: removed blood-drive stub, use-scroll-reveal hook, theme-toggle component.
+> Last updated: 2026-07-16 — Issue 23 complete: added HospitalStaffRole enum + typed column, staff CRUD uses typed column, existing data backfilled.
 
 ```
 biomatch/
@@ -453,8 +453,7 @@ Shared patterns:
 
 | Issue                                               | Severity | File(s)                                           |
 | --------------------------------------------------- | -------- | ------------------------------------------------- |
-| `inventory` JSON blob — no type safety, can't query | Medium   | `prisma/schema.prisma`                            |
-| Sidebar `userName` prop never passed by layouts     | Low      | `app/donor/layout.tsx`, `app/hospital/layout.tsx` |
+| Inventory `updatedHealthInfo` still written as JSON even though all 5 fields now have typed columns | Low | `prisma/schema.prisma` |
 | Hospital phone not in User schema — contactPhone always "N/A" in emergency feed | Low | `prisma/schema.prisma` |
 | maxRadius and smsFallbackEnabled not persisted (no DB fields) | Low | `app/donor/page.tsx`, `components/donor/location-settings-card.tsx` |
-| Hospital staff roles and hospitalId not in schema (stored in updatedHealthInfo JSON) | Low | `prisma/schema.prisma`, `servers/staff.ts` |
+| Hospital staff hospitalId not in schema (stored in updatedHealthInfo JSON) | Low | `prisma/schema.prisma`, `servers/staff.ts` |

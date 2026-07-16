@@ -18,10 +18,10 @@ Hospital staff role (`viewer`/`requester`/`admin`) becomes a real, typed, DB-val
 
 ## Acceptance criteria
 
-- [ ] `HospitalStaffRole` enum and `User.hospitalStaffRole` column exist
-- [ ] All staff CRUD server actions read/write the typed column, not `updatedHealthInfo`
-- [ ] No remaining code casts `updatedHealthInfo` to read `staffRole`
-- [ ] Existing staff role data (if any) migrated, not silently dropped
+- [x] `HospitalStaffRole` enum and `User.hospitalStaffRole` column exist
+- [x] All staff CRUD server actions read/write the typed column, not `updatedHealthInfo`
+- [x] No remaining code casts `updatedHealthInfo` to read `staffRole`
+- [x] Existing staff role data (if any) migrated, not silently dropped
 
 ## Blocked by
 

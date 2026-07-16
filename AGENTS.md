@@ -160,7 +160,7 @@ See `contexts/` directory for the detailed improvement plan:
 | 20 | Collapse `opened` into `alerted` in Alert Lifecycle | AFK | — | ✅ |
 | 21 | Commit In-Progress Dead Code Removal (admin stubs, HMO, legacy) | AFK | — | ✅ |
 | 22 | Remove Dead UI Surface (blood-drive stub, scroll-reveal hook, theme toggle) | AFK | — | ✅ |
-| 23 | Promote Staff Role to Typed Schema Columns | AFK | — | |
+| 23 | Promote Staff Role to Typed Schema Columns | AFK | — | ✅ |
 | 24 | Validate Hospital Inventory Writes with Zod | AFK | — | |
 | 25 | Replace `alert-context.tsx` with a Shared Query Hook | AFK | — | |
 | 26 | [Backlog] Dark-Only Theme Redesign | HITL | — (needs design decision first) | needs-triage |
