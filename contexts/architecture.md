@@ -85,7 +85,6 @@
 |---|---|---|
 | `/hospital/inventory` | `app/hospital/inventory/page.tsx` | Live inventory grid + eligible donors |
 | `/hospital/donor-finder` | `app/hospital/donor-finder/page.tsx` | **STUB** — donor search |
-| `/hospital/blood-drive` | `app/hospital/blood-drive/page.tsx` | **STUB** — blood drive request |
 | `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Emergency request creation |
 
 ### Protected — Admin

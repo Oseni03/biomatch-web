@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
 	Bell,
-	ClipboardPlus,
 	Building2,
 	Droplet,
 	HeartPulse,
@@ -18,7 +17,6 @@ import {
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
@@ -67,11 +65,7 @@ const NAV_ITEMS: Record<
 			url: "/hospital/donor-finder",
 			icon: Search,
 		},
-		{
-			title: "Request Blood Drive",
-			url: "/hospital/blood-drive",
-			icon: ClipboardPlus,
-		},
+
 	],
 };
 
@@ -197,7 +191,6 @@ function TopBarActions({ role }: { role: Role }) {
 				<BadgeCount count={alertCount} className="bg-brand" />
 				<span className="sr-only">Notifications</span>
 			</Button>
-			<ThemeToggle />
 		</>
 	);
 }

@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-16 — Issue 21 complete: removed admin stub pages, incentive server, HMO card, prospeo components, chart.tsx, supabase.ts; cleaned IncentiveClaim/IncentiveType/ClaimStatus from schema.
+> Last updated: 2026-07-16 — Issue 22 complete: removed blood-drive stub, use-scroll-reveal hook, theme-toggle component.
 
 ```
 biomatch/
@@ -22,7 +22,7 @@ biomatch/
 │   │   ├── inventory/page.tsx      #   Blood Search — bento cards per hospital bank, search/filter bar, eligible donor cards
 │   │   ├── emergency/page.tsx      #   Emergency request creation form — blood group, units, urgency, radius; shows matched donor count
 │   │   ├── donor-finder/page.tsx   #   Donor Finder — search/filter with blood group, location, name, eligibility toggle, pagination
-│   │   └── blood-drive/page.tsx    #   STUB - Blood drive request form
+
 │   ├── favicon.ico
 │   ├── globals.css                 # Tailwind directives + theme variables
 │   ├── layout.tsx                  # Root layout: Inter font, ThemeProvider, QueryClientProvider, Toaster
@@ -89,7 +89,7 @@ biomatch/
 │   │   ├── textarea.tsx
 │   │   └── tooltip.tsx
 │   ├── theme-provider.tsx          # next-themes ThemeProvider wrapper
-│   └── theme-toggle.tsx            # Light/dark toggle
+
 │
 ├── emails/                         # React Email templates
 │   └── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
@@ -129,7 +129,7 @@ biomatch/
 │
 ├── hooks/
 │   ├── use-analytics.ts            # React Query: useHospitalAnalytics() — wraps getHospitalAnalytics
-│   ├── use-scroll-reveal.ts        # IntersectionObserver scroll animation hook
+
 │   ├── use-donor-dashboard.ts      # React Query: wraps getUserById (incl. wallet)
 │   ├── use-donor-history.ts        # React Query: useDonorHistory(), useLocalDemandStats() (imports from servers/emergency)
 │   ├── use-wallet.ts               # React Query: wraps getWalletByUserId (from servers/user)

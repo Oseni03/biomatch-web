@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Menu, X, LayoutDashboard } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
@@ -72,8 +71,6 @@ export function Navbar() {
 				</div>
 
 				<div className="flex items-center gap-3">
-					<ThemeToggle />
-
 					{session ? (
 						<div className="hidden md:flex items-center gap-3">
 							<Button variant="outline" asChild>

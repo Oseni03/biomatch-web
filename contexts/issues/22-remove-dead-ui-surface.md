@@ -12,10 +12,10 @@ Three small, independent removals bundled together since none touch shared code:
 
 ## Acceptance criteria
 
-- [ ] `/hospital/blood-drive` route, page, and nav link removed
-- [ ] `use-scroll-reveal.ts` deleted
-- [ ] No visible theme toggle control in navbar or sidebar
-- [ ] App still renders correctly following OS light/dark preference (no manual toggle, but `next-themes` still functions)
+- [x] `/hospital/blood-drive` route, page, and nav link removed
+- [x] `use-scroll-reveal.ts` deleted
+- [x] No visible theme toggle control in navbar or sidebar
+- [x] App still renders correctly following OS light/dark preference (no manual toggle, but `next-themes` still functions)
 
 ## Blocked by
 
