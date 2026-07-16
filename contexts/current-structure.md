@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-16 — Issue 23 complete: added HospitalStaffRole enum + typed column, staff CRUD uses typed column, existing data backfilled.
+> Last updated: 2026-07-16 — Issue 24 complete: added Zod inventory validation schema, wired to updateHospitalBankInventory.
 
 ```
 biomatch/

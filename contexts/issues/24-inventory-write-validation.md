@@ -12,10 +12,10 @@ Simplification pass (grilling session, 2026-07-16) — see AGENTS.md / CLAUDE.md
 
 ## Acceptance criteria
 
-- [ ] `zod` added to `package.json` dependencies
-- [ ] `updateHospitalBankInventory` rejects payloads with unexpected keys, negative counts, or non-integer values
-- [ ] Existing valid inventory updates continue to work unchanged
-- [ ] Validation error surfaces as a clear error/toast, not a silent failure or raw Prisma error
+- [x] `zod` added to `package.json` dependencies
+- [x] `updateHospitalBankInventory` rejects payloads with unexpected keys, negative counts, or non-integer values
+- [x] Existing valid inventory updates continue to work unchanged
+- [x] Validation error surfaces as a clear error message, not a silent failure or raw Prisma error
 
 ## Blocked by
 
