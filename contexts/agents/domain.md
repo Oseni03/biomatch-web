@@ -16,11 +16,11 @@ Single-context repo:
 ```
 /
 ├── AGENTS.md
-├── contexts/
-│   ├── architecture.md
-│   └── current-structure.md
-└── docs/agents/
-    └── domain.md
+└── contexts/
+    ├── agents/
+    │   └── domain.md
+    ├── architecture.md
+    └── current-structure.md
 ```
 
 ## Use the glossary's vocabulary

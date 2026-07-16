@@ -171,12 +171,12 @@ See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details
 
 ### Issue tracker
 
-Issues live as local markdown files under `contexts/issues/`. See `docs/agents/issue-tracker.md`.
+Issues live as local markdown files under `contexts/issues/`. See `contexts/agents/issue-tracker.md`.
 
 ### Triage labels
 
-Five canonical roles map to the same-named strings (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Five canonical roles map to the same-named strings (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `contexts/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context repo; the authoritative doc is `contexts/architecture.md`. See `docs/agents/domain.md`.
+Single-context repo; the authoritative doc is `contexts/architecture.md`. See `contexts/agents/domain.md`.

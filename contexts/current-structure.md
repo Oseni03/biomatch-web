@@ -94,12 +94,11 @@ biomatch/
 ├── emails/                         # React Email templates
 │   └── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
 │
-├── docs/
-│   └── agents/                      # Engineering skill configuration
-│       ├── issue-tracker.md
-│       ├── triage-labels.md
-│       └── domain.md
 ├── contexts/                       # AI context & plans directory
+│   ├── agents/                     # Engineering skill configuration
+│   │   ├── domain.md
+│   │   ├── issue-tracker.md
+│   │   └── triage-labels.md
 │   ├── architecture.md             # Tech stack, data model, routing, patterns
 │   ├── current-structure.md        # This file — full file tree
 │   ├── improvement-plan.md         # Summary of all 3 phases
