@@ -31,7 +31,8 @@ import {
 	SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { useAlertCount } from "@/lib/alert-context";
+import { authClient } from "@/lib/auth-client";
+import { useDonorAlerts } from "@/hooks/use-emergency-requests";
 import { cn } from "@/lib/utils";
 
 type Role = "donor" | "hospital";
@@ -85,9 +86,24 @@ export function SidebarLayout({
 	userName,
 	children,
 }: SidebarLayoutProps) {
+	const { data: session } = authClient.useSession();
+	const { data: donorAlerts } = useDonorAlerts(
+		role === "donor" ? session?.user?.id : undefined,
+	);
+	const alertCount = (donorAlerts ?? []).filter(
+		(a) =>
+			a.status === "alerted" ||
+			a.status === "accepted" ||
+			a.status === "en_route",
+	).length;
+
 	return (
 		<SidebarProvider>
-			<AppSidebar role={role} userName={userName} />
+			<AppSidebar
+				role={role}
+				userName={userName}
+				alertCount={alertCount}
+			/>
 			<SidebarInset>
 				<header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
 					<div className="flex items-center gap-2">
@@ -101,7 +117,10 @@ export function SidebarLayout({
 						</h1>
 					</div>
 					<div className="ml-auto flex items-center gap-1.5">
-						<TopBarActions role={role} />
+						<TopBarActions
+							role={role}
+							alertCount={alertCount}
+						/>
 						<Separator
 							orientation="vertical"
 							className="mx-1 h-5"
@@ -141,9 +160,13 @@ function BadgeCount({
 	);
 }
 
-function TopBarActions({ role }: { role: Role }) {
-	const alertCount = useAlertCount();
-
+function TopBarActions({
+	role,
+	alertCount,
+}: {
+	role: Role;
+	alertCount: number;
+}) {
 	return (
 		<>
 			{role === "hospital" && (
@@ -198,12 +221,13 @@ function TopBarActions({ role }: { role: Role }) {
 function AppSidebar({
 	role,
 	userName,
+	alertCount,
 }: {
 	role: Role;
 	userName?: string;
+	alertCount: number;
 }) {
 	const pathname = usePathname();
-	const alertCount = useAlertCount();
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {

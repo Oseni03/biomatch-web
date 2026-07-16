@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-16 — Issue 24 complete: added Zod inventory validation schema, wired to updateHospitalBankInventory.
+> Last updated: 2026-07-16 — Issue 25 complete: replaced alert-context.tsx with shared useDonorAlerts query hook in sidebar.
 
 ```
 biomatch/

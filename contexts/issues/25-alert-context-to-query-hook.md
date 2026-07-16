@@ -8,10 +8,10 @@ The donor dashboard (`app/donor/page.tsx`) and sidebar (`components/layout/sideb
 
 ## Acceptance criteria
 
-- [ ] `lib/alert-context.tsx` deleted
-- [ ] Sidebar badge count reads from a React Query hook, not a context value
-- [ ] No duplicate network fetch introduced — confirm the sidebar's hook call shares a query key/cache with whatever the donor dashboard already uses for alerts
-- [ ] Badge count still updates correctly when alerts change
+- [x] `lib/alert-context.tsx` deleted
+- [x] Sidebar badge count reads from a React Query hook, not a context value
+- [x] No duplicate network fetch introduced — sidebar's useDonorAlerts call shares query key `["donor-alerts", donorId]` with the same hook call in the donor dashboard page
+- [x] Badge count still updates correctly when alerts change (same refetchInterval: 15_000)
 
 ## Blocked by
 

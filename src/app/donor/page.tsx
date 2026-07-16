@@ -21,7 +21,6 @@ import {
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
 import { toast } from "sonner";
 
-import { AlertCountProvider } from "@/lib/alert-context";
 import { ActiveMissionTracker } from "@/components/donor/active-mission-tracker";
 import { DeferralStatusCard } from "@/components/donor/deferral-status-card";
 import { LocationSettingsCard } from "@/components/donor/location-settings-card";
@@ -112,13 +111,6 @@ export default function DonorDashboardPage() {
 			declinedRequestIds.push(a.id);
 		}
 	}
-
-	const activeAlertCount = (alerts ?? []).filter(
-		(a: { status: string }) =>
-			a.status === "alerted" ||
-			a.status === "accepted" ||
-			a.status === "en_route",
-	).length;
 
 	useEffect(() => {
 		if (user?.location) setDonorLocation(user.location);
@@ -299,102 +291,100 @@ export default function DonorDashboardPage() {
 	};
 
 	return (
-		<AlertCountProvider value={activeAlertCount}>
-			<motion.div
-				className="space-y-8"
-				variants={containerVariants}
-				initial="hidden"
-				animate="visible"
-			>
-				{eligibility.eligible && lastDonationDate && (
-					<motion.div variants={itemVariants}>
-						<div className="bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 rounded-2xl p-4 flex items-center gap-3">
-							<CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
-							<div>
-								<p className="text-sm font-semibold text-green-800 dark:text-green-300">
-									You are eligible to donate again!
-								</p>
-								<p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-									Your 56-day deferral period has ended. Check
-									for active emergency requests above.
-								</p>
-							</div>
+		<motion.div
+			className="space-y-8"
+			variants={containerVariants}
+			initial="hidden"
+			animate="visible"
+		>
+			{eligibility.eligible && lastDonationDate && (
+				<motion.div variants={itemVariants}>
+					<div className="bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 rounded-2xl p-4 flex items-center gap-3">
+						<CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+						<div>
+							<p className="text-sm font-semibold text-green-800 dark:text-green-300">
+								You are eligible to donate again!
+							</p>
+							<p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+								Your 56-day deferral period has ended. Check
+								for active emergency requests above.
+							</p>
 						</div>
-					</motion.div>
-				)}
-
-				{activeTrackingId && activeRequest && (
-					<motion.div variants={itemVariants}>
-						<ActiveMissionTracker
-							request={activeRequest}
-							trackingStatus={trackingStatus}
-							donorLocation={donorLocation}
-							onAbort={() => {
-								setActiveTrackingId(null);
-							}}
-							onSimulateArrival={() =>
-								trackingStatus === "accepted"
-									? handleMarkEnRoute(activeTrackingId)
-									: handleMarkArrived(activeTrackingId)
-							}
-						/>
-					</motion.div>
-				)}
-
-				<motion.div
-					variants={itemVariants}
-					className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-				>
-					<div className="space-y-8 lg:col-span-1">
-						<DeferralStatusCard
-							eligibility={eligibility}
-							lastDonationDate={lastDonationDate}
-							lastDonationDateInput={lastDonationDateInput}
-							onDateChange={setLastDonationDateInput}
-							deferralPercent={deferralPercent}
-						/>
-
-						<LocationSettingsCard
-							donorStatus={donorStatus}
-							onStatusChange={setDonorStatus}
-							donorLocation={donorLocation}
-							onLocationChange={setDonorLocation}
-							maxRadius={maxRadius}
-							onRadiusChange={setMaxRadius}
-							smsFallbackEnabled={smsFallbackEnabled}
-							onSmsFallbackChange={setSmsFallbackEnabled}
-							settingsSuccess={settingsSuccess}
-							onSave={handleSaveSettings}
-							locations={cityLabels}
-						/>
-					</div>
-
-					<div className="space-y-8 lg:col-span-2">
-						<EmergencyAlertsFeed
-							requests={requests}
-							bloodType={bloodType}
-							eligibility={eligibility}
-							donorStatus={donorStatus}
-							donorAlertStatuses={donorAlertStatuses}
-							activeTrackingId={activeTrackingId}
-							onRespond={handleRespond}
-							onDecline={handleDecline}
-							onMarkEnRoute={handleMarkEnRoute}
-							onMarkArrived={handleMarkArrived}
-						/>
-
-						<BloodSupplyChart banks={banks} bloodType={bloodType} />
-
-						<DonationHistoryCard records={donationRecords} />
 					</div>
 				</motion.div>
+			)}
 
-				<SuccessModal
-					isOpen={isSuccessModalOpen}
-					completedCount={completedCount}
-					onUpdateRecords={handleManualComplete}
-				/>
+			{activeTrackingId && activeRequest && (
+				<motion.div variants={itemVariants}>
+					<ActiveMissionTracker
+						request={activeRequest}
+						trackingStatus={trackingStatus}
+						donorLocation={donorLocation}
+						onAbort={() => {
+							setActiveTrackingId(null);
+						}}
+						onSimulateArrival={() =>
+							trackingStatus === "accepted"
+								? handleMarkEnRoute(activeTrackingId)
+								: handleMarkArrived(activeTrackingId)
+						}
+					/>
+				</motion.div>
+			)}
+
+			<motion.div
+				variants={itemVariants}
+				className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+			>
+				<div className="space-y-8 lg:col-span-1">
+					<DeferralStatusCard
+						eligibility={eligibility}
+						lastDonationDate={lastDonationDate}
+						lastDonationDateInput={lastDonationDateInput}
+						onDateChange={setLastDonationDateInput}
+						deferralPercent={deferralPercent}
+					/>
+
+					<LocationSettingsCard
+						donorStatus={donorStatus}
+						onStatusChange={setDonorStatus}
+						donorLocation={donorLocation}
+						onLocationChange={setDonorLocation}
+						maxRadius={maxRadius}
+						onRadiusChange={setMaxRadius}
+						smsFallbackEnabled={smsFallbackEnabled}
+						onSmsFallbackChange={setSmsFallbackEnabled}
+						settingsSuccess={settingsSuccess}
+						onSave={handleSaveSettings}
+						locations={cityLabels}
+					/>
+				</div>
+
+				<div className="space-y-8 lg:col-span-2">
+					<EmergencyAlertsFeed
+						requests={requests}
+						bloodType={bloodType}
+						eligibility={eligibility}
+						donorStatus={donorStatus}
+						donorAlertStatuses={donorAlertStatuses}
+						activeTrackingId={activeTrackingId}
+						onRespond={handleRespond}
+						onDecline={handleDecline}
+						onMarkEnRoute={handleMarkEnRoute}
+						onMarkArrived={handleMarkArrived}
+					/>
+
+					<BloodSupplyChart banks={banks} bloodType={bloodType} />
+
+					<DonationHistoryCard records={donationRecords} />
+				</div>
 			</motion.div>
-		</AlertCountProvider>
+
+			<SuccessModal
+				isOpen={isSuccessModalOpen}
+				completedCount={completedCount}
+				onUpdateRecords={handleManualComplete}
+			/>
+		</motion.div>
 	);
 }
