@@ -75,7 +75,7 @@ export default function DonorFinderPage() {
 				</p>
 			</header>
 
-			<div className="rounded-xl border border-border bg-white p-4">
+			<div className="rounded-xl border border-border bg-card p-4">
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					<div>
 						<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
@@ -127,7 +127,7 @@ export default function DonorFinderPage() {
 					</div>
 
 					<div className="flex items-end gap-3">
-						<label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted has-checked:border-rose-300 has-checked:bg-brand-light has-checked:text-brand">
+						<label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted has-checked:border-brand/30 has-checked:bg-brand-light has-checked:text-brand">
 							<input
 								type="checkbox"
 								checked={eligibleOnly}
@@ -152,7 +152,7 @@ export default function DonorFinderPage() {
 			</div>
 
 			{isLoading ? (
-				<div className="rounded-xl border border-border bg-white p-5">
+				<div className="rounded-xl border border-border bg-card p-5">
 					<div className="mb-4 h-5 w-48 animate-pulse rounded bg-muted" />
 					<div className="space-y-3">
 						{Array.from({ length: 5 }).map((_, i) => (
@@ -164,7 +164,7 @@ export default function DonorFinderPage() {
 					</div>
 				</div>
 			) : donors.length === 0 ? (
-				<div className="flex flex-col items-center justify-center rounded-xl border border-border bg-white px-5 py-16">
+				<div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-5 py-16">
 					<Users className="mb-3 h-10 w-10 text-muted-foreground" />
 					<h3 className="text-sm font-semibold text-foreground">
 						No donors match your search

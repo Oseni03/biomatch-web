@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import {
 	compactContainerVariants,
 	compactCardVariants,
-} from "@/components/hospital/animations";
+} from "@/lib/animations";
 import type { EligibleDonor } from "@/components/donor/eligible-donors-list";
 
 interface DonorCardsProps {

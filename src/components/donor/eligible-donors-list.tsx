@@ -1,4 +1,14 @@
-import { Users, MapPin } from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
+import { Users, MapPin, Droplet } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+	compactContainerVariants,
+	compactCardVariants,
+} from "@/lib/animations";
 
 export interface EligibleDonor {
 	id: string;
@@ -14,86 +24,108 @@ interface EligibleDonorsListProps {
 }
 
 function getEligibilityStatus(lastDonationDate: string | null) {
-	if (!lastDonationDate) return { label: "Eligible", class: "bg-emerald-50 text-emerald-700" };
+	if (!lastDonationDate)
+		return {
+			label: "Eligible",
+			class: "bg-emerald-50 text-emerald-700 border-emerald-200",
+		};
 	const daysSince = Math.floor(
-		(Date.now() - new Date(lastDonationDate).getTime()) / (1000 * 60 * 60 * 24),
+		(Date.now() - new Date(lastDonationDate).getTime()) /
+			(1000 * 60 * 60 * 24),
 	);
 	return daysSince >= 56
-		? { label: "Eligible", class: "bg-emerald-50 text-emerald-700" }
-		: { label: "Recently Donated", class: "bg-amber-50 text-amber-700" };
+		? {
+				label: "Eligible",
+				class: "bg-emerald-50 text-emerald-700 border-emerald-200",
+			}
+		: {
+				label: "Recently Donated",
+				class: "bg-amber-50 text-amber-700 border-amber-200",
+			};
 }
 
 export function EligibleDonorsList({ donors }: EligibleDonorsListProps) {
 	return (
-		<section className="rounded-xl border border-gray-200 bg-white">
-			<div className="flex items-center gap-2 border-b px-5 py-4">
-				<Users className="h-4.5 w-4.5 text-rose-600" />
-				<h2 className="text-sm font-semibold text-gray-900">
+		<section className="rounded-xl border border-border bg-card">
+			<div className="flex items-center gap-2 border-b border-border px-5 py-4">
+				<Users className="h-4.5 w-4.5 text-brand" />
+				<h2 className="text-sm font-semibold text-foreground">
 					Eligible BioMatch Donors
 				</h2>
-				<span className="ml-auto text-xs text-gray-400">
+				<span className="ml-auto text-xs text-muted-foreground">
 					Last donation 56+ days ago or never donated
 				</span>
 			</div>
 			{donors.length === 0 ? (
-				<p className="px-5 py-6 text-sm text-gray-400">
-					No eligible donors found right now.
-				</p>
-			) : (
-				<div className="overflow-x-auto">
-					<table className="w-full text-sm">
-						<thead>
-							<tr className="border-b border-gray-100 text-left text-xs font-medium text-gray-400">
-								<th className="px-5 py-3 font-medium">Name</th>
-								<th className="px-5 py-3 font-medium">Blood Group</th>
-								<th className="px-5 py-3 font-medium">Genotype</th>
-								<th className="px-5 py-3 font-medium">Location</th>
-								<th className="px-5 py-3 font-medium">Last Donation</th>
-								<th className="px-5 py-3 font-medium">Status</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-gray-100">
-							{donors.map((donor) => {
-								const status = getEligibilityStatus(donor.lastDonationDate);
-								return (
-									<tr key={donor.id} className="hover:bg-gray-50">
-										<td className="px-5 py-3 font-medium text-gray-900">
-											{donor.name}
-										</td>
-										<td className="px-5 py-3">
-											<span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
-												{donor.bloodGroup ?? "—"}
-											</span>
-										</td>
-										<td className="px-5 py-3 text-gray-600">
-											{donor.genotype ?? "—"}
-										</td>
-										<td className="px-5 py-3 text-gray-600">
-											{donor.location ? (
-												<span className="inline-flex items-center gap-1">
-													<MapPin className="h-3.5 w-3.5 text-gray-400" />
-													{donor.location}
-												</span>
-											) : (
-												"—"
-											)}
-										</td>
-										<td className="px-5 py-3 text-gray-600">
-											{donor.lastDonationDate
-												? new Date(donor.lastDonationDate).toLocaleDateString()
-												: "Never"}
-										</td>
-										<td className="px-5 py-3">
-											<span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${status.class}`}>
-												{status.label}
-											</span>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
+				<div className="flex flex-col items-center justify-center px-5 py-10 text-center">
+					<Users className="mb-2 h-6 w-6 text-muted-foreground" />
+					<p className="text-sm text-muted-foreground">
+						No eligible donors found right now.
+					</p>
 				</div>
+			) : (
+				<motion.div
+					className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3"
+					variants={compactContainerVariants}
+					initial="hidden"
+					animate="visible"
+				>
+					{donors.map((donor) => {
+						const status = getEligibilityStatus(
+							donor.lastDonationDate,
+						);
+						return (
+							<motion.div key={donor.id} variants={compactCardVariants}>
+								<Card className="flex items-start gap-3 p-4 transition-shadow hover:shadow-card-hover">
+									<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-light">
+										<Droplet
+											className="h-5 w-5 text-brand"
+											fill="currentColor"
+										/>
+									</div>
+									<div className="min-w-0 flex-1">
+										<div className="flex items-center justify-between gap-2">
+											<p className="truncate text-sm font-semibold text-foreground">
+												{donor.name}
+											</p>
+											<Badge
+												variant="outline"
+												className={cn(
+													"shrink-0 px-2 py-0.5 text-[10px]",
+													status.class,
+												)}
+											>
+												{status.label}
+											</Badge>
+										</div>
+										<div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+											<span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 font-semibold text-foreground">
+												{donor.bloodGroup ?? "\u2014"}
+											</span>
+											{donor.genotype && (
+												<span className="inline-flex items-center gap-1">
+													Geno: {donor.genotype}
+												</span>
+											)}
+											<span className="inline-flex items-center gap-1">
+												<MapPin className="h-3 w-3" />
+												{donor.location ?? "\u2014"}
+											</span>
+											<span>
+												Last:{" "}
+												{donor.lastDonationDate
+													? new Date(
+															donor.lastDonationDate,
+														).toLocaleDateString()
+													: "Never"}
+											</span>
+										</div>
+									</div>
+								</Card>
+							</motion.div>
+						);
+					})}
+				</motion.div>
 			)}
 		</section>
 	);

@@ -98,10 +98,10 @@ New server files: `servers/analytics.ts`, `servers/staff.ts`. New hook: `hooks/u
 |---|---|---|
 | 17 | Restyle dashboard bento grid widgets with new palette | ✅ |
 
-### Redesign — Issue 18 (Hospital Blood Search Cards)
+### Redesign — Issue 18 (Hospital Blood Search Cards) ✅
 | # | Task | Status |
 |---|---|---|
-| 18 | Restyle hospital blood search cards with new palette | ⬜ |
+| 18 | Restyle hospital blood search cards with new palette | ✅ |
 
 ## Non-goals (decided)
 - No `Donation` model (deferred)

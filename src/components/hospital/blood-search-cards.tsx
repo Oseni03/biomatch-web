@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CRITICAL_THRESHOLD } from "@/lib/constants";
-import { containerVariants, cardVariants } from "@/components/hospital/animations";
+import { containerVariants, cardVariants } from "@/lib/animations";
 
 const BLOOD_GROUPS = [
 	"O+",

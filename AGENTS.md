@@ -140,15 +140,15 @@ See `contexts/` directory for the detailed improvement plan:
 
 7 vertical-slice issues derived from the redesign plan. Listed in dependency order.
 
-| # | Title | Type | Blocked By |
-|---|---|---|---|
-| 12 | Design Foundation | AFK | — |
-| 13 | Landing Hero + Navbar | AFK | 12 |
-| 14 | Landing Stats + How It Works + Testimonials | AFK | 12 |
-| 15 | Landing Services + Impact + Footer | AFK | 12 |
-| 16 | Dashboard Sidebar + Top Bar | AFK | 12 |
-| 17 | Dashboard Bento Widget Restyle | AFK | 16 |
-| 18 | Hospital Blood Search Cards | AFK | 16 |
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|---|
+| 12 | Design Foundation | AFK | — | ✅ |
+| 13 | Landing Hero + Navbar | AFK | 12 | ✅ |
+| 14 | Landing Stats + How It Works + Testimonials | AFK | 12 | ✅ |
+| 15 | Landing Services + Impact + Footer | AFK | 12 | ✅ |
+| 16 | Dashboard Sidebar + Top Bar | AFK | 12 | ✅ |
+| 17 | Dashboard Bento Widget Restyle | AFK | 16 | ✅ |
+| 18 | Hospital Blood Search Cards | AFK | 16 | ✅ |
 
 ## Simplification Issues (from grilling session, 2026-07-16)
 

@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-16 — Issue 25 complete: replaced alert-context.tsx with shared useDonorAlerts query hook in sidebar.
+> Last updated: 2026-07-17 — Issue 18 complete: restyled blood search cards with new palette, converted EligibleDonorsList to card style.
 
 ```
 biomatch/
