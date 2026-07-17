@@ -30,7 +30,7 @@ export function Navbar() {
 		<motion.nav
 			initial={{ y: -20, opacity: 0 }}
 			animate={{ y: 0, opacity: 1 }}
-			transition={{ duration: 0.4, ease: "easeOut" }}
+			transition={{ duration: 0.4, ease: "easeOut" as const }}
 			className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm"
 		>
 			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">

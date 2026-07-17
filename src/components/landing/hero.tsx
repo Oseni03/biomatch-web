@@ -54,7 +54,7 @@ export function Hero() {
 					<motion.div
 						initial={{ opacity: 0, x: -30 }}
 						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.6, ease: "easeOut" }}
+						transition={{ duration: 0.6, ease: "easeOut" as const }}
 						className="flex-1 text-center lg:text-left"
 					>
 						<h1 className="text-4xl font-black tracking-tight text-foreground md:text-5xl lg:text-6xl leading-[1.1]">

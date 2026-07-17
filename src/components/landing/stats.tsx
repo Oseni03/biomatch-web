@@ -85,7 +85,7 @@ export function Stats() {
 							<motion.div
 								key={stat.label}
 								variants={cardVariants}
-								transition={{ duration: 0.4, ease: "easeOut" }}
+								transition={{ duration: 0.4, ease: "easeOut" as const }}
 								className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center shadow-card"
 							>
 								<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand">
