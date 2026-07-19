@@ -11,6 +11,7 @@ import {
 	usePendingEmergencyRequests,
 	useExpandSearchRadius,
 } from "@/hooks/use-emergency-requests";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const EXPANSION_COUNTDOWN_S = Math.floor(EXPANSION_TIMEOUT_MS / 1000);
 
@@ -163,6 +164,14 @@ export default function HospitalBroadcastsPage() {
 						{pendingServerReqs.map((req) => (
 							<LiveStatusPanel key={req.id} requestId={req.id} />
 						))}
+						{pendingRequests && pendingRequests.totalPages > 1 && (
+							<PaginationControls
+								page={page}
+								totalPages={pendingRequests.totalPages}
+								onPageChange={setPage}
+								variant="numbered"
+							/>
+						)}
 					</div>
 				) : (
 					<div className="bg-card border border-border rounded-xl p-10 text-center text-muted-foreground">

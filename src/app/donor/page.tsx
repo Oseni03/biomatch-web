@@ -29,6 +29,7 @@ import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
 import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { SuccessModal } from "@/components/donor/success-modal";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function DonorDashboardPage() {
 	const { data: session, isPending: sessionLoading } =
@@ -265,6 +266,14 @@ export default function DonorDashboardPage() {
 						onMarkEnRoute={handleMarkEnRoute}
 						onMarkArrived={handleMarkArrived}
 					/>
+					{alerts && alerts.totalPages > 1 && (
+						<PaginationControls
+							page={page}
+							totalPages={alerts.totalPages}
+							onPageChange={setPage}
+							variant="numbered"
+						/>
+					)}
 
 					<BloodSupplyChart banks={banks} bloodType={bloodType} />
 
