@@ -39,12 +39,12 @@ export default function HospitalDashboardLayout({
 }) {
 	const pathname = usePathname();
 	const { data: session } = authClient.useSession();
-	const { data: pendingRequests } = usePendingEmergencyRequests(
+	const { data: pendingData } = usePendingEmergencyRequests(
 		session?.user?.id,
 	);
 
-	const pendingServerReqs = pendingRequests ?? [];
-	const totalAlerts = pendingServerReqs.length;
+	const pendingServerReqs = pendingData?.requests ?? [];
+	const totalAlerts = pendingData?.total ?? pendingServerReqs.length;
 	const activeAlerts = pendingServerReqs.filter(
 		(r) => r.status === "pending" || r.status === "matched",
 	).length;

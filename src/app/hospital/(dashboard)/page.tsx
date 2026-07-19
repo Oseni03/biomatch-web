@@ -16,20 +16,26 @@ const EXPANSION_COUNTDOWN_S = Math.floor(EXPANSION_TIMEOUT_MS / 1000);
 
 export default function HospitalBroadcastsPage() {
 	const { data: session } = authClient.useSession();
+	const [page, setPage] = useState(1);
 	const { data: pendingRequests } = usePendingEmergencyRequests(
 		session?.user?.id,
+		{
+			page,
+			pageSize: 10,
+		},
 	);
 	const expandMutation = useExpandSearchRadius();
 
-	const pendingServerReqs = pendingRequests ?? [];
+	const pendingServerReqs = pendingRequests?.requests ?? [];
 	const hasPendingServerReq = pendingServerReqs.some(
 		(r) => r.status === "pending",
 	);
 
 	const [alertRadius, setAlertRadius] = useState(5);
 	const [totalDonors, setTotalDonors] = useState(0);
-	const [autoExpandCountdown, setAutoExpandCountdown] =
-		useState(EXPANSION_COUNTDOWN_S);
+	const [autoExpandCountdown, setAutoExpandCountdown] = useState(
+		EXPANSION_COUNTDOWN_S,
+	);
 	const [isExpandingRadius, setIsExpandingRadius] = useState(false);
 	const [expandingRequestId, setExpandingRequestId] = useState<string | null>(
 		null,
@@ -37,9 +43,15 @@ export default function HospitalBroadcastsPage() {
 
 	const lastExpandRef = useRef<number>(0);
 
+	const handleFilter = () => {
+		setPage(1);
+	};
+
 	useEffect(() => {
 		if (pendingServerReqs.length > 0) {
-			const pending = pendingServerReqs.find((r) => r.status === "pending");
+			const pending = pendingServerReqs.find(
+				(r) => r.status === "pending",
+			);
 			if (pending) {
 				setAlertRadius(pending.searchRadius);
 				setTotalDonors(pending.alerts.length);

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	getActiveEmergencyRequests,
 	getAlertsForDonor,
+	getEmergencyRequestsForHospital,
 	getPendingEmergencyRequestsForHospital,
 	getEmergencyRequestStatus,
 	getEmergencyHistory,
@@ -12,19 +13,37 @@ import {
 } from "@/servers/emergency";
 import { toast } from "sonner";
 
-export function useActiveEmergencyRequests() {
+export function useActiveEmergencyRequests(filters?: {
+	page?: number;
+	pageSize?: number;
+}) {
 	return useQuery({
-		queryKey: ["emergency-requests", "active"],
-		queryFn: () => getActiveEmergencyRequests(),
+		queryKey: ["emergency-requests", "active", filters],
+		queryFn: () => getActiveEmergencyRequests(filters),
 		refetchInterval: 15_000,
 	});
 }
 
-export function useDonorAlerts(donorId?: string) {
+export function useDonorAlerts(
+	donorId?: string,
+	filters?: { page?: number; pageSize?: number },
+) {
 	return useQuery({
-		queryKey: ["donor-alerts", donorId],
-		queryFn: () => getAlertsForDonor(donorId!),
+		queryKey: ["donor-alerts", donorId, filters],
+		queryFn: () => getAlertsForDonor(donorId!, filters),
 		enabled: !!donorId,
+		refetchInterval: 15_000,
+	});
+}
+
+export function useEmergencyRequestsForHospital(
+	hospitalId?: string,
+	filters?: { page?: number; pageSize?: number },
+) {
+	return useQuery({
+		queryKey: ["hospital-emergency-requests", hospitalId, filters],
+		queryFn: () => getEmergencyRequestsForHospital(hospitalId!, filters),
+		enabled: !!hospitalId,
 		refetchInterval: 15_000,
 	});
 }
@@ -69,10 +88,14 @@ export function useUpdateAlertStatus() {
 	});
 }
 
-export function usePendingEmergencyRequests(hospitalId?: string) {
+export function usePendingEmergencyRequests(
+	hospitalId?: string,
+	filters?: { page?: number; pageSize?: number },
+) {
 	return useQuery({
-		queryKey: ["pending-emergency-requests", hospitalId],
-		queryFn: () => getPendingEmergencyRequestsForHospital(hospitalId!),
+		queryKey: ["pending-emergency-requests", hospitalId, filters],
+		queryFn: () =>
+			getPendingEmergencyRequestsForHospital(hospitalId!, filters),
 		enabled: !!hospitalId,
 		refetchInterval: 15_000,
 	});

@@ -38,18 +38,24 @@ export interface DonationRecord {
 export type DonorStatus = "available" | "busy" | "inactive";
 
 export interface DonorAlertWithRequest {
-	id: string;
-	status: string;
-	request: {
-		bloodGroup: string;
-		unitsNeeded: number;
-		urgencyLevel: string;
+	alerts: {
+		id: string;
 		status: string;
-		createdAt: Date;
-		hospital: {
-			id: string;
-			name: string;
-			location: string | null;
+		request: {
+			bloodGroup: string;
+			unitsNeeded: number;
+			urgencyLevel: string;
+			status: string;
+			createdAt: Date;
+			hospital: {
+				id: string;
+				name: string;
+				location: string | null;
+			};
 		};
-	};
+	}[];
+	total: number;
+	page: number;
+	pageSize: number;
+	totalPages: number;
 }

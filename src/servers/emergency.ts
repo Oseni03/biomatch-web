@@ -174,89 +174,168 @@ export async function createEmergencyRequest(data: {
 	};
 }
 
-export async function getActiveEmergencyRequests() {
-	return prisma.emergencyRequest.findMany({
-		where: {
-			status: { in: ["pending", "matched"] },
-		},
-		include: {
-			hospital: {
-				select: { id: true, name: true, location: true },
+export async function getActiveEmergencyRequests(filters?: {
+	page?: number;
+	pageSize?: number;
+}) {
+	const page = filters?.page ?? 1;
+	const pageSize = filters?.pageSize ?? 10;
+
+	const [requests, total] = await Promise.all([
+		prisma.emergencyRequest.findMany({
+			where: {
+				status: { in: ["pending", "matched"] },
 			},
-			alerts: {
-				select: { id: true, donorId: true, status: true },
+			include: {
+				hospital: {
+					select: { id: true, name: true, location: true },
+				},
+				alerts: {
+					select: { id: true, donorId: true, status: true },
+				},
 			},
-		},
-		orderBy: [{ urgencyLevel: "desc" }, { createdAt: "desc" }],
-	});
+			orderBy: [{ urgencyLevel: "desc" }, { createdAt: "desc" }],
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+		}),
+		prisma.emergencyRequest.count({
+			where: { status: { in: ["pending", "matched"] } },
+		}),
+	]);
+	return {
+		requests,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+	};
 }
 
 export async function getAlertsForDonor(
 	donorId: string,
-): Promise<DonorAlertWithRequest[]> {
-	return prisma.emergencyAlert.findMany({
-		where: { donorId },
-		include: {
-			request: {
-				include: {
-					hospital: {
-						select: { id: true, name: true, location: true },
-					},
-				},
-			},
-		},
-		orderBy: { createdAt: "desc" },
-	});
-}
+	filters?: { page?: number; pageSize?: number },
+): Promise<DonorAlertWithRequest> {
+	const page = filters?.page ?? 1;
+	const pageSize = filters?.pageSize ?? 10;
 
-export async function getEmergencyRequestsForHospital(hospitalId: string) {
-	return prisma.emergencyRequest.findMany({
-		where: { hospitalId },
-		include: {
-			alerts: {
-				include: {
-					donor: {
-						select: {
-							id: true,
-							name: true,
-							bloodGroup: true,
-							location: true,
+	const [alerts, total] = await Promise.all([
+		prisma.emergencyAlert.findMany({
+			where: { donorId },
+			include: {
+				request: {
+					include: {
+						hospital: {
+							select: { id: true, name: true, location: true },
 						},
 					},
 				},
 			},
-		},
-		orderBy: { createdAt: "desc" },
-	});
+			orderBy: { createdAt: "desc" },
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+		}),
+		prisma.emergencyAlert.count({ where: { donorId } }),
+	]);
+
+	return {
+		alerts,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+	};
+}
+
+export async function getEmergencyRequestsForHospital(
+	hospitalId: string,
+	filters?: { page?: number; pageSize?: number },
+) {
+	const page = filters?.page ?? 1;
+	const pageSize = filters?.pageSize ?? 10;
+
+	const [requests, total] = await Promise.all([
+		prisma.emergencyRequest.findMany({
+			where: { hospitalId },
+			include: {
+				alerts: {
+					include: {
+						donor: {
+							select: {
+								id: true,
+								name: true,
+								bloodGroup: true,
+								location: true,
+							},
+						},
+					},
+				},
+			},
+			orderBy: { createdAt: "desc" },
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+		}),
+		prisma.emergencyRequest.count({ where: { hospitalId } }),
+	]);
+	return {
+		requests,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+	};
 }
 
 export async function getPendingEmergencyRequestsForHospital(
 	hospitalId: string,
+	filters?: {
+		page?: number;
+		pageSize?: number;
+	},
 ) {
-	return prisma.emergencyRequest.findMany({
-		where: {
-			hospitalId,
-			status: { in: ["pending", "matched"] },
-		},
-		include: {
-			alerts: {
-				select: {
-					id: true,
-					donorId: true,
-					status: true,
-					donor: {
-						select: {
-							id: true,
-							name: true,
-							location: true,
-							bloodGroup: true,
+	const page = filters?.page ?? 1;
+	const pageSize = filters?.pageSize ?? 10;
+
+	const [requests, total] = await Promise.all([
+		prisma.emergencyRequest.findMany({
+			where: {
+				hospitalId,
+				status: { in: ["pending", "matched"] },
+			},
+			include: {
+				alerts: {
+					select: {
+						id: true,
+						donorId: true,
+						status: true,
+						donor: {
+							select: {
+								id: true,
+								name: true,
+								location: true,
+								bloodGroup: true,
+							},
 						},
 					},
 				},
 			},
-		},
-		orderBy: { createdAt: "desc" },
-	});
+			orderBy: { createdAt: "desc" },
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+		}),
+		prisma.emergencyRequest.count({
+			where: {
+				hospitalId,
+				status: { in: ["pending", "matched"] },
+			},
+		}),
+	]);
+	return {
+		requests,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+	};
 }
 
 export async function expandSearchRadius(requestId: string) {

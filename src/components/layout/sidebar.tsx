@@ -66,7 +66,6 @@ const NAV_ITEMS: Record<
 			url: "/hospital/donor-finder",
 			icon: Search,
 		},
-
 	],
 };
 
@@ -90,7 +89,7 @@ export function SidebarLayout({
 	const { data: donorAlerts } = useDonorAlerts(
 		role === "donor" ? session?.user?.id : undefined,
 	);
-	const alertCount = (donorAlerts ?? []).filter(
+	const alertCount = (donorAlerts?.alerts ?? []).filter(
 		(a) =>
 			a.status === "alerted" ||
 			a.status === "accepted" ||
@@ -117,10 +116,7 @@ export function SidebarLayout({
 						</h1>
 					</div>
 					<div className="ml-auto flex items-center gap-1.5">
-						<TopBarActions
-							role={role}
-							alertCount={alertCount}
-						/>
+						<TopBarActions role={role} alertCount={alertCount} />
 						<Separator
 							orientation="vertical"
 							className="mx-1 h-5"

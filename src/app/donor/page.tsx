@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -42,7 +42,15 @@ export default function DonorDashboardPage() {
 		queryKey: ["hospital-banks"],
 		queryFn: () => getAllHospitalBanks(),
 	});
-	const { data: alerts } = useDonorAlerts(session?.user?.id);
+	const [page, setPage] = useState(1);
+
+	const handleFilter = () => {
+		setPage(1);
+	};
+	const { data: alerts } = useDonorAlerts(session?.user?.id, {
+		page,
+		pageSize: 10,
+	});
 	const { data: historyData } = useDonorHistory(1);
 	const { data: cityLabels = [] } = useQuery({
 		queryKey: ["city-labels"],
@@ -59,7 +67,7 @@ export default function DonorDashboardPage() {
 
 	const openedAlertIds = useRef<Set<string>>(new Set());
 
-	const requests: EmergencyMatchRequest[] = (alerts ?? [])
+	const requests: EmergencyMatchRequest[] = (alerts?.alerts ?? [])
 		.filter(
 			(a: { request: { status: string } }) =>
 				a.request.status === "pending" ||
@@ -94,12 +102,12 @@ export default function DonorDashboardPage() {
 		);
 
 	const donorAlertStatuses: Record<string, string> = {};
-	for (const a of alerts ?? []) {
+	for (const a of alerts?.alerts ?? []) {
 		donorAlertStatuses[a.id] = a.status;
 	}
 
 	useEffect(() => {
-		for (const a of alerts ?? []) {
+		for (const a of alerts?.alerts ?? []) {
 			if (a.status === "alerted" && !openedAlertIds.current.has(a.id)) {
 				openedAlertIds.current.add(a.id);
 				markAlertOpened(a.id).catch(() => {});
