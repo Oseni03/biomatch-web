@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-19 — Issue 29 complete: replaced in-memory hospital analytics aggregation with DB aggregation (count, groupBy, raw SQL).
+> Last updated: 2026-07-19 — Issue 30 complete: consolidated duplicate React Query caches on donor dashboard (replaced inline queries with useInventory + new useCityLabels hook).
 
 ```
 biomatch/

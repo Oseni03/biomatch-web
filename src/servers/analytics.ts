@@ -2,6 +2,7 @@
 
 import { Prisma } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { ACTIVE_ALERT_STATUSES } from "@/lib/constants";
 
 function buildCreatedAtFilter(dateRange?: {
 	startDate: string;
@@ -44,7 +45,7 @@ export async function getHospitalAnalytics(
 		prisma.emergencyAlert.count({
 			where: {
 				...alertWhere,
-				status: { in: ["accepted", "en_route", "arrived", "completed"] },
+				status: { in: [...ACTIVE_ALERT_STATUSES] },
 			},
 		}),
 		prisma.emergencyRequest.groupBy({
@@ -70,7 +71,7 @@ export async function getHospitalAnalytics(
 				${dateFilter?.gte ? Prisma.sql`AND er.created_at >= ${dateFilter.gte}::timestamp` : Prisma.empty}
 				${dateFilter?.lte ? Prisma.sql`AND er.created_at <= ${dateFilter.lte}::timestamp` : Prisma.empty}
 				AND ea.responded_at IS NOT NULL
-				AND ea.status IN ('accepted', 'en_route', 'arrived', 'completed')
+				AND ea.status IN (${Prisma.join(ACTIVE_ALERT_STATUSES)})
 		`),
 	]);
 

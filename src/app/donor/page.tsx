@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { useDonorHistory } from "@/hooks/use-donor-history";
-import { getAllHospitalBanks } from "@/servers/hospital";
-import { getAllCityLabels } from "@/servers/location";
+import { useInventory } from "@/hooks/use-inventory";
+import { useCityLabels } from "@/hooks/use-city-labels";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
@@ -39,10 +38,7 @@ export default function DonorDashboardPage() {
 		isLoading: userLoading,
 		error: userError,
 	} = useDonorDashboard();
-	const { data: banks } = useQuery({
-		queryKey: ["hospital-banks"],
-		queryFn: () => getAllHospitalBanks(),
-	});
+	const { data: banks } = useInventory();
 	const [page, setPage] = useState(1);
 
 	const handleFilter = () => {
@@ -53,10 +49,7 @@ export default function DonorDashboardPage() {
 		pageSize: 10,
 	});
 	const { data: historyData } = useDonorHistory(1);
-	const { data: cityLabels = [] } = useQuery({
-		queryKey: ["city-labels"],
-		queryFn: () => getAllCityLabels(),
-	});
+	const { data: cityLabels = [] } = useCityLabels();
 
 	const bloodType = displayBloodGroup(user?.bloodGroup);
 	const lastDonationDate = user?.lastDonationDate

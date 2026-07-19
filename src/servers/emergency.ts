@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCompatibleDonorGroups } from "@/lib/blood-compatibility";
 import { ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { ACTIVE_ALERT_STATUSES } from "@/lib/constants";
 import {
 	INITIAL_RADIUS,
 	MAX_ALERTS_PER_REQUEST,
@@ -363,12 +364,8 @@ export async function expandSearchRadius(requestId: string) {
 		};
 	}
 
-	const hasAccepted = request.alerts.some(
-		(a) =>
-			a.status === "accepted" ||
-			a.status === "en_route" ||
-			a.status === "arrived" ||
-			a.status === "completed",
+	const hasAccepted = request.alerts.some((a) =>
+		(ACTIVE_ALERT_STATUSES as readonly string[]).includes(a.status),
 	);
 
 	if (hasAccepted) {
@@ -592,12 +589,8 @@ export async function respondToAlert(
 		const allAlerts = await prisma.emergencyAlert.findMany({
 			where: { requestId: alert.requestId },
 		});
-		const hasAccepted = allAlerts.some(
-			(a) =>
-				a.status === "accepted" ||
-				a.status === "en_route" ||
-				a.status === "arrived" ||
-				a.status === "completed",
+		const hasAccepted = allAlerts.some((a) =>
+			(ACTIVE_ALERT_STATUSES as readonly string[]).includes(a.status),
 		);
 		if (hasAccepted) {
 			await prisma.emergencyRequest.update({

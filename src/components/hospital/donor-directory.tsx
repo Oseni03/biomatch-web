@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Users, Search, Phone } from "lucide-react";
 import { useEligibleDonors } from "@/hooks/use-eligible-donors";
+import { getEligibility } from "@/lib/eligibility";
 import {
 	Card,
 	CardHeader,
@@ -121,8 +122,11 @@ export function DonorDirectory() {
 						</thead>
 						<tbody className="divide-y divide-border">
 							{donors.map((donor) => {
-								const eligible = !donor.lastDonationDate ||
-									Date.now() - new Date(donor.lastDonationDate).getTime() >= 56 * 86400000;
+								const eligible = getEligibility(
+									donor.lastDonationDate
+										? new Date(donor.lastDonationDate).toISOString()
+										: null,
+								).eligible;
 								return (
 									<tr key={donor.id} className="hover:bg-muted transition">
 										<td className="py-4 px-3">
