@@ -167,6 +167,28 @@ See `contexts/` directory for the detailed improvement plan:
 
 See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details. Issue #26 is explicitly **not** ready-for-agent — it requires a human palette/contrast decision before implementation.
 
+## Optimization & Page-Decomposition Issues (from codebase audit, 2026-07-19)
+
+13 issues derived from a full-codebase optimization + "busy component/page" audit. All are independent — no dependency chain, work in any order (a few note a natural-but-not-required ordering with each other). Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 27 | Fix Nationwide N+1 Donor-Location Matching in Emergency Dispatch | AFK | — | |
+| 28 | Paginate Unbounded Emergency List Queries | AFK | — | |
+| 29 | Replace In-Memory Hospital Analytics Aggregation with DB Aggregation | AFK | — | |
+| 30 | Consolidate Duplicate React Query Caches on Donor Dashboard | AFK | — | |
+| 31 | Consolidate Redundant Polling Intervals on Hospital Dashboard | AFK | — | |
+| 32 | Add Route-Level `loading.tsx` / `error.tsx` Boundaries | AFK | — | |
+| 33 | Extract Shared Alert-Status Constant + Fix Eligibility Magic Number | AFK | — | |
+| 34 | Split Hospital Dashboard Tabs into Standalone Routes | AFK | — | |
+| 35 | Extract Shared `useLocationCascade` Hook | AFK | — | |
+| 36 | Decompose Donor Health Profile Page into Section Components | AFK | — | |
+| 37 | Extract Shared Pagination Component | AFK | — | |
+| 38 | Decompose Donor Dashboard + Alerts Feed | AFK | — | |
+| 39 | Decompose Donor History Page | AFK | — | |
+
+See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details. Issue #36 flags a product placement question (Emergency Preferences section) for human input but is otherwise ready-for-agent; #39 naturally follows #37/#38 but isn't strictly blocked by them.
+
 ## Agent skills
 
 ### Issue tracker
