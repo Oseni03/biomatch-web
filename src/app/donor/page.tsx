@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Loader2, CheckCircle2 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { useDonorHistory } from "@/hooks/use-donor-history";
 import { getAllHospitalBanks } from "@/servers/hospital";
 import { getAllCityLabels } from "@/servers/location";
-import { updateUserProfile } from "@/servers/user";
-import { respondToAlert, updateAlertStatus, markAlertOpened } from "@/servers/emergency";
+import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
 import {
 	displayBloodGroup,
 	type EmergencyMatchRequest,
-	type DonorStatus,
 } from "@/lib/donor-types";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
+import { useDonorSettingsForm } from "@/hooks/use-donor-settings-form";
 import { toast } from "sonner";
 
 import { ActiveMissionTracker } from "@/components/donor/active-mission-tracker";
@@ -28,6 +28,7 @@ import { EmergencyAlertsFeed } from "@/components/donor/emergency-alerts-feed";
 import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
 import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { SuccessModal } from "@/components/donor/success-modal";
+import { EligibilityBanner } from "@/components/donor/eligibility-banner";
 
 export default function DonorDashboardPage() {
 	const { data: session, isPending: sessionLoading } =
@@ -55,19 +56,8 @@ export default function DonorDashboardPage() {
 	const eligibility = getEligibility(lastDonationDate);
 	const walletData = user?.wallet;
 	const completedCount = walletData?.lifetimeDonations ?? 0;
-	// const points = walletData?.points ?? 0;
 
-	const [donorStatus, setDonorStatus] = useState<DonorStatus>("available");
-	const [donorLocation, setDonorLocation] = useState<string>(
-		user?.location || "",
-	);
-	const [maxRadius, setMaxRadius] = useState<number>(15);
-	const [smsFallbackEnabled, setSmsFallbackEnabled] = useState<boolean>(true);
 	const openedAlertIds = useRef<Set<string>>(new Set());
-	const [settingsSuccess, setSettingsSuccess] = useState<string>("");
-	const [lastDonationDateInput, setLastDonationDateInput] = useState<string>(
-		lastDonationDate ?? "",
-	);
 
 	const requests: EmergencyMatchRequest[] = (alerts ?? [])
 		.filter(
@@ -104,19 +94,9 @@ export default function DonorDashboardPage() {
 		);
 
 	const donorAlertStatuses: Record<string, string> = {};
-	const declinedRequestIds: string[] = [];
 	for (const a of alerts ?? []) {
 		donorAlertStatuses[a.id] = a.status;
-		if (a.status === "declined") {
-			declinedRequestIds.push(a.id);
-		}
 	}
-
-	useEffect(() => {
-		if (user?.location) setDonorLocation(user.location);
-		if (lastDonationDate) setLastDonationDateInput(lastDonationDate);
-		if (user?.isActive === false) setDonorStatus("inactive");
-	}, [user, lastDonationDate]);
 
 	useEffect(() => {
 		for (const a of alerts ?? []) {
@@ -136,122 +116,37 @@ export default function DonorDashboardPage() {
 		),
 	);
 
-	const queryClient = useQueryClient();
+	const {
+		donorStatus,
+		setDonorStatus,
+		donorLocation,
+		setDonorLocation,
+		maxRadius,
+		setMaxRadius,
+		smsFallbackEnabled,
+		setSmsFallbackEnabled,
+		settingsSuccess,
+		lastDonationDateInput,
+		setLastDonationDateInput,
+		handleSaveSettings,
+	} = useDonorSettingsForm({
+		userId: session?.user?.id,
+		userLocation: user?.location,
+		userIsActive: user?.isActive,
+		lastDonationDate,
+	});
 
-	const handleSaveSettings = useCallback(
-		async (e: React.FormEvent) => {
-			e.preventDefault();
-			if (!session?.user?.id) return;
-			try {
-				await updateUserProfile(session.user.id, {
-					location: donorLocation || undefined,
-					isActive: donorStatus !== "inactive",
-					lastDonationDate: lastDonationDateInput
-						? new Date(lastDonationDateInput)
-						: undefined,
-				});
-				setSettingsSuccess(
-					"Preferences updated successfully! Match filters updated in real-time.",
-				);
-				setTimeout(() => setSettingsSuccess(""), 4000);
-				queryClient.invalidateQueries({
-					queryKey: ["donor-dashboard"],
-				});
-				toast.success("Settings saved");
-			} catch {
-				toast.error("Failed to save settings");
-			}
-		},
-		[
-			session?.user?.id,
-			donorLocation,
-			donorStatus,
-			lastDonationDateInput,
-			queryClient,
-		],
-	);
-
-	const [activeTrackingId, setActiveTrackingId] = useState<string | null>(
-		null,
-	);
-	const [trackingStatus, setTrackingStatus] = useState<
-		"accepted" | "en_route" | "arrived"
-	>("accepted");
-	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-
-	const handleRespond = useCallback(
-		async (reqId: string) => {
-			setActiveTrackingId(reqId);
-			setTrackingStatus("accepted");
-			try {
-				await respondToAlert(reqId, "accepted");
-				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-			} catch {
-				toast.error("Failed to accept alert");
-			}
-		},
-		[queryClient],
-	);
-
-	const handleDecline = useCallback(
-		async (reqId: string) => {
-			try {
-				await respondToAlert(reqId, "declined");
-				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-				toast.success("Alert declined");
-			} catch {
-				toast.error("Failed to decline alert");
-			}
-		},
-		[queryClient],
-	);
-
-	const handleMarkEnRoute = useCallback(
-		async (reqId: string) => {
-			try {
-				await updateAlertStatus(reqId, "en_route");
-				setTrackingStatus("en_route");
-				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-				toast.success("Marked as en route");
-			} catch {
-				toast.error("Failed to update status");
-			}
-		},
-		[queryClient],
-	);
-
-	const handleMarkArrived = useCallback(
-		async (reqId: string) => {
-			try {
-				await updateAlertStatus(reqId, "arrived");
-				setTrackingStatus("arrived");
-				setIsSuccessModalOpen(true);
-				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-			} catch {
-				toast.error("Failed to update status");
-			}
-		},
-		[queryClient],
-	);
-
-	const handleManualComplete = useCallback(async () => {
-		if (activeTrackingId) {
-			try {
-				await updateAlertStatus(activeTrackingId, "completed");
-				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-				queryClient.invalidateQueries({
-					queryKey: ["donor-dashboard"],
-				});
-			} catch {
-				toast.error("Failed to update donation status");
-			}
-		}
-		setActiveTrackingId(null);
-		setIsSuccessModalOpen(false);
-		const today = new Date().toISOString().split("T")[0];
-		setLastDonationDateInput(today);
-		toast.success("Donation recorded. Deferral period reset.");
-	}, [activeTrackingId, queryClient]);
+	const {
+		activeTrackingId,
+		trackingStatus,
+		isSuccessModalOpen,
+		setActiveTrackingId,
+		handleRespond,
+		handleDecline,
+		handleMarkEnRoute,
+		handleMarkArrived,
+		handleManualComplete,
+	} = useEmergencyMissionTracker(setLastDonationDateInput);
 
 	const donationRecords = historyData?.records ?? [];
 	const activeRequest = requests.find((r) => r.id === activeTrackingId);
@@ -299,18 +194,7 @@ export default function DonorDashboardPage() {
 		>
 			{eligibility.eligible && lastDonationDate && (
 				<motion.div variants={itemVariants}>
-					<div className="bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 rounded-2xl p-4 flex items-center gap-3">
-						<CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
-						<div>
-							<p className="text-sm font-semibold text-green-800 dark:text-green-300">
-								You are eligible to donate again!
-							</p>
-							<p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-								Your 56-day deferral period has ended. Check
-								for active emergency requests above.
-							</p>
-						</div>
-					</div>
+					<EligibilityBanner />
 				</motion.div>
 			)}
 

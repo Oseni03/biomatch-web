@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useEligibleDonors } from "@/hooks/use-eligible-donors";
 import { EligibleDonorsList } from "@/components/donor/eligible-donors-list";
 import type { EligibleDonor } from "@/components/donor/eligible-donors-list";
@@ -13,6 +13,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const BLOOD_GROUPS = [
 	{ value: "A_PLUS", label: "A+" },
@@ -190,61 +191,12 @@ export default function DonorFinderPage() {
 
 					<EligibleDonorsList donors={donors} />
 
-					{totalPages > 1 && (
-						<div className="flex items-center justify-center gap-2 pt-2">
-							<button
-								onClick={() =>
-									setPage((p) => Math.max(1, p - 1))
-								}
-								disabled={page <= 1}
-								className="inline-flex h-8 items-center gap-1 rounded-lg border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
-							>
-								<ChevronLeft className="h-4 w-4" />
-								Previous
-							</button>
-
-							<div className="flex items-center gap-1">
-								{Array.from({
-									length: Math.min(totalPages, 7),
-								}).map((_, i) => {
-									let pageNum: number;
-									if (totalPages <= 7) {
-										pageNum = i + 1;
-									} else if (page <= 4) {
-										pageNum = i + 1;
-									} else if (page >= totalPages - 3) {
-										pageNum = totalPages - 6 + i;
-									} else {
-										pageNum = page - 3 + i;
-									}
-									return (
-										<button
-											key={pageNum}
-											onClick={() => setPage(pageNum)}
-											className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm transition-colors ${
-												pageNum === page
-													? "bg-brand text-white"
-													: "text-muted-foreground hover:bg-muted"
-											}`}
-										>
-											{pageNum}
-										</button>
-									);
-								})}
-							</div>
-
-							<button
-								onClick={() =>
-									setPage((p) => Math.min(totalPages, p + 1))
-								}
-								disabled={page >= totalPages}
-								className="inline-flex h-8 items-center gap-1 rounded-lg border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
-							>
-								Next
-								<ChevronRight className="h-4 w-4" />
-							</button>
-						</div>
-					)}
+					<PaginationControls
+						page={page}
+						totalPages={totalPages}
+						onPageChange={setPage}
+						variant="numbered"
+					/>
 				</>
 			)}
 		</div>

@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Activity, Sparkles, BarChart, Download } from "lucide-react";
+import { Clock, Activity, Sparkles } from "lucide-react";
 import { useHospitalAnalytics } from "@/hooks/use-analytics";
-import {
-	Card,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { exportDonationRecords } from "@/servers/analytics";
 import { toast } from "sonner";
+import { DateRangePicker } from "@/components/hospital/date-range-picker";
+import { RequestVolumeChart } from "@/components/hospital/request-volume-chart";
+import { CoverageGapsCard } from "@/components/hospital/coverage-gaps-card";
 
 interface AnalyticsDashboardProps {
 	hospitalId: string;
@@ -61,30 +59,12 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 
 	return (
 		<div className="space-y-8 animate-in fade-in duration-300">
-			<div className="flex items-center gap-4 flex-wrap">
-				<div className="flex items-center gap-2">
-					<label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-						From
-					</label>
-					<input
-						type="date"
-						value={startDate}
-						onChange={(e) => setStartDate(e.target.value)}
-						className="px-3 py-1.5 bg-muted border border-border rounded-xl text-xs font-medium"
-					/>
-				</div>
-				<div className="flex items-center gap-2">
-					<label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-						To
-					</label>
-					<input
-						type="date"
-						value={endDate}
-						onChange={(e) => setEndDate(e.target.value)}
-						className="px-3 py-1.5 bg-muted border border-border rounded-xl text-xs font-medium"
-					/>
-				</div>
-			</div>
+			<DateRangePicker
+				startDate={startDate}
+				endDate={endDate}
+				onStartDateChange={setStartDate}
+				onEndDateChange={setEndDate}
+			/>
 
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
@@ -140,90 +120,13 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 				</Card>
 			</div>
 
-			<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
-				<div className="flex justify-between items-center pb-4 border-b border-border mb-6">
-					<div>
-						<CardTitle className="text-base font-bold flex items-center gap-2">
-							<BarChart className="h-5 w-5 text-brand" />
-							Request Volume Over Time
-						</CardTitle>
-						<CardDescription className="text-xs text-muted-foreground">
-							Monthly emergency request volume
-						</CardDescription>
-					</div>
-					<button
-						onClick={handleExport}
-						className="px-3.5 py-1.5 border-border hover:bg-muted text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-					>
-						<Download className="h-3.5 w-3.5" />
-						Export CSV
-					</button>
-				</div>
-
-				<div className="h-64 flex flex-col justify-end pt-4 font-mono text-[10px] text-muted-foreground">
-					{analytics && analytics.monthlyVolume.length > 0 ? (
-						<div className="flex-1 w-full flex items-end justify-between px-6 gap-4 border-b border-border pb-2 relative">
-							{analytics.monthlyVolume.map((item, idx) => {
-								const maxCount = Math.max(
-									...analytics.monthlyVolume.map(
-										(m) => m.count,
-									),
-									1,
-								);
-								const height = (item.count / maxCount) * 100;
-								return (
-									<div
-										key={idx}
-										className="flex-1 flex flex-col items-center gap-2 group relative z-10"
-									>
-										<span className="font-bold text-brand text-[11px] group-hover:scale-110 transition-transform">
-											{item.count}
-										</span>
-										<div
-											className="w-12 bg-brand hover:bg-brand-hover rounded-t-lg transition-all duration-1000 ease-out"
-											style={{ height: `${height}%` }}
-										/>
-										<span className="text-muted-foreground uppercase text-[9px] font-semibold mt-1">
-											{item.month.slice(5)}
-										</span>
-									</div>
-								);
-							})}
-						</div>
-					) : (
-						<div className="flex-1 flex items-center justify-center text-muted-foreground">
-							No request data available yet
-						</div>
-					)}
-				</div>
-			</Card>
+			<RequestVolumeChart
+				monthlyVolume={analytics?.monthlyVolume ?? []}
+				onExport={handleExport}
+			/>
 
 			{analytics && analytics.coverageGaps.length > 0 && (
-				<Card className="bg-card border-border rounded-xl p-6 transition-shadow hover:shadow-card-hover">
-					<CardHeader className="p-0 pb-4 border-b border-border mb-6">
-						<CardTitle className="text-base font-bold">
-							Coverage Gaps
-						</CardTitle>
-						<CardDescription className="text-xs text-muted-foreground">
-							Blood groups with unfulfilled requests
-						</CardDescription>
-					</CardHeader>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-						{analytics.coverageGaps.map((gap) => (
-							<div
-								key={gap.group}
-								className="bg-brand-light rounded-xl p-4 text-center"
-							>
-								<span className="text-xl font-bold font-mono text-brand block">
-									{gap.group.replace("_", " ")}
-								</span>
-								<span className="text-xs text-muted-foreground">
-									{gap.count} unfulfilled
-								</span>
-							</div>
-						))}
-					</div>
-				</Card>
+				<CoverageGapsCard coverageGaps={analytics.coverageGaps} />
 			)}
 		</div>
 	);

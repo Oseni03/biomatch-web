@@ -180,12 +180,12 @@ See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details
 | 31 | Consolidate Redundant Polling Intervals on Hospital Dashboard | AFK | — | |
 | 32 | Add Route-Level `loading.tsx` / `error.tsx` Boundaries | AFK | — | |
 | 33 | Extract Shared Alert-Status Constant + Fix Eligibility Magic Number | AFK | — | |
-| 34 | Split Hospital Dashboard Tabs into Standalone Routes | AFK | — | |
-| 35 | Extract Shared `useLocationCascade` Hook | AFK | — | |
-| 36 | Decompose Donor Health Profile Page into Section Components | AFK | — | |
-| 37 | Extract Shared Pagination Component | AFK | — | |
-| 38 | Decompose Donor Dashboard + Alerts Feed | AFK | — | |
-| 39 | Decompose Donor History Page | AFK | — | |
+| 34 | Split Hospital Dashboard Tabs into Standalone Routes | AFK | — | ✅ |
+| 35 | Extract Shared `useLocationCascade` Hook | AFK | — | ✅ |
+| 36 | Decompose Donor Health Profile Page into Section Components | AFK | — | ✅ |
+| 37 | Extract Shared Pagination Component | AFK | — | ✅ |
+| 38 | Decompose Donor Dashboard + Alerts Feed | AFK | — | ✅ |
+| 39 | Decompose Donor History Page | AFK | — | ✅ |
 
 See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details. Issue #36 flags a product placement question (Emergency Preferences section) for human input but is otherwise ready-for-agent; #39 naturally follows #37/#38 but isn't strictly blocked by them.
 

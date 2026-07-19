@@ -8,15 +8,11 @@ import {
 	MapPin,
 	ArrowRight,
 	Target,
-	ChevronDown,
-	ChevronUp,
 	Clock,
 } from "lucide-react";
 import { displayBloodGroup } from "@/lib/donor-types";
-import {
-	useEmergencyRequestStatus,
-	useConfirmDonation,
-} from "@/hooks/use-emergency-requests";
+import { useEmergencyRequestStatus } from "@/hooks/use-emergency-requests";
+import { DonorStageList } from "@/components/hospital/donor-stage-list";
 
 interface LiveStatusPanelProps {
 	requestId: string;
@@ -76,7 +72,6 @@ const STATUS_CONFIG = [
 export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 	const { data: request, isLoading } = useEmergencyRequestStatus(requestId);
 	const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
-	const confirmDonation = useConfirmDonation();
 
 	if (isLoading) {
 		return (
@@ -159,129 +154,12 @@ export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
 			</div>
 
 			{expandedStatus && (
-				<div className="border-border rounded-2xl overflow-hidden">
-					{(() => {
-						const cfg = STATUS_CONFIG.find(
-							(s) => s.key === expandedStatus,
-						);
-						const Icon = cfg?.icon ?? Bell;
-						const filteredDonors = request.alerts.filter(
-							(a) => a.status === expandedStatus,
-						);
-						return (
-							<div>
-								<div
-									className={`${cfg?.bg ?? ""} px-4 py-2 flex items-center justify-between border-b ${cfg?.border ?? ""}`}
-								>
-									<div className="flex items-center gap-2">
-										<Icon
-											className={`h-4 w-4 ${cfg?.color ?? ""}`}
-										/>
-										<span className="text-sm font-semibold text-foreground">
-											{cfg?.label} —{" "}
-											{filteredDonors.length} donor
-											{filteredDonors.length !== 1
-												? "s"
-												: ""}
-										</span>
-									</div>
-									<button
-										onClick={() => setExpandedStatus(null)}
-										className="text-muted-foreground hover:text-muted-foreground cursor-pointer"
-									>
-										<ChevronUp className="h-4 w-4" />
-									</button>
-								</div>
-								{filteredDonors.length === 0 ? (
-									<p className="p-4 text-sm text-muted-foreground">
-										No donors in this stage.
-									</p>
-								) : (
-									<div className="divide-y divide-border">
-										{filteredDonors.map((alert) => (
-											<div
-												key={alert.id}
-												className="px-4 py-3 flex items-center justify-between gap-4"
-											>
-												<div className="flex items-center gap-3 min-w-0">
-													<div
-														className={`w-8 h-8 rounded-lg ${cfg?.bg ?? ""} flex items-center justify-center ${cfg?.color ?? ""} text-xs font-bold shrink-0`}
-													>
-														{alert.donor.name
-															?.split(" ")
-															.map(
-																(n: string) =>
-																	n[0],
-															)
-															.join("")
-															.slice(0, 2)
-															.toUpperCase() ??
-															"?"}
-													</div>
-													<div>
-														<p className="text-sm font-medium text-foreground truncate">
-															{alert.donor.name}
-														</p>
-														<p className="text-xs text-muted-foreground">
-															{displayBloodGroup(
-																alert.donor
-																	.bloodGroup,
-															)}{" "}
-															&bull;{" "}
-															{alert.donor
-																.location ??
-																"Location unknown"}
-														</p>
-													</div>
-												</div>
-												<div className="flex items-center gap-3 shrink-0">
-													<span className="text-[10px] text-muted-foreground font-mono">
-														{new Date(
-															alert.updatedAt,
-														).toLocaleTimeString(
-															[],
-															{
-																hour: "2-digit",
-																minute: "2-digit",
-															},
-														)}
-													</span>
-													{alert.status ===
-														"arrived" && (
-														<button
-															onClick={() => {
-																if (
-																	window.confirm(
-																		`Confirm donation for ${alert.donor.name}? This will update their donation record and award points.`,
-																	)
-																) {
-																	confirmDonation.mutate(
-																		{
-																			alertId:
-																				alert.id,
-																		},
-																	);
-																}
-															}}
-															disabled={
-																confirmDonation.isPending
-															}
-															className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-[10px] font-medium rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
-														>
-															{confirmDonation.isPending
-																? "Confirming..."
-																: "Confirm Donation"}
-														</button>
-													)}
-												</div>
-											</div>
-										))}
-									</div>
-								)}
-							</div>
-						);
-					})()}
-				</div>
+				<DonorStageList
+					statusKey={expandedStatus}
+					config={STATUS_CONFIG.find((s) => s.key === expandedStatus)}
+					alerts={request.alerts}
+					onClose={() => setExpandedStatus(null)}
+				/>
 			)}
 
 			<div className="flex items-center gap-2 text-xs text-muted-foreground border-t border-border pt-4">

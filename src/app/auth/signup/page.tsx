@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, ArrowLeft, Eye, EyeOff, MapPin, Clock } from "lucide-react";
@@ -15,7 +15,7 @@ import {
 import { signUpWithProfile } from "@/servers/auth";
 import { AVAILABILITY_OPTIONS } from "@/lib/availability";
 import type { Availability } from "@generated/prisma/enums";
-import { getLocations } from "@/servers/location";
+import { useLocationCascade } from "@/hooks/use-location-cascade";
 import { toast } from "sonner";
 
 export default function SignupPage() {
@@ -25,43 +25,13 @@ export default function SignupPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const [locationId, setLocationId] = useState("");
-	const [regionId, setRegionId] = useState("");
-	const [stateId, setStateId] = useState("");
-	const [cityId, setCityId] = useState("");
-	const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
-	const [states, setStates] = useState<{ id: string; name: string }[]>([]);
-	const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
+	const cascade = useLocationCascade();
+	const { regionId, stateId, cityId, regions, states, cities, locationId } =
+		cascade;
 	const [availability, setAvailability] = useState<Availability | "">("");
 	const [receiveAlerts, setReceiveAlerts] = useState(true);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-
-	useEffect(() => {
-		getLocations(null).then(setRegions);
-	}, []);
-
-	useEffect(() => {
-		if (regionId) {
-			getLocations(regionId).then(setStates);
-			setStateId("");
-			setCityId("");
-			setCities([]);
-		}
-	}, [regionId]);
-
-	useEffect(() => {
-		if (stateId) {
-			getLocations(stateId).then(setCities);
-			setCityId("");
-		}
-	}, [stateId]);
-
-	useEffect(() => {
-		if (cityId) {
-			setLocationId(cityId);
-		}
-	}, [cityId]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -252,7 +222,7 @@ export default function SignupPage() {
 									<select
 										value={regionId}
 										onChange={(e) =>
-											setRegionId(e.target.value)
+											cascade.selectRegion(e.target.value)
 										}
 										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 										required
@@ -272,7 +242,7 @@ export default function SignupPage() {
 									<select
 										value={stateId}
 										onChange={(e) =>
-											setStateId(e.target.value)
+											cascade.selectState(e.target.value)
 										}
 										disabled={!regionId}
 										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
@@ -293,7 +263,7 @@ export default function SignupPage() {
 									<select
 										value={cityId}
 										onChange={(e) =>
-											setCityId(e.target.value)
+											cascade.selectCity(e.target.value)
 										}
 										disabled={!stateId}
 										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
