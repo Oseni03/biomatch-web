@@ -175,7 +175,7 @@ See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details
 |---|---|---|---|---|
 | 27 | Fix Nationwide N+1 Donor-Location Matching in Emergency Dispatch | AFK | — | |
 | 28 | Paginate Unbounded Emergency List Queries | AFK | — | ✅ |
-| 29 | Replace In-Memory Hospital Analytics Aggregation with DB Aggregation | AFK | — | |
+| 29 | Replace In-Memory Hospital Analytics Aggregation with DB Aggregation | AFK | — | ✅ |
 | 30 | Consolidate Duplicate React Query Caches on Donor Dashboard | AFK | — | |
 | 31 | Consolidate Redundant Polling Intervals on Hospital Dashboard | AFK | — | |
 | 32 | Add Route-Level `loading.tsx` / `error.tsx` Boundaries | AFK | — | |

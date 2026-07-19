@@ -1,78 +1,87 @@
 "use server";
 
+import { Prisma } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+
+function buildCreatedAtFilter(dateRange?: {
+	startDate: string;
+	endDate: string;
+}): Prisma.DateTimeFilter | undefined {
+	if (!dateRange?.startDate && !dateRange?.endDate) return undefined;
+	const filter: Prisma.DateTimeFilter = {};
+	if (dateRange.startDate) filter.gte = new Date(dateRange.startDate);
+	if (dateRange.endDate)
+		filter.lte = new Date(dateRange.endDate + "T23:59:59.999Z");
+	return filter;
+}
 
 export async function getHospitalAnalytics(
 	hospitalId: string,
 	dateRange?: { startDate: string; endDate: string },
 ) {
-	const where: Record<string, unknown> = { hospitalId };
-	if (dateRange?.startDate || dateRange?.endDate) {
-		const createdAt: Record<string, Date> = {};
-		if (dateRange.startDate) createdAt.gte = new Date(dateRange.startDate);
-		if (dateRange.endDate) createdAt.lte = new Date(dateRange.endDate + "T23:59:59.999Z");
-		where.createdAt = createdAt;
-	}
-	const allRequests = await prisma.emergencyRequest.findMany({
-		where,
-		include: {
-			alerts: {
-				select: {
-					status: true,
-					createdAt: true,
-					respondedAt: true,
-				},
+	const dateFilter = buildCreatedAtFilter(dateRange);
+	const requestWhere = dateFilter
+		? { hospitalId, createdAt: dateFilter }
+		: { hospitalId };
+	const alertWhere = dateFilter
+		? { request: { hospitalId, createdAt: dateFilter } }
+		: { request: { hospitalId } };
+
+	const [
+		totalRequests,
+		fulfilledRequests,
+		totalAlerts,
+		acceptedAlerts,
+		gapGroups,
+		monthlyRows,
+		avgResponseTimeResult,
+	] = await Promise.all([
+		prisma.emergencyRequest.count({ where: requestWhere }),
+		prisma.emergencyRequest.count({
+			where: { ...requestWhere, status: "fulfilled" },
+		}),
+		prisma.emergencyAlert.count({ where: alertWhere }),
+		prisma.emergencyAlert.count({
+			where: {
+				...alertWhere,
+				status: { in: ["accepted", "en_route", "arrived", "completed"] },
 			},
-		},
-		orderBy: { createdAt: "asc" },
-	});
+		}),
+		prisma.emergencyRequest.groupBy({
+			by: ["bloodGroup"],
+			where: { ...requestWhere, status: { not: "fulfilled" } },
+			_count: { bloodGroup: true },
+		}),
+		prisma.emergencyRequest.findMany({
+			where: requestWhere,
+			select: { createdAt: true },
+			orderBy: { createdAt: "asc" },
+		}),
+		prisma.$queryRaw<Array<{ avg: number | null }>>(Prisma.sql`
+			SELECT
+				ROUND(
+					AVG(
+						EXTRACT(EPOCH FROM (ea.responded_at - ea.created_at)) / 60
+					)
+				)::integer AS avg
+			FROM emergency_alerts ea
+			JOIN emergency_requests er ON er.id = ea.request_id
+			WHERE er.hospital_id = ${hospitalId}::uuid
+				${dateFilter?.gte ? Prisma.sql`AND er.created_at >= ${dateFilter.gte}::timestamp` : Prisma.empty}
+				${dateFilter?.lte ? Prisma.sql`AND er.created_at <= ${dateFilter.lte}::timestamp` : Prisma.empty}
+				AND ea.responded_at IS NOT NULL
+				AND ea.status IN ('accepted', 'en_route', 'arrived', 'completed')
+		`),
+	]);
 
-	const totalRequests = allRequests.length;
-	const totalAlerts = allRequests.reduce(
-		(sum, r) => sum + r.alerts.length,
-		0,
-	);
-	const acceptedAlerts = allRequests.reduce(
-		(sum, r) =>
-			sum +
-			r.alerts.filter((a) =>
-				["accepted", "en_route", "arrived", "completed"].includes(
-					a.status,
-				),
-			).length,
-		0,
-	);
-	const fulfilledRequests = allRequests.filter(
-		(r) => r.status === "fulfilled",
-	).length;
-	const responseTimes = allRequests.flatMap((r) =>
-		r.alerts
-			.filter(
-				(a) =>
-					a.respondedAt &&
-					["accepted", "en_route", "arrived", "completed"].includes(
-						a.status,
-					),
-			)
-			.map((a) =>
-				Math.round(
-					(a.respondedAt!.getTime() - a.createdAt.getTime()) / 60000,
-				),
-			),
-	);
-
-	const avgResponseTime =
-		responseTimes.length > 0
-			? Math.round(
-					responseTimes.reduce((s, t) => s + t, 0) /
-						responseTimes.length,
-				)
-			: 0;
+	const avgResponseTime = avgResponseTimeResult[0]?.avg ?? 0;
 
 	const responseRate =
-		totalAlerts > 0 ? Math.round((acceptedAlerts / totalAlerts) * 100) : 0;
+		totalAlerts > 0
+			? Math.round((acceptedAlerts / totalAlerts) * 100)
+			: 0;
 
-	const monthlyVolume = allRequests.reduce(
+	const monthlyVolumeMap = monthlyRows.reduce(
 		(acc, r) => {
 			const month = r.createdAt.toISOString().slice(0, 7);
 			acc[month] = (acc[month] ?? 0) + 1;
@@ -81,28 +90,22 @@ export async function getHospitalAnalytics(
 		{} as Record<string, number>,
 	);
 
-	const coverageGaps: Record<string, number> = {};
-	for (const r of allRequests) {
-		if (r.status !== "fulfilled") {
-			const bg =
-				typeof r.bloodGroup === "string" ? r.bloodGroup : "unknown";
-			coverageGaps[bg] = (coverageGaps[bg] ?? 0) + 1;
-		}
-	}
+	const monthlyVolume = Object.entries(monthlyVolumeMap).map(
+		([month, count]) => ({ month, count }),
+	);
+
+	const coverageGaps = gapGroups.map((g) => ({
+		group: g.bloodGroup,
+		count: g._count.bloodGroup,
+	}));
 
 	return {
 		avgResponseTime,
 		responseRate,
 		fulfilledRequests,
 		totalRequests,
-		monthlyVolume: Object.entries(monthlyVolume).map(([month, count]) => ({
-			month,
-			count,
-		})),
-		coverageGaps: Object.entries(coverageGaps).map(([group, count]) => ({
-			group,
-			count,
-		})),
+		monthlyVolume,
+		coverageGaps,
 	};
 }
 
@@ -110,13 +113,12 @@ export async function exportDonationRecords(
 	hospitalId: string,
 	dateRange?: { startDate: string; endDate: string },
 ) {
-	const where: Record<string, unknown> = { hospitalId, status: "fulfilled" };
-	if (dateRange?.startDate || dateRange?.endDate) {
-		const createdAt: Record<string, Date> = {};
-		if (dateRange.startDate) createdAt.gte = new Date(dateRange.startDate);
-		if (dateRange.endDate) createdAt.lte = new Date(dateRange.endDate + "T23:59:59.999Z");
-		where.createdAt = createdAt;
-	}
+	const dateFilter = buildCreatedAtFilter(dateRange);
+	const where: Record<string, unknown> = {
+		hospitalId,
+		status: "fulfilled",
+		...(dateFilter ? { createdAt: dateFilter } : {}),
+	};
 	const requests = await prisma.emergencyRequest.findMany({
 		where,
 		include: {
