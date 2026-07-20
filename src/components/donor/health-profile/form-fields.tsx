@@ -1,5 +1,5 @@
 export const inputClass =
-	"mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring";
+	"w-full rounded-xl border-border bg-muted px-3.5 py-2.5 text-xs text-foreground outline-none transition-colors focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
 export function Field({
 	label,
@@ -14,8 +14,8 @@ export function Field({
 }) {
 	return (
 		<label className={`block ${className ?? ""}`}>
-			<span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-				{Icon && <Icon className="h-3.5 w-3.5" />}
+			<span className="mb-1.5 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+				{Icon && <Icon className="h-3 w-3" />}
 				{label}
 			</span>
 			{children}
