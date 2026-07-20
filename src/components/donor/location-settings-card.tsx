@@ -8,6 +8,8 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import type { DonorStatus } from "@/lib/donor-types";
 
 interface LocationSettingsCardProps {
@@ -51,7 +53,7 @@ export function LocationSettingsCard({
 
 			<CardContent className="p-0">
 				{settingsSuccess && (
-					<div className="p-3 mb-4 text-xs text-green-700 bg-green-50 border border-green-200 rounded-2xl">
+					<div className="p-3 mb-4 text-xs text-status-ok bg-status-ok-bg border border-status-ok/20 rounded-2xl">
 						{settingsSuccess}
 					</div>
 				)}
@@ -133,22 +135,15 @@ export function LocationSettingsCard({
 								Receive SMS if push unopened in 2m
 							</span>
 						</div>
-						<input
-							type="checkbox"
+						<Switch
 							checked={smsFallbackEnabled}
-							onChange={(e) =>
-								onSmsFallbackChange(e.target.checked)
-							}
-							className="h-4 w-4 rounded border-input text-brand focus:ring-ring accent-brand"
+							onCheckedChange={onSmsFallbackChange}
 						/>
 					</div>
 
-					<button
-						type="submit"
-						className="w-full py-2.5 bg-brand hover:bg-brand-hover text-white font-semibold text-xs rounded-xl transition shadow active:scale-95"
-					>
+					<Button type="submit" className="w-full">
 						Save Profile Settings
-					</button>
+					</Button>
 				</form>
 			</CardContent>
 		</Card>

@@ -5,20 +5,15 @@ import {
 	AlertTriangle,
 } from "lucide-react";
 import { displayBloodGroup } from "@/lib/donor-types";
+import { StatusTag } from "@/components/brand/status-tag";
 
-const STATUS_BADGE: Record<string, { label: string; color: string }> = {
-	fulfilled: {
-		label: "Fulfilled",
-		color: "text-green-600 bg-green-50 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-900/50",
-	},
-	expired: {
-		label: "Expired",
-		color: "text-brand bg-brand-light border-brand/20",
-	},
-	cancelled: {
-		label: "Cancelled",
-		color: "text-muted-foreground bg-muted border-border",
-	},
+const STATUS_BADGE: Record<
+	string,
+	{ label: string; status: "ok" | "critical" | "info" }
+> = {
+	fulfilled: { label: "Fulfilled", status: "ok" },
+	expired: { label: "Expired", status: "critical" },
+	cancelled: { label: "Cancelled", status: "info" },
 };
 
 const FUNNEL_LABELS = [
@@ -62,7 +57,7 @@ export function RequestFunnelCard({
 }: RequestFunnelCardProps) {
 	const badge = STATUS_BADGE[req.status] ?? {
 		label: req.status,
-		color: "text-muted-foreground bg-muted border-border",
+		status: "info" as const,
 	};
 	const shortfallStages = FUNNEL_LABELS.filter(
 		(f) => req.aggregates[f.key] === 0,
@@ -84,11 +79,7 @@ export function RequestFunnelCard({
 							{req.unitsNeeded > 1 ? "s" : ""}
 						</span>
 					</div>
-					<span
-						className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${badge.color}`}
-					>
-						{badge.label}
-					</span>
+					<StatusTag status={badge.status}>{badge.label}</StatusTag>
 					{req.aggregates.alerted === 0 && req.status === "expired" && (
 						<span className="text-[10px] font-mono text-brand flex items-center gap-1">
 							<AlertTriangle className="h-3 w-3" />
@@ -98,7 +89,7 @@ export function RequestFunnelCard({
 					{req.aggregates.accepted === 0 &&
 						req.aggregates.alerted > 0 &&
 						req.status === "expired" && (
-							<span className="text-[10px] font-mono text-orange-500 flex items-center gap-1">
+							<span className="text-[10px] font-mono text-status-low flex items-center gap-1">
 								<AlertTriangle className="h-3 w-3" />
 								No donors accepted
 							</span>
@@ -128,12 +119,12 @@ export function RequestFunnelCard({
 									className={`p-2 rounded-xl text-center border ${
 										isZero
 											? "border-brand/20 bg-brand-light"
-											: "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/10"
+											: "border-status-ok/20 bg-status-ok-bg"
 									}`}
 								>
 									<span
 										className={`text-lg font-bold font-mono block ${
-											isZero ? "text-brand" : "text-green-600"
+											isZero ? "text-brand" : "text-status-ok"
 										}`}
 									>
 										{count}
@@ -147,7 +138,7 @@ export function RequestFunnelCard({
 					</div>
 
 					{shortfallStages.length > 0 && req.status === "expired" && (
-						<div className="p-3 bg-orange-50 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-900/50 rounded-xl text-xs text-orange-700 dark:text-orange-400 flex items-start gap-2">
+						<div className="p-3 bg-status-low-bg border border-status-low/20 rounded-xl text-xs text-status-low flex items-start gap-2">
 							<AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
 							<span>
 								Shortfall detected at:{" "}

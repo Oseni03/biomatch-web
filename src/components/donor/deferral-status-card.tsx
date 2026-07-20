@@ -76,8 +76,8 @@ export function DeferralStatusCard({
 							</>
 						) : (
 							<>
-								<CheckCircle className="h-10 w-10 text-green-500 animate-pulse mb-1" />
-								<span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">
+								<CheckCircle className="h-10 w-10 text-status-ok animate-pulse mb-1" />
+								<span className="text-xs font-bold text-status-ok uppercase tracking-wider">
 									Eligible Now
 								</span>
 							</>

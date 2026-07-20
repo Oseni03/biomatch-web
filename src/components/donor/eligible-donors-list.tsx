@@ -3,8 +3,8 @@
 import { motion } from "framer-motion";
 import { Users, MapPin, Droplet } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { StatusTag } from "@/components/brand/status-tag";
+import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import {
 	compactContainerVariants,
 	compactCardVariants,
@@ -25,23 +25,14 @@ interface EligibleDonorsListProps {
 
 function getEligibilityStatus(lastDonationDate: string | null) {
 	if (!lastDonationDate)
-		return {
-			label: "Eligible",
-			class: "bg-emerald-50 text-emerald-700 border-emerald-200",
-		};
+		return { label: "Eligible", status: "ok" as const };
 	const daysSince = Math.floor(
 		(Date.now() - new Date(lastDonationDate).getTime()) /
 			(1000 * 60 * 60 * 24),
 	);
 	return daysSince >= 56
-		? {
-				label: "Eligible",
-				class: "bg-emerald-50 text-emerald-700 border-emerald-200",
-			}
-		: {
-				label: "Recently Donated",
-				class: "bg-amber-50 text-amber-700 border-amber-200",
-			};
+		? { label: "Eligible", status: "ok" as const }
+		: { label: "Recently Donated", status: "low" as const };
 }
 
 export function EligibleDonorsList({ donors }: EligibleDonorsListProps) {
@@ -88,20 +79,22 @@ export function EligibleDonorsList({ donors }: EligibleDonorsListProps) {
 											<p className="truncate text-sm font-semibold text-foreground">
 												{donor.name}
 											</p>
-											<Badge
-												variant="outline"
-												className={cn(
-													"shrink-0 px-2 py-0.5 text-[10px]",
-													status.class,
-												)}
+											<StatusTag
+												status={status.status}
+												className="shrink-0"
 											>
 												{status.label}
-											</Badge>
+											</StatusTag>
 										</div>
 										<div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-											<span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 font-semibold text-foreground">
-												{donor.bloodGroup ?? "\u2014"}
-											</span>
+											{donor.bloodGroup ? (
+												<BloodTypeBadge
+													bloodGroup={donor.bloodGroup}
+													size="sm"
+												/>
+											) : (
+												<span>{"\u2014"}</span>
+											)}
 											{donor.genotype && (
 												<span className="inline-flex items-center gap-1">
 													Geno: {donor.genotype}

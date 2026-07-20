@@ -34,7 +34,7 @@ The Prisma client is generated to `generated/prisma` (not `node_modules/.prisma`
 - `@generated/*` → `generated/*` (Prisma client output)
 
 ### Request flow / auth guard
-Route protection lives in **`proxy.ts`** at the repo root (Next.js's newer replacement for `middleware.ts` — it exports a `proxy()` function, not `middleware()`). It checks the better-auth session via `auth.api.getSession()` and redirects based on `session.user.role` (`donor` | `hospital` | `admin`). Public routes are `/`, `/auth/login`, `/auth/signup`, `/api/auth`. If you're hunting for RBAC logic, look here, not in a `middleware.ts` file — don't recreate one.
+Route protection lives in **`src/proxy.ts`** (Next.js's newer replacement for `middleware.ts` — it exports a `proxy()` function, not `middleware()`). It must live inside `src/` alongside `src/app`, not at the repo root — Next 16 only picks up `proxy.ts` at the same level as the `app`/`pages` directory, and a root-level file is silently never invoked, leaving every route unprotected. It checks the better-auth session via `auth.api.getSession()` and redirects based on `session.user.role` (`donor` | `hospital` | `admin`). Public routes are `/`, `/auth/login`, `/auth/signup`, `/api/auth`. If you're hunting for RBAC logic, look here, not in a `middleware.ts` file — don't recreate one.
 
 ### Directory layout (under `src/`)
 - `app/` — Next.js App Router pages. Each role section (`donor/`, `hospital/`) has its own `layout.tsx` wrapping children in `SidebarLayout` from `components/layout/sidebar.tsx`.

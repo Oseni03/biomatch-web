@@ -9,6 +9,7 @@ import {
 	useLocalDemandStats,
 } from "@/hooks/use-donor-history";
 import { getEligibility } from "@/lib/eligibility";
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
 import { DonationStatsGrid } from "@/components/donor/donation-stats-grid";
 import { LocalDemandCard } from "@/components/donor/local-demand-card";
@@ -53,25 +54,21 @@ export default function DonorHistoryPage() {
 
 	return (
 		<div className="space-y-8">
-			<div>
-				<h1 className="text-2xl font-bold text-foreground">
-					Donation History & Impact
-				</h1>
-				<p className="text-sm text-muted-foreground mt-1">
-					Track your life-saving contributions and local demand
-				</p>
-			</div>
+			<DashboardGreeting
+				title="Donation History & Impact"
+				subtitle="Track your life-saving contributions and local demand"
+			/>
 
 			{eligibility.eligible && lastDonationDate && <EligibilityBanner />}
 
 			{!eligibility.eligible && lastDonationDate && (
-				<div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 flex items-center gap-3">
-					<Calendar className="h-5 w-5 text-amber-600 shrink-0" />
+				<div className="bg-status-low-bg border border-status-low/20 rounded-2xl p-4 flex items-center gap-3">
+					<Calendar className="h-5 w-5 text-status-low shrink-0" />
 					<div>
-						<p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+						<p className="text-sm font-semibold text-status-low">
 							Deferral period active
 						</p>
-						<p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+						<p className="text-xs text-status-low/80 mt-0.5">
 							{eligibility.daysRemaining} day
 							{eligibility.daysRemaining !== 1 ? "s" : ""}{" "}
 							remaining until you can donate again. Last

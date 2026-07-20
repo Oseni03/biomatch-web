@@ -3,14 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-	Heart,
-	ArrowLeft,
-	Eye,
-	EyeOff,
-	Mail,
-	Lock,
-} from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -20,6 +13,14 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+
+const STATS = [
+	{ value: "2.3x", label: "Faster response" },
+	{ value: "94%", label: "Donor activation" },
+	{ value: "99.2%", label: "Match accuracy" },
+];
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -55,45 +56,41 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="min-h-screen w-full flex items-center justify-center p-6 bg-background">
-			<div className="absolute top-8 left-6 md:left-12">
-				<Button
-					asChild
-					variant="outline"
-					className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 bg-muted border-border px-4 py-2 h-10 rounded-2xl"
-				>
-					<Link href="/">
-						<ArrowLeft className="h-4 w-4" />
-						Back to Home
-					</Link>
-				</Button>
-			</div>
-
-			<Card className="w-full max-w-md rounded-3xl p-2 shadow-sm relative overflow-hidden">
-				<div className="absolute inset-0 bg-[radial-gradient(#ef444408_0.8px,transparent_1px)] bg-[length:4px_4px] pointer-events-none" />
-
-				<CardHeader className="text-center relative pb-2 pt-6">
-					<div className="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-4 scale-100 hover:scale-105 transition-transform duration-300">
-						<Heart className="h-5 w-5 text-white fill-current animate-pulse" />
+		<AuthShell
+			eyebrow="Welcome Back"
+			headline={
+				<>
+					Sign in to the network
+					<br />
+					that <span className="italic text-brand">saves lives.</span>
+				</>
+			}
+			description="Every donor and hospital on BioMatch is verified in real time — pick up right where you left off."
+			stats={STATS}
+		>
+			<Card className="rounded-3xl p-2">
+				<CardHeader className="relative pb-2 pt-6 text-center">
+					<div className="mx-auto mb-4 flex h-10 w-10 scale-100 items-center justify-center rounded-2xl bg-brand transition-transform duration-300 hover:scale-105">
+						<BloodDropIcon className="h-5 w-5 text-white" />
 					</div>
 					<CardTitle className="text-3xl font-semibold tracking-tighter">
 						Welcome back
 					</CardTitle>
-					<CardDescription className="text-sm text-muted-foreground mt-2">
+					<CardDescription className="mt-2 text-sm text-muted-foreground">
 						Sign in to access your dashboard
 					</CardDescription>
 				</CardHeader>
 
 				<CardContent className="p-6 pt-0">
 					{error && (
-						<div className="p-4 mb-6 text-sm text-brand bg-brand-light rounded-2xl border border-brand/20">
+						<div className="mb-6 rounded-2xl border border-brand/20 bg-brand-light p-4 text-sm text-brand">
 							{error}
 						</div>
 					)}
 
 					<form onSubmit={handleSubmit} className="space-y-6">
 						<div>
-							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+							<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 								Email Address
 							</label>
 							<div className="relative">
@@ -104,19 +101,19 @@ export default function LoginPage() {
 									type="email"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
-									placeholder={"example@biomatch.org"}
-									className="w-full pl-11 pr-4 py-4 bg-muted border-border rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-all"
+									placeholder="example@biomatch.org"
+									className="w-full rounded-2xl border-border bg-muted py-4 pl-11 pr-4 text-sm transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
 									required
 								/>
 							</div>
 						</div>
 
 						<div>
-							<div className="flex items-center justify-between mb-2">
-								<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase">
+							<div className="mb-2 flex items-center justify-between">
+								<label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 									Password
 								</label>
-								<span className="text-xs text-brand hover:text-brand-hover cursor-pointer">
+								<span className="cursor-pointer text-xs text-brand hover:text-brand-hover">
 									Forgot password?
 								</span>
 							</div>
@@ -127,19 +124,15 @@ export default function LoginPage() {
 								<input
 									type={showPassword ? "text" : "password"}
 									value={password}
-									onChange={(e) =>
-										setPassword(e.target.value)
-									}
+									onChange={(e) => setPassword(e.target.value)}
 									placeholder="••••••••"
-									className="w-full pl-11 pr-12 py-4 bg-muted border-border rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-all"
+									className="w-full rounded-2xl border-border bg-muted py-4 pl-11 pr-12 text-sm transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
 									required
 								/>
 								<button
 									type="button"
-									onClick={() =>
-										setShowPassword(!showPassword)
-									}
-									className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground"
+									onClick={() => setShowPassword(!showPassword)}
+									className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-foreground"
 								>
 									{showPassword ? (
 										<EyeOff className="h-4 w-4" />
@@ -153,15 +146,15 @@ export default function LoginPage() {
 						<Button
 							type="submit"
 							disabled={isLoading}
-							className="w-full py-6 font-medium rounded-2xl text-sm"
+							className="w-full rounded-2xl py-6 text-sm font-medium"
 						>
-							{isLoading ? "Authenticating..." : `Sign in`}
+							{isLoading ? "Authenticating..." : "Sign in"}
 						</Button>
 					</form>
 
-					<div className="mt-8 pt-6 border-t border-border text-center">
+					<div className="mt-8 border-t border-border pt-6 text-center">
 						<p className="text-sm text-muted-foreground">
-							Don't have an account?{" "}
+							Don&apos;t have an account?{" "}
 							<Link
 								href="/auth/signup"
 								className="font-medium text-brand hover:text-brand-hover"
@@ -172,6 +165,6 @@ export default function LoginPage() {
 					</div>
 				</CardContent>
 			</Card>
-		</div>
+		</AuthShell>
 	);
 }

@@ -1,4 +1,5 @@
 import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { displayBloodGroup, BLOOD_GROUP_MAP } from "@/lib/donor-types";
 
 const BLOOD_GROUPS = Object.keys(BLOOD_GROUP_MAP);
@@ -99,12 +100,9 @@ export function HistoryFilterBar({
 					</select>
 				</div>
 				<div className="flex items-end">
-					<button
-						onClick={onApply}
-						className="w-full rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-medium px-4 py-2 transition cursor-pointer"
-					>
+					<Button onClick={onApply} className="w-full">
 						Apply Filters
-					</button>
+					</Button>
 				</div>
 			</div>
 		</div>

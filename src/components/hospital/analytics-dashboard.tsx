@@ -87,9 +87,9 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 						<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
 							Donor Alert Conversion
 						</span>
-						<Activity className="h-5 w-5 text-green-600" />
+						<Activity className="h-5 w-5 text-status-ok" />
 					</div>
-					<h4 className="text-3xl font-bold font-mono tracking-tight text-green-600">
+					<h4 className="text-3xl font-bold font-mono tracking-tight text-status-ok">
 						{analytics?.responseRate ?? 0}%
 					</h4>
 					<p className="text-xs text-muted-foreground mt-2">
@@ -102,9 +102,9 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 						<span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
 							Fulfillment Rate
 						</span>
-						<Sparkles className="h-5 w-5 text-blue-600" />
+						<Sparkles className="h-5 w-5 text-status-info" />
 					</div>
-					<h4 className="text-3xl font-bold font-mono tracking-tight text-blue-600">
+					<h4 className="text-3xl font-bold font-mono tracking-tight text-status-info">
 						{analytics && analytics.totalRequests > 0
 							? Math.round(
 									(analytics.fulfilledRequests /

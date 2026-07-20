@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { StatusTag } from "@/components/brand/status-tag";
+import { Button } from "@/components/ui/button";
 import type { EmergencyMatchRequest, DonorStatus } from "@/lib/donor-types";
 import type { EligibilityResult } from "@/lib/eligibility";
 
@@ -153,33 +154,36 @@ export function AlertCard({
 
 				<div className="flex gap-2 w-full sm:w-auto">
 					{isDeclined ? (
-						<button
+						<Button
+							variant="outline"
+							size="sm"
 							onClick={onToggleCollapse}
-							className="px-3 py-1.5 border-border text-muted-foreground hover:bg-muted transition"
 						>
 							Hide
-						</button>
+						</Button>
 					) : isApproved ? (
 						<>
 							{alertStatus === "accepted" && (
-								<button
+								<Button
+									size="sm"
 									onClick={() => onMarkEnRoute(request.id)}
 									disabled={isTrackingThis}
-									className="px-4 py-2 bg-status-info hover:opacity-90 text-white rounded-2xl text-xs font-semibold transition flex items-center gap-1.5 disabled:opacity-40"
+									className="bg-status-info text-white hover:bg-status-info hover:opacity-90 hover:scale-100"
 								>
 									<Navigation className="h-3.5 w-3.5" />
 									Mark En Route
-								</button>
+								</Button>
 							)}
 							{alertStatus === "en_route" && (
-								<button
+								<Button
+									size="sm"
 									onClick={() => onMarkArrived(request.id)}
 									disabled={isTrackingThis}
-									className="px-4 py-2 bg-status-ok hover:opacity-90 text-white rounded-2xl text-xs font-semibold transition flex items-center gap-1.5 disabled:opacity-40"
+									className="bg-status-ok text-white hover:bg-status-ok hover:opacity-90 hover:scale-100"
 								>
 									<LogIn className="h-3.5 w-3.5" />
 									Mark Arrived
-								</button>
+								</Button>
 							)}
 							{(alertStatus === "arrived" ||
 								alertStatus === "completed") && (
@@ -191,19 +195,21 @@ export function AlertCard({
 						</>
 					) : (
 						<>
-							<button
+							<Button
+								variant="outline"
+								size="sm"
 								onClick={() => onDecline(request.id)}
-								className="px-4 py-2 border-border text-muted-foreground hover:text-brand hover:bg-muted rounded-lg transition"
+								className="text-muted-foreground hover:text-brand"
 							>
 								Decline
-							</button>
-							<button
+							</Button>
+							<Button
+								size="sm"
 								onClick={() => onRespond(request.id)}
 								disabled={
 									!eligibility.eligible ||
 									donorStatus !== "available"
 								}
-								className="px-5 py-2 bg-brand hover:bg-brand-deep text-white rounded-2xl text-xs font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
 								title={
 									!eligibility.eligible
 										? "You must wait until deferral period is complete"
@@ -211,7 +217,7 @@ export function AlertCard({
 								}
 							>
 								Accept and Depart
-							</button>
+							</Button>
 						</>
 					)}
 				</div>

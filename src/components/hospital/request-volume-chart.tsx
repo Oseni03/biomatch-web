@@ -1,5 +1,6 @@
 import { BarChart, Download } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface MonthlyVolumePoint {
 	month: string;
@@ -27,13 +28,10 @@ export function RequestVolumeChart({
 						Monthly emergency request volume
 					</CardDescription>
 				</div>
-				<button
-					onClick={onExport}
-					className="px-3.5 py-1.5 border-border hover:bg-muted text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-				>
+				<Button variant="outline" size="sm" onClick={onExport}>
 					<Download className="h-3.5 w-3.5" />
 					Export CSV
-				</button>
+				</Button>
 			</div>
 
 			<div className="h-64 flex flex-col justify-end pt-4 font-mono text-[10px] text-muted-foreground">

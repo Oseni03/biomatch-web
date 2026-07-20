@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Send, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { EmergencyMatchRequest } from "@/lib/donor-types";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -60,13 +61,14 @@ export function EmergencyRequestForm({
 	if (!showCreateForm) {
 		return (
 			<div className="flex justify-end">
-				<button
+				<Button
+					size="lg"
 					onClick={() => setShowCreateForm(true)}
-					className="bg-brand hover:bg-brand-hover text-white text-xs font-semibold px-5 py-3 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 active:scale-95 transition"
+					className="shadow-md"
 				>
 					<Plus className="h-4 w-4" />
 					Launch Emergency Match Request
-				</button>
+				</Button>
 			</div>
 		);
 	}
@@ -83,7 +85,7 @@ export function EmergencyRequestForm({
 			</p>
 
 			{formSuccess && (
-				<div className="p-4 mb-6 text-xs text-green-700 bg-green-50 border border-green-200 rounded-2xl animate-fade-in">
+				<div className="p-4 mb-6 text-xs text-status-ok bg-status-ok-bg border border-status-ok/20 rounded-2xl animate-fade-in">
 					{formSuccess}
 				</div>
 			)}
@@ -163,20 +165,18 @@ export function EmergencyRequestForm({
 				</div>
 
 				<div className="md:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t border-border">
-					<button
+					<Button
 						type="button"
+						variant="outline"
+						size="lg"
 						onClick={() => setShowCreateForm(false)}
-						className="px-5 py-3 rounded-2xl border-border text-xs hover:bg-muted transition"
 					>
 						Cancel
-					</button>
-					<button
-						type="submit"
-						className="px-6 py-3 bg-brand hover:bg-brand-hover text-white font-medium rounded-2xl text-xs shadow flex items-center gap-2"
-					>
+					</Button>
+					<Button type="submit" size="lg" className="shadow">
 						<Send className="h-4 w-4" />
 						Launch Live Broadcast
-					</button>
+					</Button>
 				</div>
 			</form>
 		</Card>

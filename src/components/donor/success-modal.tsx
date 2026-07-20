@@ -2,6 +2,7 @@
 
 import { CheckCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface SuccessModalProps {
 	isOpen: boolean;
@@ -19,7 +20,7 @@ export function SuccessModal({
 	return (
 		<div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300">
 			<Card className="w-full max-w-md bg-card border-border rounded-3xl p-6 shadow-2xl relative text-center">
-				<div className="w-16 h-16 bg-green-100 dark:bg-green-950/50 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+				<div className="w-16 h-16 bg-status-ok-bg rounded-full flex items-center justify-center mx-auto mb-4 text-status-ok">
 					<CheckCircle className="h-10 w-10" />
 				</div>
 
@@ -35,18 +36,18 @@ export function SuccessModal({
 				<div className="my-6 p-4 bg-muted border-border rounded-2xl text-left text-xs space-y-1.5">
 					<div className="flex justify-between">
 						<span className="text-muted-foreground">
-							HMO Milestone Count:
+							Lifetime Donations:
 						</span>
 						<span className="font-bold text-foreground">
-							{completedCount} -- {completedCount + 1}
+							{completedCount} &rarr; {completedCount + 1}
 						</span>
 					</div>
 					<div className="flex justify-between">
-						<span className="text-muted-foreground">Insurance Status:</span>
-						<span className="font-bold text-green-600">
-							{completedCount + 1 >= 3
-								? "Premium Tier Gold"
-								: "Basic Tier Active"}
+						<span className="text-muted-foreground">
+							Wallet Points:
+						</span>
+						<span className="font-bold text-status-ok">
+							Awarded
 						</span>
 					</div>
 					<div className="flex justify-between">
@@ -59,12 +60,9 @@ export function SuccessModal({
 					</div>
 				</div>
 
-				<button
-					onClick={onUpdateRecords}
-					className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-semibold text-sm transition"
-				>
+				<Button onClick={onUpdateRecords} className="w-full" size="lg">
 					Update My Records
-				</button>
+				</Button>
 			</Card>
 		</div>
 	);

@@ -1,4 +1,5 @@
 import { Activity } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface LocalDemandCardProps {
 	location: string;
@@ -21,9 +22,9 @@ export function LocalDemandCard({
 			: 0;
 
 	return (
-		<div className="bg-white dark:bg-card border border-border dark:border-border rounded-2xl p-5 shadow-sm">
+		<Card className="bg-card border-border rounded-2xl p-5 shadow-sm transition-shadow hover:shadow-card-hover">
 			<div className="flex items-center gap-2 mb-4">
-				<Activity className="h-4 w-4 text-purple-600" />
+				<Activity className="h-4 w-4 text-status-info" />
 				<span className="text-sm font-semibold text-foreground">
 					Local Demand — {location}
 				</span>
@@ -38,7 +39,7 @@ export function LocalDemandCard({
 					</span>
 				</div>
 				<div>
-					<span className="text-lg font-bold font-mono text-brand block">
+					<span className="text-lg font-bold font-mono text-status-critical block">
 						{criticalThisMonth}
 					</span>
 					<span className="text-[10px] font-mono uppercase text-muted-foreground">
@@ -54,6 +55,6 @@ export function LocalDemandCard({
 					</span>
 				</div>
 			</div>
-		</div>
+		</Card>
 	);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { displayBloodGroup } from "@/lib/donor-types";
 import { useConfirmDonation } from "@/hooks/use-emergency-requests";
 
@@ -116,7 +117,8 @@ export function DonorStageList({
 									})}
 								</span>
 								{alert.status === "arrived" && (
-									<button
+									<Button
+										size="sm"
 										onClick={() =>
 											handleConfirm(
 												alert.id,
@@ -124,12 +126,12 @@ export function DonorStageList({
 											)
 										}
 										disabled={confirmDonation.isPending}
-										className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-[10px] font-medium rounded-lg transition cursor-pointer disabled:cursor-not-allowed"
+										className="h-auto px-3 py-1.5 text-[10px] bg-status-ok text-white hover:bg-status-ok hover:opacity-90 hover:scale-100"
 									>
 										{confirmDonation.isPending
 											? "Confirming..."
 											: "Confirm Donation"}
-									</button>
+									</Button>
 								)}
 							</div>
 						</div>

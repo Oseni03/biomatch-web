@@ -51,8 +51,6 @@ export async function signUpWithProfile(formData: {
 			if (locationId) {
 				updateData.locationId = locationId;
 				updateData.location = await buildLocationLabel(locationId);
-			} else if (location) {
-				updateData.location = location;
 			}
 
 			if (availability !== undefined)

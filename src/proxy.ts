@@ -57,10 +57,6 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
 		}
 
-		if (pathname === "/dashboard") {
-			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
-		}
-
 		return NextResponse.next();
 	} catch (error) {
 		if (pathname === "/") {

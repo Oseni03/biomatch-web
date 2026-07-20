@@ -11,6 +11,10 @@ import {
 	Search,
 	AlertTriangle,
 	Wallet,
+	History,
+	BarChart,
+	Users,
+	UserPlus,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -49,8 +53,10 @@ const NAV_ITEMS: Record<
 			icon: HeartPulse,
 		},
 		{ title: "My BioMatch Wallet", url: "/donor/wallet", icon: Wallet },
+		{ title: "Donation History", url: "/donor/history", icon: History },
 	],
 	hospital: [
+		{ title: "Dashboard", url: "/hospital", icon: LayoutDashboard },
 		{
 			title: "Live Inventory Grid",
 			url: "/hospital/inventory",
@@ -65,6 +71,22 @@ const NAV_ITEMS: Record<
 			title: "BioMatch Donor Finder",
 			url: "/hospital/donor-finder",
 			icon: Search,
+		},
+		{
+			title: "Donor Directory",
+			url: "/hospital/directory",
+			icon: Users,
+		},
+		{
+			title: "Analytics & Reports",
+			url: "/hospital/analytics",
+			icon: BarChart,
+		},
+		{ title: "Request History", url: "/hospital/history", icon: History },
+		{
+			title: "Staff Accounts",
+			url: "/hospital/staff",
+			icon: UserPlus,
 		},
 	],
 };
@@ -230,9 +252,16 @@ function AppSidebar({
 		setMounted(true);
 	}, []);
 
-	const items = NAV_ITEMS[role].map((item) => {
-		const isActive =
+	const navItems = NAV_ITEMS[role];
+	const bestMatchUrl = navItems.reduce<string | undefined>((best, item) => {
+		const matches =
 			pathname === item.url || pathname.startsWith(item.url + "/");
+		if (!matches) return best;
+		if (!best || item.url.length > best.length) return item.url;
+		return best;
+	}, undefined);
+	const items = navItems.map((item) => {
+		const isActive = item.url === bestMatchUrl;
 		const badge =
 			role === "donor" && item.title === "Dashboard" && alertCount > 0
 				? alertCount

@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { AnalyticsDashboard } from "@/components/hospital/analytics-dashboard";
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
 export default function HospitalAnalyticsPage() {
 	const { data: session, isPending } = authClient.useSession();
@@ -17,5 +18,13 @@ export default function HospitalAnalyticsPage() {
 
 	if (!session?.user) return null;
 
-	return <AnalyticsDashboard hospitalId={session.user.id} />;
+	return (
+		<div className="space-y-8">
+			<DashboardGreeting
+				title="Analytics & Reports"
+				subtitle="Response times, fulfillment rates, and coverage gaps across your emergency requests"
+			/>
+			<AnalyticsDashboard hospitalId={session.user.id} />
+		</div>
+	);
 }

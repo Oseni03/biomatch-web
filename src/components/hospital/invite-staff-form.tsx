@@ -5,6 +5,7 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { StaffRole } from "@/servers/staff";
 
 const ROLE_OPTIONS: StaffRole[] = ["admin", "requester", "viewer"];
@@ -85,12 +86,9 @@ export function InviteStaffForm({ onSubmit }: InviteStaffFormProps) {
 					</select>
 				</div>
 
-				<button
-					type="submit"
-					className="w-full py-3 bg-brand hover:bg-brand-hover text-white font-semibold text-xs rounded-2xl transition shadow-sm cursor-pointer"
-				>
+				<Button type="submit" className="w-full">
 					Add Authorized Staff
-				</button>
+				</Button>
 			</form>
 		</Card>
 	);

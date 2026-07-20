@@ -62,15 +62,15 @@ export async function getHospitalAnalytics(
 			SELECT
 				ROUND(
 					AVG(
-						EXTRACT(EPOCH FROM (ea.responded_at - ea.created_at)) / 60
+						EXTRACT(EPOCH FROM (ea."respondedAt" - ea."createdAt")) / 60
 					)
 				)::integer AS avg
 			FROM emergency_alerts ea
-			JOIN emergency_requests er ON er.id = ea.request_id
-			WHERE er.hospital_id = ${hospitalId}::uuid
-				${dateFilter?.gte ? Prisma.sql`AND er.created_at >= ${dateFilter.gte}::timestamp` : Prisma.empty}
-				${dateFilter?.lte ? Prisma.sql`AND er.created_at <= ${dateFilter.lte}::timestamp` : Prisma.empty}
-				AND ea.responded_at IS NOT NULL
+			JOIN emergency_requests er ON er.id = ea."requestId"
+			WHERE er."hospitalId" = ${hospitalId}::uuid
+				${dateFilter?.gte ? Prisma.sql`AND er."createdAt" >= ${dateFilter.gte}::timestamp` : Prisma.empty}
+				${dateFilter?.lte ? Prisma.sql`AND er."createdAt" <= ${dateFilter.lte}::timestamp` : Prisma.empty}
+				AND ea."respondedAt" IS NOT NULL
 				AND ea.status IN (${Prisma.join(ACTIVE_ALERT_STATUSES)})
 		`),
 	]);
@@ -78,9 +78,7 @@ export async function getHospitalAnalytics(
 	const avgResponseTime = avgResponseTimeResult[0]?.avg ?? 0;
 
 	const responseRate =
-		totalAlerts > 0
-			? Math.round((acceptedAlerts / totalAlerts) * 100)
-			: 0;
+		totalAlerts > 0 ? Math.round((acceptedAlerts / totalAlerts) * 100) : 0;
 
 	const monthlyVolumeMap = monthlyRows.reduce(
 		(acc, r) => {

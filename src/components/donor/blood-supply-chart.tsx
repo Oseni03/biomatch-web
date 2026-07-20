@@ -71,10 +71,15 @@ export function BloodSupplyChart({ banks, bloodType }: BloodSupplyChartProps) {
 						const isLow = units < 5;
 						const isMedium = units >= 5 && units < 15;
 						const barColor = isLow
-							? "bg-brand"
+							? "bg-status-critical"
 							: isMedium
-								? "bg-orange-500"
-								: "bg-brand";
+								? "bg-status-low"
+								: "bg-status-ok";
+						const labelColor = isLow
+							? "bg-status-critical-bg text-status-critical"
+							: isMedium
+								? "bg-status-low-bg text-status-low"
+								: "bg-status-ok-bg text-status-ok";
 						const statusLabel = isLow
 							? "Critical Shortage"
 							: isMedium
@@ -92,11 +97,13 @@ export function BloodSupplyChart({ banks, bloodType }: BloodSupplyChartProps) {
 										>
 											{item.blood}
 										</span>
-										<span className="text-[10px] px-2 py-0.5 rounded bg-muted font-mono text-muted-foreground">
+										<span
+											className={`text-[10px] px-2 py-0.5 rounded font-mono font-semibold ${labelColor}`}
+										>
 											{statusLabel}
 										</span>
 									</div>
-									<span className="font-mono text-gray-500">
+									<span className="font-mono text-muted-foreground">
 										{units} units
 									</span>
 								</div>

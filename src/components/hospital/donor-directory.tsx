@@ -10,6 +10,9 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
+import { StatusTag } from "@/components/brand/status-tag";
 
 const BLOOD_GROUPS = [
 	"", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-",
@@ -86,7 +89,7 @@ export function DonorDirectory() {
 				</div>
 
 				<div className="flex items-end">
-					<label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-foreground transition-colors hover:bg-muted has-checked:border-rose-300 has-checked:bg-brand-light has-checked:text-brand w-full">
+					<label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-foreground transition-colors hover:bg-muted has-checked:border-brand/30 has-checked:bg-brand-light has-checked:text-brand w-full">
 						<input
 							type="checkbox"
 							checked={eligibleOnly}
@@ -138,28 +141,28 @@ export function DonorDirectory() {
 											</span>
 										</td>
 										<td className="py-4 px-3">
-											<span className="px-2.5 py-0.5 bg-brand-light text-brand font-mono font-bold rounded-md">
-												{donor.bloodGroup ?? "—"}
-											</span>
+											{donor.bloodGroup ? (
+												<BloodTypeBadge
+													bloodGroup={donor.bloodGroup}
+													size="sm"
+												/>
+											) : (
+												"—"
+											)}
 										</td>
 										<td className="py-4 px-3 font-medium text-muted-foreground">
 											{donor.location ?? "—"}
 										</td>
 										<td className="py-4 px-3">
-											<span className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold ${
-												eligible ? "text-green-600" : "text-amber-600"
-											}`}>
-												<span className={`w-1.5 h-1.5 rounded-full ${
-													eligible ? "bg-green-500" : "bg-amber-500"
-												}`} />
+											<StatusTag status={eligible ? "ok" : "low"}>
 												{eligible ? "Eligible" : "Deferred"}
-											</span>
+											</StatusTag>
 										</td>
 										<td className="py-4 px-3 text-right">
-											<button className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white font-semibold rounded-xl text-[11px] inline-flex items-center gap-1 shadow-sm transition cursor-pointer">
+											<Button size="sm">
 												<Phone className="h-3 w-3" />
 												Contact
-											</button>
+											</Button>
 										</td>
 									</tr>
 								);

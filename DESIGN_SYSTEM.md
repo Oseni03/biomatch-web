@@ -129,18 +129,22 @@ serif. Current adoption:
   (the one deliberate marketing-voice touch inside the clinical shell).
 - **Page headers** — `/donor` and `/hospital` (both the inventory grid and the
   emergency-broadcasts page) open with `DashboardGreeting`.
-- **Retokenized widgets** — `alert-card.tsx` (donor emergency alerts) and
-  `blood-search-cards.tsx` (hospital inventory tiles) use `BloodTypeBadge` /
+- **Retokenized widgets** — all `src/components/donor/*` and
+  `src/components/hospital/*` dashboard widgets now use `BloodTypeBadge` /
   `StatusTag` and the `status-*` tokens instead of ad-hoc `green-600` /
-  `orange-100` / `blue-600` Tailwind palette classes.
+  `orange-100` / `blue-600` Tailwind palette classes. Interactive controls
+  (`<button>` CTAs) were unified onto `components/ui/button.tsx`'s `Button`
+  and `components/ui/switch.tsx`'s `Switch` where they represent a primary
+  action or toggle; whole-row/whole-card click targets (expand/collapse rows
+  in `request-funnel-card.tsx`, `donor-stage-list.tsx` close affordance) were
+  intentionally left as native `<button>` since `Button`'s fixed
+  height/padding don't fit a full-width row target.
 
-**Not yet migrated:** most other dashboard widgets (`donation-stats-grid`,
-`donor-directory`, `live-status-panel`, `radius-expansion-card`, etc.) still
-use pre-design-system ad-hoc styling. They already inherit the new color
-tokens and fonts automatically (since those are global CSS variables), but
-haven't been restructured to use the `brand/` components. Migrate
-opportunistically when touching a file, rather than in a single sweep — do
-**not** do a mechanical find-replace across all of them at once.
+When adding a **new** dashboard widget, follow this pattern rather than
+reaching for raw Tailwind palette colors or native form controls — grep the
+component you're closest to (e.g. `alert-card.tsx`, `blood-search-cards.tsx`,
+`live-status-panel.tsx`) for the current convention before inventing a new
+one.
 
 ## 7. Conventions when extending this system
 

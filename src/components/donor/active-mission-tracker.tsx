@@ -2,6 +2,7 @@
 
 import { Navigation, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 interface ActiveMissionTrackerProps {
@@ -75,21 +76,20 @@ export function ActiveMissionTracker({
 					</span>
 				</span>
 				<div className="flex gap-2">
-					<button
+					<Button
+						variant="outline"
+						size="sm"
 						onClick={onAbort}
-						className="px-4 py-2 border-brand/20 text-brand hover:bg-brand-light rounded-lg font-medium transition"
+						className="border-brand/20 text-brand hover:bg-brand-light"
 					>
 						Abort Drive
-					</button>
+					</Button>
 					{trackingStatus !== "arrived" && (
-						<button
-							onClick={onSimulateArrival}
-							className="px-4 py-2 bg-brand text-white hover:bg-brand-hover rounded-lg font-medium transition"
-						>
+						<Button size="sm" onClick={onSimulateArrival}>
 							{trackingStatus === "accepted"
 								? "Mark En Route"
 								: "Mark Arrived"}
-						</button>
+						</Button>
 					)}
 				</div>
 			</div>

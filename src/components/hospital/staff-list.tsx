@@ -5,6 +5,7 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { StatusTag } from "@/components/brand/status-tag";
 import type { StaffRole } from "@/servers/staff";
 
 const ROLE_OPTIONS: StaffRole[] = ["admin", "requester", "viewer"];
@@ -94,7 +95,7 @@ export function StaffList({
 												e.target.value as StaffRole,
 											)
 										}
-										className="px-2 py-1 bg-white border border-border rounded-lg text-xs font-medium"
+										className="px-2 py-1 bg-card border border-border rounded-lg text-xs font-medium"
 									>
 										{ROLE_OPTIONS.map((r) => (
 											<option key={r} value={r}>
@@ -107,21 +108,15 @@ export function StaffList({
 										{st.role}
 									</span>
 								)}
-								<span
-									className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-mono font-semibold tracking-wider ${
-										st.isActive
-											? "border border-green-200 bg-green-100 text-green-700"
-											: "border border-red-200 bg-red-100 text-red-700"
-									}`}
-								>
+								<StatusTag status={st.isActive ? "ok" : "critical"}>
 									{st.isActive ? "Active" : "Inactive"}
-								</span>
+								</StatusTag>
 								{isAdmin &&
 									st.isActive &&
 									st.id !== currentUserId && (
 										<button
 											onClick={() => onRemove(st.id)}
-											className="text-[10px] text-red-600 hover:text-red-800 font-semibold cursor-pointer"
+											className="text-[10px] text-destructive hover:text-destructive/80 font-semibold cursor-pointer"
 										>
 											Remove
 										</button>

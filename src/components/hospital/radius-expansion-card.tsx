@@ -1,5 +1,6 @@
 import { Activity, Users, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { MAX_RADIUS } from "@/lib/radius-expansion";
 
 interface RadiusExpansionCardProps {
@@ -63,14 +64,15 @@ export function RadiusExpansionCard({
 							</span>
 						</div>
 					</div>
-					<button
+					<Button
+						size="sm"
 						onClick={onWidenRadius}
 						disabled={alertRadius >= maxRadius}
-						className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-800 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5 disabled:opacity-40"
+						className="bg-ink text-cream hover:bg-ink hover:opacity-90 hover:scale-100"
 					>
 						<MapPin className="h-3.5 w-3.5" />
 						Expand Now
-					</button>
+					</Button>
 				</div>
 			</div>
 

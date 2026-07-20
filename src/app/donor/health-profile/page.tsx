@@ -8,6 +8,8 @@ import { getAncestors } from "@/servers/location";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useLocationCascade } from "@/hooks/use-location-cascade";
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
+import { Button } from "@/components/ui/button";
 import { IdentitySection } from "@/components/donor/health-profile/identity-section";
 import { EmergencyPreferencesSection } from "@/components/donor/health-profile/emergency-preferences-section";
 import { VitalsSection } from "@/components/donor/health-profile/vitals-section";
@@ -156,15 +158,10 @@ export default function HealthProfilePage() {
 
 	return (
 		<div className="max-w-3xl space-y-8">
-			<header>
-				<h1 className="text-2xl font-bold text-foreground">
-					Health Profile
-				</h1>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Keep this accurate — hospitals rely on it to confirm safe,
-					eligible matches.
-				</p>
-			</header>
+			<DashboardGreeting
+				title="Health Profile"
+				subtitle="Keep this accurate — hospitals rely on it to confirm safe, eligible matches."
+			/>
 
 			<form onSubmit={handleSave} className="space-y-6">
 				<IdentitySection
@@ -209,20 +206,16 @@ export default function HealthProfilePage() {
 				/>
 
 				<div className="flex items-center gap-3">
-					<button
-						type="submit"
-						disabled={saving}
-						className="flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
-					>
+					<Button type="submit" disabled={saving}>
 						{saving ? (
 							<Loader2 className="h-4 w-4 animate-spin" />
 						) : (
 							<Save className="h-4 w-4" />
 						)}
 						Save Health Profile
-					</button>
+					</Button>
 					{saved && (
-						<span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+						<span className="flex items-center gap-1.5 text-sm font-medium text-status-ok">
 							<CheckCircle2 className="h-4 w-4" />
 							Saved
 						</span>

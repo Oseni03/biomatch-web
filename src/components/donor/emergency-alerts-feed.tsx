@@ -55,7 +55,8 @@ export function EmergencyAlertsFeed({
 						</strong>
 					</p>
 				</div>
-				<span className="text-[10px] uppercase font-mono px-2.5 py-1 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 rounded-full border border-green-200">
+				<span className="flex items-center gap-1.5 text-[10px] uppercase font-mono px-2.5 py-1 bg-status-ok-bg text-status-ok rounded-full border border-status-ok/20">
+					<span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
 					LIVE
 				</span>
 			</div>

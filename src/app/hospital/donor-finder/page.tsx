@@ -13,7 +13,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
 const BLOOD_GROUPS = [
 	{ value: "A_PLUS", label: "A+" },
@@ -66,15 +68,10 @@ export default function DonorFinderPage() {
 
 	return (
 		<div className="space-y-6">
-			<header>
-				<h1 className="text-2xl font-bold text-foreground">
-					BioMatch Donor Finder
-				</h1>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Search and filter eligible donors by blood group, location,
-					or name.
-				</p>
-			</header>
+			<DashboardGreeting
+				title="BioMatch Donor Finder"
+				subtitle="Search and filter eligible donors by blood group, location, or name."
+			/>
 
 			<div className="rounded-xl border border-border bg-card p-4">
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -140,14 +137,14 @@ export default function DonorFinderPage() {
 							/>
 							Eligible only (56+ days)
 						</label>
-						<button
+						<Button
 							onClick={handleSearch}
 							disabled={isFetching}
-							className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand px-3 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-50"
+							size="sm"
 						>
 							<Search className="h-4 w-4" />
 							Search
-						</button>
+						</Button>
 					</div>
 				</div>
 			</div>

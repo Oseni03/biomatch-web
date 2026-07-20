@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heart, ArrowLeft, Eye, EyeOff, MapPin, Clock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -17,6 +17,14 @@ import { AVAILABILITY_OPTIONS } from "@/lib/availability";
 import type { Availability } from "@generated/prisma/enums";
 import { useLocationCascade } from "@/hooks/use-location-cascade";
 import { toast } from "sonner";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+
+const STATS = [
+	{ value: "2.3x", label: "Faster response" },
+	{ value: "94%", label: "Donor activation" },
+	{ value: "99.2%", label: "Match accuracy" },
+];
 
 export default function SignupPage() {
 	const router = useRouter();
@@ -76,46 +84,42 @@ export default function SignupPage() {
 	};
 
 	return (
-		<div className="min-h-screen w-full flex items-center justify-center p-6 bg-background">
-			<div className="absolute top-8 left-6 md:left-12">
-				<Button
-					asChild
-					variant="outline"
-					className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 bg-muted border-border px-4 py-2 h-10 rounded-2xl"
-				>
-					<Link href="/">
-						<ArrowLeft className="h-4 w-4" />
-						Back to Home
-					</Link>
-				</Button>
-			</div>
-
-			<Card className="w-full max-w-md rounded-3xl p-2 shadow-sm relative overflow-hidden">
-				<div className="absolute inset-0 bg-[radial-gradient(#ef444408_0.8px,transparent_1px)] bg-[length:4px_4px] pointer-events-none" />
-
-				<CardHeader className="text-center relative pb-2 pt-6">
-					<div className="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-4 scale-100 hover:scale-105 transition-transform duration-300">
-						<Heart className="h-5 w-5 text-white fill-current animate-pulse" />
+		<AuthShell
+			eyebrow="Join The Network"
+			headline={
+				<>
+					Every match starts
+					<br />
+					with <span className="italic text-brand">one signup.</span>
+				</>
+			}
+			description="Register as a donor to answer emergency calls near you, or as a hospital to reach verified donors in minutes."
+			stats={STATS}
+		>
+			<Card className="rounded-3xl p-2">
+				<CardHeader className="relative pb-2 pt-6 text-center">
+					<div className="mx-auto mb-4 flex h-10 w-10 scale-100 items-center justify-center rounded-2xl bg-brand transition-transform duration-300 hover:scale-105">
+						<BloodDropIcon className="h-5 w-5 text-white" />
 					</div>
 					<CardTitle className="text-3xl font-semibold tracking-tighter">
 						Join the Network
 					</CardTitle>
-					<CardDescription className="text-sm text-muted-foreground mt-2">
+					<CardDescription className="mt-2 text-sm text-muted-foreground">
 						Register and start saving lives or requesting matches
 					</CardDescription>
 				</CardHeader>
 
 				<CardContent className="p-6 pt-0">
-					<div className="grid grid-cols-2 gap-2 bg-muted p-1.5 rounded-2xl border-border mb-8 relative">
+					<div className="relative mb-8 grid grid-cols-2 gap-2 rounded-2xl border-border bg-muted p-1.5">
 						<button
 							type="button"
 							onClick={() => {
 								setRole("donor");
 								setError("");
 							}}
-							className={`py-3 text-sm font-medium rounded-xl transition-all duration-300 cursor-pointer ${
+							className={`cursor-pointer rounded-xl py-3 text-sm font-medium transition-all duration-300 ${
 								role === "donor"
-									? "bg-card text-brand shadow-sm font-semibold"
+									? "bg-card font-semibold text-brand shadow-sm"
 									: "text-muted-foreground hover:text-foreground"
 							}`}
 						>
@@ -127,9 +131,9 @@ export default function SignupPage() {
 								setRole("hospital");
 								setError("");
 							}}
-							className={`py-3 text-sm font-medium rounded-xl transition-all duration-300 cursor-pointer ${
+							className={`cursor-pointer rounded-xl py-3 text-sm font-medium transition-all duration-300 ${
 								role === "hospital"
-									? "bg-card text-brand shadow-sm font-semibold"
+									? "bg-card font-semibold text-brand shadow-sm"
 									: "text-muted-foreground hover:text-foreground"
 							}`}
 						>
@@ -138,21 +142,15 @@ export default function SignupPage() {
 					</div>
 
 					{error && (
-						<div className="p-4 mb-6 text-sm text-brand bg-brand-light rounded-2xl border border-brand/20">
+						<div className="mb-6 rounded-2xl border border-brand/20 bg-brand-light p-4 text-sm text-brand">
 							{error}
 						</div>
 					)}
 
-					<form
-						onSubmit={handleSubmit}
-						className="space-y-6 relative"
-					>
+					<form onSubmit={handleSubmit} className="relative space-y-6">
 						<div>
-							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
-								{role === "donor"
-									? "Full Name"
-									: "Hospital Name"}{" "}
-								*
+							<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
+								{role === "donor" ? "Full Name" : "Hospital Name"} *
 							</label>
 							<input
 								type="text"
@@ -163,13 +161,13 @@ export default function SignupPage() {
 										? "e.g. David Adebayo"
 										: "e.g. Red Cross Hospital"
 								}
-								className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+								className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 								required
 							/>
 						</div>
 
 						<div>
-							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+							<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 								Email Address *
 							</label>
 							<input
@@ -177,32 +175,28 @@ export default function SignupPage() {
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								placeholder="you@example.com"
-								className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+								className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 								required
 							/>
 						</div>
 
 						<div>
-							<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+							<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 								Password *
 							</label>
 							<div className="relative">
 								<input
 									type={showPassword ? "text" : "password"}
 									value={password}
-									onChange={(e) =>
-										setPassword(e.target.value)
-									}
+									onChange={(e) => setPassword(e.target.value)}
 									placeholder="At least 6 characters"
-									className="w-full px-4 pr-12 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+									className="w-full rounded-xl border-border bg-muted px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 									required
 								/>
 								<button
 									type="button"
-									onClick={() =>
-										setShowPassword(!showPassword)
-									}
-									className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+									onClick={() => setShowPassword(!showPassword)}
+									className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-4 text-muted-foreground hover:text-foreground"
 								>
 									{showPassword ? (
 										<EyeOff className="h-4 w-4" />
@@ -216,7 +210,7 @@ export default function SignupPage() {
 						{role === "donor" && (
 							<>
 								<div>
-									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 										Region *
 									</label>
 									<select
@@ -224,7 +218,7 @@ export default function SignupPage() {
 										onChange={(e) =>
 											cascade.selectRegion(e.target.value)
 										}
-										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 										required
 									>
 										<option value="">Select region</option>
@@ -236,7 +230,7 @@ export default function SignupPage() {
 									</select>
 								</div>
 								<div>
-									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 										State *
 									</label>
 									<select
@@ -245,7 +239,7 @@ export default function SignupPage() {
 											cascade.selectState(e.target.value)
 										}
 										disabled={!regionId}
-										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 										required
 									>
 										<option value="">Select state</option>
@@ -257,7 +251,7 @@ export default function SignupPage() {
 									</select>
 								</div>
 								<div>
-									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 										City / Area *
 									</label>
 									<select
@@ -266,7 +260,7 @@ export default function SignupPage() {
 											cascade.selectCity(e.target.value)
 										}
 										disabled={!stateId}
-										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 										required
 									>
 										<option value="">Select city</option>
@@ -278,30 +272,27 @@ export default function SignupPage() {
 									</select>
 								</div>
 								<div>
-									<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 										Availability (optional)
 									</label>
 									<select
 										value={availability}
 										onChange={(e) =>
-											setAvailability(e.target.value as Availability | "")
+											setAvailability(
+												e.target.value as Availability | "",
+											)
 										}
-										className="w-full px-4 py-3 bg-muted border-border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 									>
-										<option value="">
-											Select availability
-										</option>
+										<option value="">Select availability</option>
 										{AVAILABILITY_OPTIONS.map((opt) => (
-											<option
-												key={opt.value}
-												value={opt.value}
-											>
+											<option key={opt.value} value={opt.value}>
 												{opt.label}
 											</option>
 										))}
 									</select>
 								</div>
-								<label className="flex items-center gap-3 cursor-pointer">
+								<label className="flex cursor-pointer items-center gap-3">
 									<input
 										type="checkbox"
 										checked={receiveAlerts}
@@ -320,7 +311,7 @@ export default function SignupPage() {
 						<Button
 							type="submit"
 							disabled={isLoading}
-							className="w-full py-6 font-medium rounded-2xl text-sm"
+							className="w-full rounded-2xl py-6 text-sm font-medium"
 						>
 							{isLoading
 								? "Creating Account..."
@@ -328,7 +319,7 @@ export default function SignupPage() {
 						</Button>
 					</form>
 
-					<div className="mt-8 pt-6 border-t border-border text-center">
+					<div className="mt-8 border-t border-border pt-6 text-center">
 						<p className="text-sm text-muted-foreground">
 							Already registered?{" "}
 							<Link
@@ -341,6 +332,6 @@ export default function SignupPage() {
 					</div>
 				</CardContent>
 			</Card>
-		</div>
+		</AuthShell>
 	);
 }
