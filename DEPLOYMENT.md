@@ -1,101 +1,112 @@
-# BioMatch — Setup & Deployment
+````markdown
+# BioMatch — Setup & Deployment (Prisma + Supabase)
 
-This is a complete, runnable Next.js 14 App Router project. Follow these steps in order.
+This is a complete, runnable Next.js 14 App Router project using **Prisma** as the ORM and Supabase for Auth + Realtime + Hosting.
 
 ## 1. Unzip and install
+
 ```bash
 cd biomatch
 npm install
 ```
+````
 
 ## 2. Create your Supabase project
-1. Go to https://supabase.com/dashboard -> New Project.
-2. Once provisioned, go to Project Settings -> API and copy:
-   - Project URL
-   - anon public key
-   - service_role key (keep this server-side only, never expose to the client)
 
-## 3. Run the database migration
-Dashboard -> SQL Editor -> New query -> paste the entire contents of
-001_biomatch_schema.sql -> Run.
+1. Go to https://supabase.com/dashboard → New Project.
+2. Once provisioned, go to **Project Settings → API** and copy:
+    - Project URL
+    - anon public key
+    - service_role key (keep server-side only)
 
-This creates all tables, enums, RLS policies, and enables Realtime on
-biomatch_hospital_banks and biomatch_incentives_claims.
+## 3. Environment variables
 
-## 4. Environment variables
 ```bash
 cp .env.local.example .env.local
 ```
-Fill in the three values from step 2.
+
+Add your Supabase connection string to Prisma:
+
+```env
+DATABASE_URL="postgresql://postgres.[your-project-ref]:[your-password]@aws-0-[region].pooler.supabase.com:5432/postgres?schema=public"
+```
+
+> You can find the direct connection string in Supabase → Project Settings → Database.
+
+## 4. Database migration with Prisma
+
+```bash
+# Generate Prisma Client and push schema to Supabase
+npx prisma generate
+npx prisma db push
+```
+
+This applies the Prisma schema (`prisma/schema.prisma`) — creating tables, enums, indexes, and defaults.  
+RLS policies are **not** in Prisma. After `db push`, run the RLS + helper functions + realtime config from `001_biomatch_rls.sql` (or equivalent) in the Supabase SQL Editor.
 
 ## 5. Run locally
+
 ```bash
 npm run dev
 ```
-Visit http://localhost:3000, sign up as a donor or hospital, and confirm
-you land on the correct dashboard.
 
-To test the hospital inventory dashboard with live data, insert a row
-manually in Supabase SQL editor:
-```sql
-insert into public.biomatch_hospital_banks (hospital_name, location, inventory)
-values ('Lagos General', 'Lagos, NG', '{"A+":12,"A-":3,"B+":8,"B-":2,"AB+":1,"AB-":0,"O+":20,"O-":4}');
-```
-Then update a value from the SQL editor while the page is open -- the grid
-should update without a refresh.
+Visit http://localhost:3000, sign up as a donor or hospital, and confirm you land on the correct dashboard.
+
+To test realtime hospital inventory:
+
+- Insert a sample row via Supabase SQL Editor (as before).
+- Updates made in Supabase will reflect live on the dashboard.
 
 ## 6. Push to GitHub
+
 ```bash
 git init
 git add .
-git commit -m "Initial BioMatch build"
+git commit -m "Initial BioMatch build with Prisma"
 gh repo create biomatch --private --source=. --push
 ```
-(or push manually to a repo you create on github.com)
 
 ## 7. Deploy to Vercel
-Easiest path -- via the dashboard:
-1. Go to https://vercel.com/new
-2. Import your GitHub repo.
-3. Add the same three environment variables from .env.local in the
-   Vercel project settings (Environment Variables section).
-4. Deploy.
 
-Or via CLI:
+**Via dashboard (recommended):**
+
+1. https://vercel.com/new → Import GitHub repo.
+2. Add these environment variables in Vercel:
+    - `DATABASE_URL` (use the **direct** Supabase connection string)
+
+**Via CLI:**
+
 ```bash
 npm install -g vercel
 vercel link
-vercel env add NEXT_PUBLIC_SUPABASE_URL
-vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
-vercel env add SUPABASE_SERVICE_ROLE_KEY
+vercel env add DATABASE_URL
 vercel --prod
 ```
 
-## 8. Post-deploy: Supabase auth redirect URLs
-In Supabase Dashboard -> Authentication -> URL Configuration, add your
-Vercel production URL (e.g. https://biomatch.vercel.app) to both
-"Site URL" and "Redirect URLs", or auth flows will fail in production.
+After deploy, run `npx prisma generate` in your build command if needed (or add to `postinstall`).
+
+## 8. Post-deploy: Supabase Auth
+
+In Supabase Dashboard → Authentication → URL Configuration, add your Vercel URL (e.g. `https://biomatch.vercel.app`) to **Site URL** and **Redirect URLs**.
+
+## Prisma Workflow Notes
+
+- Schema changes: Edit `prisma/schema.prisma` → `npx prisma db push` (dev) or `npx prisma migrate dev` (when you want migration files).
+- After any schema change that affects the client: `npx prisma generate`.
+- For production deploys, Vercel will run `prisma generate` automatically if configured.
 
 ## What's intentionally not built yet
-- Real-time inventory writes from hospital staff (the dashboard reads
-  live, but there's no UI yet to edit unit counts -- fast follow).
-- Admin verification/contracts pages are placeholders.
-- Email confirmation uses Supabase's default flow; you may want to
-  disable "Confirm email" in Auth settings for faster local testing.
 
-## Note on scope: no cash payouts
-The wallet/incentive system uses points and vouchers (HMO access, gym
-discounts), not cash payouts for blood donations. Paid/replacement
-donation models are restricted or prohibited in most jurisdictions
-(including Nigeria) on blood-safety grounds -- paying donors creates an
-incentive to conceal risk factors, which is a transfusion-safety issue,
-not just a business-model choice. If a cash component is a hard
-requirement, get legal/compliance sign-off and a licensed blood-bank
-partner before any code is written for it.
+- Real-time inventory write UI for hospitals.
+- Admin verification flows (placeholders).
+- Email confirmation uses Supabase defaults.
 
-## Honesty note on this build
-This project's dependencies could not be installed or build-verified in
-the sandbox used to write it (no network access there). The code follows
-standard Next.js 14 App Router / Supabase conventions throughout, but
-your local `npm install && npm run dev` will be the first real compile --
-flag anything that breaks and it can be fixed directly.
+## Note on scope
+
+Same as before — no cash payouts for blood donations.
+
+Run `npm install && npx prisma generate && npm run dev` locally to verify. Flag any issues.
+
+```
+
+```

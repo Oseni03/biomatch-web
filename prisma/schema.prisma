@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  donor
+  hospital
+  admin
+}
+
+enum Availability {
+  weekdays
+  weekends
+  mornings
+  afternoons
+  evenings
+  anytime
+}
+
+enum HospitalStaffRole {
+  admin
+  requester
+  viewer
+}
+
+enum UrgencyLevel {
+  standard
+  critical
+}
+
+enum RequestStatus {
+  pending
+  matched
+  expired
+  cancelled
+  fulfilled
+}
+
+enum AlertStatus {
+  alerted
+  accepted
+  declined
+  en_route
+  arrived
+  completed
+}
+
+enum NotificationChannel {
+  email
+}
+
+enum NotificationStatus {
+  sent
+  delivered
+  opened
+  failed
+}
+
+model NotificationLog {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertId           String               @db.Uuid
+  channel           NotificationChannel
+  status            NotificationStatus   @default(sent)
+  providerMessageId String?
+  sentAt            DateTime             @default(now()) @db.Timestamptz(6)
+  deliveredAt       DateTime?            @db.Timestamptz(6)
+  openedAt          DateTime?            @db.Timestamptz(6)
+  errorMessage      String?
+
+  alert EmergencyAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@map("notification_logs")
+}
+
+enum LocationType {
+  region
+  state
+  city
+}
+
+model Location {
+  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String
+  type     LocationType
+  parentId String?      @db.Uuid
+  parent   Location?    @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children Location[]   @relation("LocationHierarchy")
+  users    User[]
+  hospitalBanks HospitalBank[]
+
+  @@index([parentId])
+  @@index([type])
+  @@map("locations")
+}
+
+enum BloodGroup {
+  A_PLUS
+  A_MINUS
+  B_PLUS
+  B_MINUS
+  AB_PLUS
+  AB_MINUS
+  O_PLUS
+  O_MINUS
+}
+
+model HospitalBank {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hospitalName String
+  location     String
+  locationId   String?  @db.Uuid
+  inventory    Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
+  managedById  String?  @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  managedBy  User?     @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  locationRel Location? @relation(fields: [locationId], references: [id])
+
+  @@index([locationId])
+  @@map("hospital_banks")
+}
+
+model Wallet {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String   @unique @db.Uuid
+  points            Int      @default(0)
+  lifetimeDonations Int      @default(0)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model EmergencyRequest {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hospitalId   String        @db.Uuid
+  bloodGroup   BloodGroup
+  unitsNeeded  Int
+  urgencyLevel UrgencyLevel  @default(standard)
+  status       RequestStatus @default(pending)
+  searchRadius Int           @default(15)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
+
+  hospital User               @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
+  alerts   EmergencyAlert[]
+
+  @@index([hospitalId])
+  @@index([bloodGroup])
+  @@index([status])
+  @@index([createdAt])
+  @@map("emergency_requests")
+}
+
+model EmergencyAlert {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId   String       @db.Uuid
+  donorId     String       @db.Uuid
+  status      AlertStatus  @default(alerted)
+  openedAt    DateTime?    @db.Timestamptz(6)
+  respondedAt DateTime?    @db.Timestamptz(6)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+
+  request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
+  notificationLogs NotificationLog[]
+
+  @@index([requestId])
+  @@index([donorId])
+  @@index([status])
+  @@map("emergency_alerts")
+}
+
+model User {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  email             String
+  emailVerified     Boolean     @default(false)
+  image             String?
+  bloodGroup        BloodGroup?
+  genotype          String?
+  role              Role        @default(donor)
+  updatedHealthInfo Json        @default("{}")
+  location          String?
+  locationId        String?     @db.Uuid
+  availability      Availability?
+  isActive          Boolean     @default(true)
+  hospitalStaffRole HospitalStaffRole?
+  lastDonationDate  DateTime?   @db.Timestamptz(6)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
+
+  locationRel Location? @relation(fields: [locationId], references: [id])
+
+  sessions     Session[]
+  accounts     Account[]
+  wallet       Wallet?
+  managedBanks      HospitalBank[]
+  emergencyRequests EmergencyRequest[]  @relation("HospitalRequests")
+  emergencyAlerts   EmergencyAlert[]    @relation("DonorAlerts")
+
+  @@unique([email])
+  @@index([role])
+  @@index([bloodGroup])
+  @@index([locationId])
+  @@index([lastDonationDate])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([identifier])
+  @@map("verification")
+}
