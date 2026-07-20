@@ -1,22 +1,30 @@
-"use client";
-
-import { Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
+import { getQueryClient } from "@/lib/get-query-client";
+import { getServerSession } from "@/lib/get-session";
+import { getHospitalAnalytics } from "@/servers/analytics";
 import { AnalyticsDashboard } from "@/components/hospital/analytics-dashboard";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
-export default function HospitalAnalyticsPage() {
-	const { data: session, isPending } = authClient.useSession();
-
-	if (isPending) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-			</div>
-		);
+export default async function HospitalAnalyticsPage() {
+	const session = await getServerSession();
+	if (!session?.user?.id) {
+		redirect("/auth/login");
 	}
 
-	if (!session?.user) return null;
+	const queryClient = getQueryClient();
+	const hospitalId = session.user.id;
+
+	const today = new Date().toISOString().split("T")[0];
+	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+		.toISOString()
+		.split("T")[0];
+	const dateRange = { startDate: thirtyDaysAgo, endDate: today };
+
+	await queryClient.prefetchQuery({
+		queryKey: ["hospital-analytics", hospitalId, dateRange],
+		queryFn: () => getHospitalAnalytics(hospitalId, dateRange),
+	});
 
 	return (
 		<div className="space-y-8">
@@ -24,7 +32,9 @@ export default function HospitalAnalyticsPage() {
 				title="Analytics & Reports"
 				subtitle="Response times, fulfillment rates, and coverage gaps across your emergency requests"
 			/>
-			<AnalyticsDashboard hospitalId={session.user.id} />
+			<HydrationBoundary state={dehydrate(queryClient)}>
+				<AnalyticsDashboard hospitalId={hospitalId} />
+			</HydrationBoundary>
 		</div>
 	);
 }

@@ -1,22 +1,24 @@
-"use client";
-
-import { Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
+import { getQueryClient } from "@/lib/get-query-client";
+import { getServerSession } from "@/lib/get-session";
+import { getStaffMembers } from "@/servers/staff";
 import { StaffAccounts } from "@/components/hospital/staff-accounts";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
-export default function HospitalStaffPage() {
-	const { data: session, isPending } = authClient.useSession();
-
-	if (isPending) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-			</div>
-		);
+export default async function HospitalStaffPage() {
+	const session = await getServerSession();
+	if (!session?.user?.id) {
+		redirect("/auth/login");
 	}
 
-	if (!session?.user) return null;
+	const queryClient = getQueryClient();
+	const hospitalId = session.user.id;
+
+	await queryClient.prefetchQuery({
+		queryKey: ["staff", hospitalId],
+		queryFn: () => getStaffMembers(hospitalId),
+	});
 
 	return (
 		<div className="space-y-8">
@@ -24,7 +26,9 @@ export default function HospitalStaffPage() {
 				title="Hospital Staff Accounts"
 				subtitle="Manage who on your team can respond to emergency requests and manage inventory."
 			/>
-			<StaffAccounts hospitalId={session.user.id} />
+			<HydrationBoundary state={dehydrate(queryClient)}>
+				<StaffAccounts hospitalId={hospitalId} />
+			</HydrationBoundary>
 		</div>
 	);
 }

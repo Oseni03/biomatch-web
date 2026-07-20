@@ -1,7 +1,8 @@
 "use client";
 
-import { MapPin, Clock, Bell } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import { SectionCard } from "@/components/dashboard/section-card";
+import { Switch } from "@/components/ui/switch";
 import { Field, inputClass } from "./form-fields";
 import { AVAILABILITY_OPTIONS } from "@/lib/availability";
 import type { Availability } from "@generated/prisma/enums";
@@ -88,21 +89,21 @@ export function EmergencyPreferencesSection({
 					</select>
 				</Field>
 			</div>
-			<label className="mt-4 flex items-center gap-3 cursor-pointer">
-				<input
-					type="checkbox"
+			<div className="mt-4 flex items-center justify-between rounded-xl border border-border bg-muted/50 p-4">
+				<div>
+					<span className="block text-sm font-medium text-foreground">
+						Pause emergency alerts
+					</span>
+					<span className="mt-0.5 block text-xs text-muted-foreground">
+						When paused, you won&apos;t receive emergency donation
+						requests.
+					</span>
+				</div>
+				<Switch
 					checked={!isActive}
-					onChange={(e) => onIsActiveChange(!e.target.checked)}
-					className="h-4 w-4 rounded border-input text-brand focus:ring-ring"
+					onCheckedChange={(checked) => onIsActiveChange(!checked)}
 				/>
-				<span className="flex items-center gap-1.5 text-sm text-foreground">
-					<Bell className="h-3.5 w-3.5 text-muted-foreground" />
-					Pause emergency alerts
-				</span>
-			</label>
-			<p className="mt-1.5 text-xs text-muted-foreground">
-				When paused, you won&apos;t receive emergency donation requests.
-			</p>
+			</div>
 		</SectionCard>
 	);
 }
