@@ -207,7 +207,7 @@ function BloodBankCard({ bank }: { bank: HospitalBank }) {
 									units === 0 &&
 										"border-border bg-muted/30 opacity-50",
 									isCritical &&
-										"border-brand/30 bg-brand-light",
+										"border-status-critical/30 bg-status-critical-bg",
 									units > 0 &&
 										!isCritical &&
 										"border-border bg-card",
@@ -220,7 +220,7 @@ function BloodBankCard({ bank }: { bank: HospitalBank }) {
 									className={cn(
 										"mt-0.5 text-sm font-bold",
 										units === 0 && "text-muted-foreground",
-										isCritical && "text-brand",
+										isCritical && "text-status-critical",
 										units > 0 &&
 											!isCritical &&
 											"text-foreground",

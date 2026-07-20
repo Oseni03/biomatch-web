@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import {
 	Bell,
 	Building2,
-	Droplet,
 	HeartPulse,
 	LayoutDashboard,
 	Search,
@@ -15,6 +14,7 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 
+import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { Button } from "@/components/ui/button";
@@ -249,13 +249,10 @@ function AppSidebar({
 						<SidebarMenuButton size="lg" asChild>
 							<Link href="/">
 								<div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-brand text-white">
-									<Droplet
-										className="size-5"
-										fill="currentColor"
-									/>
+									<BloodDropIcon className="size-5" />
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-semibold tracking-tight">
+									<span className="truncate font-serif font-semibold italic tracking-tight">
 										BioMatch
 									</span>
 									<span className="truncate text-[11px] text-muted-foreground">

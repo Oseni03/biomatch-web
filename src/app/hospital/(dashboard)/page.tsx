@@ -12,6 +12,7 @@ import {
 	useExpandSearchRadius,
 } from "@/hooks/use-emergency-requests";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
 const EXPANSION_COUNTDOWN_S = Math.floor(EXPANSION_TIMEOUT_MS / 1000);
 
@@ -107,6 +108,11 @@ export default function HospitalBroadcastsPage() {
 
 	return (
 		<div className="space-y-8">
+			<DashboardGreeting
+				title="Emergency Broadcasts"
+				subtitle="Dispatch requests and track live donor response"
+			/>
+
 			{hasPendingServerReq && expandingRequestId && (
 				<RadiusExpansionCard
 					hospitalLocation=""

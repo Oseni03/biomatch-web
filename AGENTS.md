@@ -1,5 +1,11 @@
 # BioMatch — Agent Context
 
+**Read `DESIGN_SYSTEM.md` first if you're touching UI.** It documents the color
+tokens, typography, the `src/components/brand/` component family, and the
+marketing-site structure. Most dashboard widgets predate it and haven't been
+migrated yet — see its "Not yet migrated" note before assuming a given
+component already follows it.
+
 ## Project Overview
 
 BioMatch is an incentivized blood donation and hospital inventory marketplace. Donors register, maintain health profiles, earn points for donations, and redeem perks. Hospitals monitor blood inventory, find eligible donors, and request blood drives.

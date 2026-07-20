@@ -13,73 +13,112 @@ html.dark {
 
 @layer base {
   :root {
-    --background: 40 20% 98%;
-    --foreground: 40 5% 7%;
+    /* BioMatch brand primitives — "classic red + clinical white" */
+    --red: 350 96% 41%;
+    --red-deep: 349 100% 30%;
+    --red-ink: 348 100% 22%;
+    --red-bg: 350 96% 97%;
+    --emergency: 355 100% 57%;
+    --cream: 37 51% 91%;
+    --paper: 40 27% 98%;
+    --ink: 247 47% 7%;
+    --slate: 227 15% 31%;
+
+    --status-critical: 355 100% 57%;
+    --status-critical-bg: 355 100% 96%;
+    --status-low: 33 75% 51%;
+    --status-low-bg: 33 90% 95%;
+    --status-ok: 148 68% 37%;
+    --status-ok-bg: 148 60% 95%;
+    --status-info: 185 81% 29%;
+    --status-info-bg: 185 60% 95%;
+
+    --background: 40 27% 98%;
+    --foreground: 247 47% 7%;
     --card: 0 0% 100%;
-    --card-foreground: 40 5% 7%;
+    --card-foreground: 247 47% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 40 5% 7%;
-    --primary: 356 83% 41%;
+    --popover-foreground: 247 47% 7%;
+    --primary: 350 96% 41%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 10% 95%;
-    --secondary-foreground: 40 5% 20%;
+    --secondary: 37 51% 91%;
+    --secondary-foreground: 227 15% 31%;
     --muted: 40 10% 95%;
-    --muted-foreground: 40 5% 45%;
-    --accent: 356 83% 41%;
+    --muted-foreground: 222 8% 53%;
+    --accent: 350 96% 41%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 356 83% 41%;
+    --destructive: 355 100% 57%;
     --destructive-foreground: 0 0% 100%;
     --border: 40 8% 90%;
     --input: 40 8% 90%;
-    --ring: 356 83% 41%;
+    --ring: 350 96% 41%;
     --radius: 0.625rem;
-    --sidebar-background: 40 20% 98%;
-    --sidebar-foreground: 40 5% 7%;
-    --sidebar-primary: 356 83% 41%;
+    --sidebar-background: 40 27% 98%;
+    --sidebar-foreground: 247 47% 7%;
+    --sidebar-primary: 350 96% 41%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 10% 95%;
-    --sidebar-accent-foreground: 40 5% 20%;
+    --sidebar-accent: 37 51% 91%;
+    --sidebar-accent-foreground: 227 15% 31%;
     --sidebar-border: 40 8% 90%;
-    --sidebar-ring: 356 83% 41%;
-    --chart-1: 356 83% 41%;
-    --chart-2: 40 5% 45%;
-    --chart-3: 40 10% 95%;
+    --sidebar-ring: 350 96% 41%;
+    --chart-1: 350 96% 41%;
+    --chart-2: 227 15% 31%;
+    --chart-3: 37 51% 91%;
     --chart-4: 0 0% 100%;
-    --chart-5: 40 5% 7%;
+    --chart-5: 247 47% 7%;
   }
 
   .dark {
-    --background: 40 5% 6%;
+    --red: 350 96% 52%;
+    --red-deep: 349 90% 40%;
+    --red-ink: 348 80% 70%;
+    --red-bg: 350 60% 16%;
+    --emergency: 355 100% 62%;
+    --cream: 37 15% 20%;
+    --paper: 247 20% 9%;
+    --ink: 0 0% 98%;
+    --slate: 227 10% 65%;
+
+    --status-critical: 355 100% 62%;
+    --status-critical-bg: 355 60% 16%;
+    --status-low: 33 80% 58%;
+    --status-low-bg: 33 60% 15%;
+    --status-ok: 148 55% 48%;
+    --status-ok-bg: 148 45% 14%;
+    --status-info: 185 65% 45%;
+    --status-info-bg: 185 45% 14%;
+
+    --background: 247 20% 9%;
     --foreground: 0 0% 98%;
-    --card: 40 5% 11%;
+    --card: 247 15% 13%;
     --card-foreground: 0 0% 98%;
-    --popover: 40 5% 11%;
+    --popover: 247 15% 13%;
     --popover-foreground: 0 0% 98%;
-    --primary: 356 83% 41%;
+    --primary: 350 96% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 5% 15%;
+    --secondary: 247 10% 18%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 40 5% 15%;
-    --muted-foreground: 40 5% 60%;
-    --accent: 356 83% 41%;
+    --muted: 247 10% 18%;
+    --muted-foreground: 227 10% 65%;
+    --accent: 350 96% 52%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 356 83% 41%;
+    --destructive: 355 100% 62%;
     --destructive-foreground: 0 0% 100%;
-    --border: 40 5% 16%;
-    --input: 40 5% 16%;
-    --ring: 356 83% 41%;
-    --sidebar-background: 40 5% 6%;
+    --border: 247 10% 20%;
+    --input: 247 10% 20%;
+    --ring: 350 96% 52%;
+    --sidebar-background: 247 20% 9%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 356 83% 41%;
+    --sidebar-primary: 350 96% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 5% 15%;
+    --sidebar-accent: 247 10% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 40 5% 16%;
-    --sidebar-ring: 356 83% 41%;
-    --chart-1: 356 83% 41%;
-    --chart-2: 40 5% 60%;
-    --chart-3: 40 5% 15%;
-    --chart-4: 40 5% 11%;
+    --sidebar-border: 247 10% 20%;
+    --sidebar-ring: 350 96% 52%;
+    --chart-1: 350 96% 52%;
+    --chart-2: 227 10% 65%;
+    --chart-3: 247 10% 18%;
+    --chart-4: 247 15% 13%;
     --chart-5: 0 0% 98%;
   }
 
@@ -91,5 +130,23 @@ html.dark {
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Recolors text, borders, and muted content for use on a hsl(var(--red)) surface. */
+  .on-red {
+    --background: var(--red);
+    --foreground: 0 0% 100%;
+    --card: 349 100% 30%;
+    --card-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.16;
+    --input: 0 0% 100% / 0.16;
+    --muted-foreground: 0 0% 100% / 0.72;
+    color: hsl(var(--foreground));
   }
 }
