@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Hanken_Grotesk, Newsreader } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
+const hankenGrotesk = Hanken_Grotesk({
 	variable: "--font-sans",
+	subsets: ["latin"],
+});
+
+const newsreader = Newsreader({
+	variable: "--font-serif",
+	subsets: ["latin"],
+	style: ["normal", "italic"],
 });
 
 const geistMono = Geist_Mono({
@@ -26,7 +33,12 @@ export default function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={cn("font-sans", geistSans.variable, geistMono.variable)}
+			className={cn(
+				"font-sans",
+				hankenGrotesk.variable,
+				newsreader.variable,
+				geistMono.variable,
+			)}
 			suppressHydrationWarning
 		>
 			<body className="antialiased text-foreground">

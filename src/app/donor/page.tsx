@@ -20,6 +20,8 @@ import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracke
 import { useDonorSettingsForm } from "@/hooks/use-donor-settings-form";
 import { toast } from "sonner";
 
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
+import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { ActiveMissionTracker } from "@/components/donor/active-mission-tracker";
 import { DeferralStatusCard } from "@/components/donor/deferral-status-card";
 import { LocationSettingsCard } from "@/components/donor/location-settings-card";
@@ -194,6 +196,22 @@ export default function DonorDashboardPage() {
 			initial="hidden"
 			animate="visible"
 		>
+			<motion.div variants={itemVariants}>
+				<DashboardGreeting
+					title={`Welcome back, ${session.user.name?.split(" ")[0] ?? "Donor"}.`}
+					subtitle={
+						eligibility.eligible
+							? "You're eligible to donate right now."
+							: `Eligible again in ${eligibility.daysRemaining} days.`
+					}
+					action={
+						user?.bloodGroup ? (
+							<BloodTypeBadge bloodGroup={user.bloodGroup} size="lg" />
+						) : undefined
+					}
+				/>
+			</motion.div>
+
 			{eligibility.eligible && lastDonationDate && (
 				<motion.div variants={itemVariants}>
 					<EligibilityBanner />

@@ -1,9 +1,10 @@
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
-import { Stats } from "@/components/landing/stats";
-import { HowItWorks } from "@/components/landing/how-it-works";
-import { Services } from "@/components/landing/services";
+import { Testimonial } from "@/components/landing/testimonial";
+import { Partners } from "@/components/landing/partners";
+import { FeatureRows } from "@/components/landing/feature-rows";
 import { Impact } from "@/components/landing/impact";
+import { CtaBand } from "@/components/landing/cta-band";
 import { Footer } from "@/components/landing/footer";
 
 export default function HomePage() {
@@ -11,10 +12,11 @@ export default function HomePage() {
 		<>
 			<Navbar />
 			<Hero />
-			<Stats />
-			<HowItWorks />
-			<Services />
+			<Testimonial />
+			<Partners />
+			<FeatureRows />
 			<Impact />
+			<CtaBand />
 			<Footer />
 		</>
 	);

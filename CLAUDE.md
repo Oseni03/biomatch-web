@@ -8,6 +8,8 @@ BioMatch is an incentivized blood donation and hospital inventory marketplace bu
 
 **Read `AGENTS.md` first** — it has the full project context, server action inventory, and PRD issue tracker. This file adds Claude-Code-specific operational notes and flags where AGENTS.md / `contexts/` have drifted from the actual code (the repo is mid-refactor as of this writing — admin role/routes and HMO incentive features are being removed).
 
+**Read `DESIGN_SYSTEM.md` before touching any UI** — color tokens, typography, the `src/components/brand/` primitives, and the marketing-site structure are documented there. Most dashboard widgets predate it and haven't been migrated onto it yet.
+
 ## Commands
 
 ```bash
@@ -40,6 +42,7 @@ Route protection lives in **`proxy.ts`** at the repo root (Next.js's newer repla
 - `hooks/` — `@tanstack/react-query` hooks (`use-<domain>.ts`) that wrap server actions for pages. Prefer adding a hook here over calling a server action with manual `useState`/`useEffect` in a component.
 - `lib/` — Cross-cutting utilities: `auth.ts` (better-auth server config), `auth-client.ts` (browser client), `prisma.ts` (singleton client), `constants.ts` (shared domain constants like `ELIGIBILITY_DAYS`, `POINTS_PER_DONATION`, `CRITICAL_THRESHOLD` — import these rather than re-declaring), `radius-expansion.ts` (emergency alert radius tiers), `blood-compatibility.ts`, `eligibility.ts`, `email.ts` (Resend wrapper, mocks when `RESEND_API_KEY` is unset).
 - `components/ui/` — shadcn/ui primitives (Radix Nova style, configured in `components.json`).
+- `components/brand/` — BioMatch design-system primitives (`BloodDropIcon`, `BloodTypeBadge`, `StatusTag`, `InventoryGauge`, `EmergencyAlert`, `DashboardGreeting`). See `DESIGN_SYSTEM.md`.
 - `emails/` — React Email templates sent via `lib/email.ts`.
 
 ### Data model (`prisma/schema.prisma`)
