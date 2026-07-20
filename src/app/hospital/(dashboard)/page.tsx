@@ -162,7 +162,7 @@ export default function HospitalBroadcastsPage() {
 							Live Status Panel
 						</h4>
 						{pendingServerReqs.map((req) => (
-							<LiveStatusPanel key={req.id} requestId={req.id} />
+							<LiveStatusPanel key={req.id} request={req} />
 						))}
 						{pendingRequests && pendingRequests.totalPages > 1 && (
 							<PaginationControls

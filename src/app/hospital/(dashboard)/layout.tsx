@@ -23,7 +23,11 @@ const TABS = [
 		label: "Proactive Donor Directory",
 		icon: Users,
 	},
-	{ href: "/hospital/analytics", label: "Analytics & Reports", icon: BarChart },
+	{
+		href: "/hospital/analytics",
+		label: "Analytics & Reports",
+		icon: BarChart,
+	},
 	{ href: "/hospital/history", label: "Request History", icon: History },
 	{
 		href: "/hospital/staff",
@@ -41,6 +45,7 @@ export default function HospitalDashboardLayout({
 	const { data: session } = authClient.useSession();
 	const { data: pendingData } = usePendingEmergencyRequests(
 		session?.user?.id,
+		{ page: 1, pageSize: 10 },
 	);
 
 	const pendingServerReqs = pendingData?.requests ?? [];

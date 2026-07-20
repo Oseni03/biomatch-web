@@ -303,11 +303,15 @@ export async function getPendingEmergencyRequestsForHospital(
 				status: { in: ["pending", "matched"] },
 			},
 			include: {
+				hospital: {
+					select: { id: true, name: true, location: true },
+				},
 				alerts: {
 					select: {
 						id: true,
 						donorId: true,
 						status: true,
+						updatedAt: true,
 						donor: {
 							select: {
 								id: true,
@@ -317,6 +321,7 @@ export async function getPendingEmergencyRequestsForHospital(
 							},
 						},
 					},
+					orderBy: { updatedAt: "desc" },
 				},
 			},
 			orderBy: { createdAt: "desc" },
@@ -330,8 +335,12 @@ export async function getPendingEmergencyRequestsForHospital(
 			},
 		}),
 	]);
+	const requestsWithAggregates = requests.map((req) => ({
+		...req,
+		aggregates: computeAlertAggregates(req.alerts),
+	}));
 	return {
-		requests,
+		requests: requestsWithAggregates,
 		total,
 		page,
 		pageSize,

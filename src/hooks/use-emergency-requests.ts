@@ -1,10 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-	getActiveEmergencyRequests,
 	getAlertsForDonor,
-	getEmergencyRequestsForHospital,
 	getPendingEmergencyRequestsForHospital,
-	getEmergencyRequestStatus,
 	getEmergencyHistory,
 	expandSearchRadius,
 	respondToAlert,
@@ -12,17 +9,10 @@ import {
 	confirmDonation,
 } from "@/servers/emergency";
 import { toast } from "sonner";
+import { POLL_INTERVAL_MS } from "@/lib/constants";
 
-export function useActiveEmergencyRequests(filters?: {
-	page?: number;
-	pageSize?: number;
-}) {
-	return useQuery({
-		queryKey: ["emergency-requests", "active", filters],
-		queryFn: () => getActiveEmergencyRequests(filters),
-		refetchInterval: 15_000,
-	});
-}
+// Polling cadences below are a stopgap. See contexts/phase-3-realtime.md
+// for the planned SSE replacement — don't duplicate that effort here.
 
 export function useDonorAlerts(
 	donorId?: string,
@@ -32,19 +22,7 @@ export function useDonorAlerts(
 		queryKey: ["donor-alerts", donorId, filters],
 		queryFn: () => getAlertsForDonor(donorId!, filters),
 		enabled: !!donorId,
-		refetchInterval: 15_000,
-	});
-}
-
-export function useEmergencyRequestsForHospital(
-	hospitalId?: string,
-	filters?: { page?: number; pageSize?: number },
-) {
-	return useQuery({
-		queryKey: ["hospital-emergency-requests", hospitalId, filters],
-		queryFn: () => getEmergencyRequestsForHospital(hospitalId!, filters),
-		enabled: !!hospitalId,
-		refetchInterval: 15_000,
+		refetchInterval: POLL_INTERVAL_MS,
 	});
 }
 
@@ -97,16 +75,7 @@ export function usePendingEmergencyRequests(
 		queryFn: () =>
 			getPendingEmergencyRequestsForHospital(hospitalId!, filters),
 		enabled: !!hospitalId,
-		refetchInterval: 15_000,
-	});
-}
-
-export function useEmergencyRequestStatus(requestId?: string) {
-	return useQuery({
-		queryKey: ["emergency-request-status", requestId],
-		queryFn: () => getEmergencyRequestStatus(requestId!),
-		enabled: !!requestId,
-		refetchInterval: 5_000,
+		refetchInterval: POLL_INTERVAL_MS,
 	});
 }
 
@@ -135,9 +104,6 @@ export function useConfirmDonation() {
 		mutationFn: ({ alertId }: { alertId: string }) =>
 			confirmDonation(alertId),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
-				queryKey: ["emergency-request-status", data.requestId],
-			});
 			queryClient.invalidateQueries({
 				queryKey: ["pending-emergency-requests"],
 			});

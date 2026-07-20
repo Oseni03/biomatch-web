@@ -5,9 +5,13 @@ export async function proxy(request: NextRequest) {
 	const { nextUrl } = request;
 	const pathname = nextUrl.pathname;
 
-	const publicRoutes = ["/", "/auth/login", "/auth/signup", "/api/auth"];
+	const authOnlyPublicRoutes = ["/auth/login", "/auth/signup"];
+	const publicPrefixes = ["/api/auth"];
 
-	if (publicRoutes.some((route) => pathname.startsWith(route))) {
+	if (
+		authOnlyPublicRoutes.includes(pathname) ||
+		publicPrefixes.some((prefix) => pathname.startsWith(prefix))
+	) {
 		return NextResponse.next();
 	}
 
@@ -15,6 +19,15 @@ export async function proxy(request: NextRequest) {
 		const session = await auth.api.getSession({
 			headers: request.headers,
 		});
+
+		if (pathname === "/") {
+			if (session?.user?.role) {
+				return NextResponse.redirect(
+					new URL(`/${session.user.role}`, request.url),
+				);
+			}
+			return NextResponse.next();
+		}
 
 		if (!session?.user?.id) {
 			const loginUrl = new URL("/auth/login", request.url);
@@ -44,12 +57,15 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
 		}
 
-		if (pathname === "/" || pathname === "/dashboard") {
+		if (pathname === "/dashboard") {
 			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
 		}
 
 		return NextResponse.next();
 	} catch (error) {
+		if (pathname === "/") {
+			return NextResponse.next();
+		}
 		const loginUrl = new URL("/auth/login", request.url);
 		loginUrl.searchParams.set("callbackUrl", pathname);
 		return NextResponse.redirect(loginUrl);
@@ -58,6 +74,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
 	matcher: [
+		"/",
 		"/auth/:path*",
 		"/donor/:path*",
 		"/admin/:path*",

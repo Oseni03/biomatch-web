@@ -7,3 +7,7 @@ export const ACTIVE_ALERT_STATUSES = [
 	"arrived",
 	"completed",
 ] as const;
+
+// Shared polling cadence for dashboard hooks that lack push updates.
+// See contexts/phase-3-realtime.md for the planned SSE replacement.
+export const POLL_INTERVAL_MS = 20_000;

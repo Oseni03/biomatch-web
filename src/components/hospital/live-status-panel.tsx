@@ -11,11 +11,15 @@ import {
 	Clock,
 } from "lucide-react";
 import { displayBloodGroup } from "@/lib/donor-types";
-import { useEmergencyRequestStatus } from "@/hooks/use-emergency-requests";
+import type { getPendingEmergencyRequestsForHospital } from "@/servers/emergency";
 import { DonorStageList } from "@/components/hospital/donor-stage-list";
 
+type PendingRequest = Awaited<
+	ReturnType<typeof getPendingEmergencyRequestsForHospital>
+>["requests"][number];
+
 interface LiveStatusPanelProps {
-	requestId: string;
+	request: PendingRequest;
 }
 
 const STATUS_CONFIG = [
@@ -69,21 +73,8 @@ const STATUS_CONFIG = [
 	},
 ];
 
-export function LiveStatusPanel({ requestId }: LiveStatusPanelProps) {
-	const { data: request, isLoading } = useEmergencyRequestStatus(requestId);
+export function LiveStatusPanel({ request }: LiveStatusPanelProps) {
 	const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
-
-	if (isLoading) {
-		return (
-			<div className="flex h-32 items-center justify-center">
-				<Clock className="h-5 w-5 animate-spin text-muted-foreground" />
-			</div>
-		);
-	}
-
-	if (!request) {
-		return <p className="text-sm text-muted-foreground">Request not found.</p>;
-	}
 
 	const bloodGroup = displayBloodGroup(request.bloodGroup);
 	const totalDonors = request.alerts.length;
