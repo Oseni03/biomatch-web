@@ -195,6 +195,22 @@ See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details
 
 See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details. Issue #36 flags a product placement question (Emergency Preferences section) for human input but is otherwise ready-for-agent; #39 naturally follows #37/#38 but isn't strictly blocked by them.
 
+## UI/UX Feedback Report Issues (grilling session, 2026-07-21)
+
+7 issues derived from a stakeholder UI/UX + debugging report, fact-checked and scoped via grilling. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 40 | Merge Donor Finder into Donor Directory | AFK | — | |
+| 41 | Broaden `ink` Token as Structural Chrome Color App-Wide | AFK | — | |
+| 42 | Bolder Serif Wordmark (Non-Italic, Larger) | AFK | — | |
+| 43 | Hospital Unique Sequential Code (BIOMATCH-NNN) | AFK | — | |
+| 44 | Donor Donation History (Real Model + UI) | AFK | 40 | |
+| 45 | Inventory Usage Tracking + Trend Chart | AFK | — | |
+| 46 | [Backlog] Verify Donor Search "Divine" Report Against Production Data | HITL | — | needs-triage |
+
+See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details. Issue #46 is explicitly **not** ready-for-agent — it requires a human to check a production `User.name` value; #41 is a real design-system boundary change (broadening `ink`'s documented scope) distinct from issue #26 (dark-only theme).
+
 ## Agent skills
 
 ### Issue tracker
