@@ -111,6 +111,69 @@ export async function signUpWithProfile(formData: {
 	}
 }
 
+export async function acceptInvitationSignUp(formData: {
+	invitationId: string;
+	fullName: string;
+	password: string;
+}) {
+	const { invitationId, fullName, password } = formData;
+
+	const invitation = await prisma.invitation.findUnique({
+		where: { id: invitationId },
+	});
+
+	if (
+		!invitation ||
+		invitation.status !== "pending" ||
+		invitation.expiresAt < new Date()
+	) {
+		return { error: "This invitation is no longer valid" };
+	}
+
+	const existingUser = await prisma.user.findUnique({
+		where: { email: invitation.email },
+	});
+	if (existingUser) {
+		return {
+			error: "An account with this email already exists. Log in to accept this invitation.",
+		};
+	}
+
+	try {
+		const data = await auth.api.signUpEmail({
+			body: {
+				email: invitation.email,
+				password,
+				role: "hospital",
+				name: fullName,
+			},
+		});
+
+		if (!data?.user) {
+			return { error: "Failed to create account" };
+		}
+
+		await prisma.$transaction([
+			prisma.member.create({
+				data: {
+					organizationId: invitation.organizationId,
+					userId: data.user.id,
+					role: invitation.role,
+				},
+			}),
+			prisma.invitation.update({
+				where: { id: invitation.id },
+				data: { status: "accepted" },
+			}),
+		]);
+
+		return { success: true };
+	} catch (err: any) {
+		console.error("Accepting invitation failed:", err);
+		return { error: err.message ?? "Failed to accept invitation" };
+	}
+}
+
 export async function loginWithRole(email: string, password: string) {
 	const { user } = await auth.api.signInEmail({
 		body: {

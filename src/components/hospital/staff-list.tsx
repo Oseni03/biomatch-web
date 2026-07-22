@@ -6,25 +6,17 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { StatusTag } from "@/components/brand/status-tag";
-import type { StaffRole } from "@/servers/staff";
-
-const ROLE_OPTIONS: StaffRole[] = ["admin", "requester", "viewer"];
-
-interface StaffEntry {
-	id: string;
-	name: string;
-	email: string;
-	role: StaffRole;
-	isActive: boolean;
-}
+import { INVITABLE_ROLES, type InvitableRole } from "@/lib/organization-access";
+import type { StaffMember } from "@/servers/staff";
 
 interface StaffListProps {
-	staffList: StaffEntry[];
+	staffList: StaffMember[];
 	loading: boolean;
 	isAdmin: boolean;
 	currentUserId?: string;
-	onRoleChange: (userId: string, role: StaffRole) => void;
-	onRemove: (userId: string) => void;
+	onRoleChange: (memberId: string, role: InvitableRole) => void;
+	onRemove: (memberId: string) => void;
+	onCancelInvite: (invitationId: string) => void;
 }
 
 export function StaffList({
@@ -34,6 +26,7 @@ export function StaffList({
 	currentUserId,
 	onRoleChange,
 	onRemove,
+	onCancelInvite,
 }: StaffListProps) {
 	return (
 		<Card className="bg-card border-border rounded-xl p-6 lg:col-span-2 text-left shadow-sm transition-shadow hover:shadow-card-hover">
@@ -63,67 +56,96 @@ export function StaffList({
 				</div>
 			) : (
 				<div className="space-y-4">
-					{staffList.map((st) => (
-						<div
-							key={st.id}
-							className="flex justify-between items-center p-3.5 bg-muted border-border rounded-2xl"
-						>
-							<div>
-								<span className="font-bold text-sm text-foreground block">
-									{st.name}
-									{st.id === currentUserId && (
-										<span className="ml-2 text-[10px] font-mono text-muted-foreground">
-											(you)
+					{staffList.map((st) => {
+						const isMe =
+							st.status === "active" &&
+							st.userId === currentUserId;
+						const isInvitableRole = (
+							INVITABLE_ROLES as readonly string[]
+						).includes(st.role);
+
+						return (
+							<div
+								key={st.id}
+								className="flex justify-between items-center p-3.5 bg-muted border-border rounded-2xl"
+							>
+								<div>
+									<span className="font-bold text-sm text-foreground block">
+										{st.name}
+										{isMe && (
+											<span className="ml-2 text-[10px] font-mono text-muted-foreground">
+												(you)
+											</span>
+										)}
+									</span>
+									<span className="text-xs text-muted-foreground mt-0.5 block">
+										{st.email}
+									</span>
+								</div>
+								<div className="flex items-center gap-3">
+									{isAdmin &&
+									st.status === "active" &&
+									isInvitableRole ? (
+										<select
+											value={st.role}
+											disabled={isMe}
+											onChange={(e) =>
+												onRoleChange(
+													st.id,
+													e.target
+														.value as InvitableRole,
+												)
+											}
+											className="px-2 py-1 bg-card border border-border rounded-lg text-xs font-medium"
+										>
+											{INVITABLE_ROLES.map((r) => (
+												<option key={r} value={r}>
+													{r}
+												</option>
+											))}
+										</select>
+									) : (
+										<span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-mono font-semibold tracking-wider border border-border bg-brand-light text-brand">
+											{st.role}
 										</span>
 									)}
-								</span>
-								<span className="text-xs text-muted-foreground mt-0.5 block">
-									{st.email}
-								</span>
-							</div>
-							<div className="flex items-center gap-3">
-								{isAdmin ? (
-									<select
-										value={st.role}
-										disabled={
-											!st.isActive ||
-											st.id === currentUserId
+									<StatusTag
+										status={
+											st.status === "active"
+												? "ok"
+												: "info"
 										}
-										onChange={(e) =>
-											onRoleChange(
-												st.id,
-												e.target.value as StaffRole,
-											)
-										}
-										className="px-2 py-1 bg-card border border-border rounded-lg text-xs font-medium"
 									>
-										{ROLE_OPTIONS.map((r) => (
-											<option key={r} value={r}>
-												{r}
-											</option>
-										))}
-									</select>
-								) : (
-									<span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-mono font-semibold tracking-wider border border-border bg-brand-light text-brand">
-										{st.role}
-									</span>
-								)}
-								<StatusTag status={st.isActive ? "ok" : "critical"}>
-									{st.isActive ? "Active" : "Inactive"}
-								</StatusTag>
-								{isAdmin &&
-									st.isActive &&
-									st.id !== currentUserId && (
+										{st.status === "active"
+											? "Active"
+											: "Pending"}
+									</StatusTag>
+									{isAdmin &&
+										st.status === "active" &&
+										!isMe && (
+											<button
+												onClick={() =>
+													onRemove(st.id)
+												}
+												className="text-[10px] text-destructive hover:text-destructive/80 font-semibold cursor-pointer"
+											>
+												Remove
+											</button>
+										)}
+									{isAdmin && st.status === "pending" && (
 										<button
-											onClick={() => onRemove(st.id)}
+											onClick={() =>
+												onCancelInvite(st.id)
+											}
 											className="text-[10px] text-destructive hover:text-destructive/80 font-semibold cursor-pointer"
 										>
-											Remove
+											Cancel
 										</button>
 									)}
+								</div>
 							</div>
-						</div>
-					))}
+						);
+					})}
 				</div>
 			)}
 		</Card>

@@ -1,48 +1,58 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import type { StaffRole } from "@/servers/staff";
+import type { InvitableRole } from "@/lib/organization-access";
 import {
 	useStaffMembers,
 	useInviteStaffMember,
 	useUpdateStaffRole,
 	useRemoveStaffMember,
+	useCancelStaffInvitation,
 } from "@/hooks/use-staff";
 import { StaffList } from "@/components/hospital/staff-list";
 import { InviteStaffForm } from "@/components/hospital/invite-staff-form";
 
 interface StaffAccountsProps {
-	hospitalId: string;
+	organizationId: string;
 }
 
-export function StaffAccounts({ hospitalId }: StaffAccountsProps) {
+export function StaffAccounts({ organizationId }: StaffAccountsProps) {
 	const { data: session } = authClient.useSession();
 	const currentUserId = session?.user?.id;
 
 	const { data: staffList = [], isLoading: loading } =
-		useStaffMembers(hospitalId);
-	const inviteMutation = useInviteStaffMember(hospitalId);
-	const updateRoleMutation = useUpdateStaffRole(hospitalId);
-	const removeMutation = useRemoveStaffMember(hospitalId);
+		useStaffMembers(organizationId);
+	const inviteMutation = useInviteStaffMember(organizationId);
+	const updateRoleMutation = useUpdateStaffRole(organizationId);
+	const removeMutation = useRemoveStaffMember(organizationId);
+	const cancelInviteMutation = useCancelStaffInvitation(organizationId);
 
 	const currentUserRole = staffList.find(
-		(s) => s.id === currentUserId,
+		(s) => s.status === "active" && s.userId === currentUserId,
 	)?.role;
-	const isAdmin = currentUserRole === "admin";
+	const isAdmin = currentUserRole === "admin" || currentUserRole === "owner";
 
-	const handleInvite = (name: string, email: string, role: StaffRole) => {
+	const handleInvite = (email: string, role: InvitableRole) => {
 		if (!currentUserId) return;
-		inviteMutation.mutate({ email, name, role, callerUserId: currentUserId });
+		inviteMutation.mutate({ email, role, callerUserId: currentUserId });
 	};
 
-	const handleRoleChange = (userId: string, role: StaffRole) => {
+	const handleRoleChange = (memberId: string, role: InvitableRole) => {
 		if (!currentUserId) return;
-		updateRoleMutation.mutate({ userId, role, callerUserId: currentUserId });
+		updateRoleMutation.mutate({ memberId, role, callerUserId: currentUserId });
 	};
 
-	const handleRemove = (userId: string) => {
+	const handleRemove = (memberId: string) => {
 		if (!currentUserId) return;
-		removeMutation.mutate({ userId, callerUserId: currentUserId });
+		removeMutation.mutate({ memberId, callerUserId: currentUserId });
+	};
+
+	const handleCancelInvite = (invitationId: string) => {
+		if (!currentUserId) return;
+		cancelInviteMutation.mutate({
+			invitationId,
+			callerUserId: currentUserId,
+		});
 	};
 
 	return (
@@ -54,6 +64,7 @@ export function StaffAccounts({ hospitalId }: StaffAccountsProps) {
 				currentUserId={currentUserId}
 				onRoleChange={handleRoleChange}
 				onRemove={handleRemove}
+				onCancelInvite={handleCancelInvite}
 			/>
 
 			{isAdmin && <InviteStaffForm onSubmit={handleInvite} />}

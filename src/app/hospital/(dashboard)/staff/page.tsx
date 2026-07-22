@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getQueryClient } from "@/lib/get-query-client";
 import { getServerSession } from "@/lib/get-session";
 import { getStaffMembers } from "@/servers/staff";
+import { getActiveOrganizationId } from "@/servers/organization";
 import { StaffAccounts } from "@/components/hospital/staff-accounts";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
@@ -13,11 +14,11 @@ export default async function HospitalStaffPage() {
 	}
 
 	const queryClient = getQueryClient();
-	const hospitalId = session.user.id;
+	const organizationId = await getActiveOrganizationId(session.user.id);
 
 	await queryClient.prefetchQuery({
-		queryKey: ["staff", hospitalId],
-		queryFn: () => getStaffMembers(hospitalId),
+		queryKey: ["staff", organizationId],
+		queryFn: () => getStaffMembers(organizationId),
 	});
 
 	return (
@@ -27,7 +28,7 @@ export default async function HospitalStaffPage() {
 				subtitle="Manage who on your team can respond to emergency requests and manage inventory."
 			/>
 			<HydrationBoundary state={dehydrate(queryClient)}>
-				<StaffAccounts hospitalId={hospitalId} />
+				<StaffAccounts organizationId={organizationId} />
 			</HydrationBoundary>
 		</div>
 	);

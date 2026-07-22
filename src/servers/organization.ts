@@ -14,6 +14,14 @@ export async function getActiveOrganizationId(userId: string): Promise<string> {
 	return membership.organizationId;
 }
 
+export async function isUserInAnyOrganization(userId: string): Promise<boolean> {
+	const membership = await prisma.member.findFirst({
+		where: { userId },
+		select: { id: true },
+	});
+	return !!membership;
+}
+
 export async function getActiveOrganizationRole(
 	organizationId: string,
 	userId: string,

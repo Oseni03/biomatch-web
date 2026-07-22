@@ -4,6 +4,8 @@ import { nextCookies } from "better-auth/next-js";
 import { organization } from "better-auth/plugins/organization";
 import { prisma } from "./prisma";
 import { ac, orgRoles } from "./organization-access";
+import { sendEmail } from "./email";
+import StaffInvitationEmail from "@/emails/staff-invitation";
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
@@ -44,6 +46,18 @@ export const auth = betterAuth({
 			roles: orgRoles,
 			creatorRole: "owner",
 			organizationLimit: 1,
+			sendInvitationEmail: async (data) => {
+				await sendEmail({
+					to: data.email,
+					subject: `You've been invited to join ${data.organization.name} on BioMatch`,
+					react: StaffInvitationEmail({
+						organizationName: data.organization.name,
+						inviterName: data.inviter.user.name,
+						role: data.role,
+						acceptUrl: `${process.env.BETTER_AUTH_URL}/auth/accept-invitation?id=${data.invitation.id}`,
+					}),
+				});
+			},
 		}),
 		nextCookies(),
 	],

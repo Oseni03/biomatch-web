@@ -25,6 +25,8 @@ export const requesterRole = ac.newRole({
 });
 
 export const adminRole = ac.newRole({
+	invitation: ["create", "cancel"],
+	member: ["update", "delete"],
 	staff: ["invite", "update", "remove"],
 	inventory: ["read", "write"],
 	emergency: ["create", "update"],
