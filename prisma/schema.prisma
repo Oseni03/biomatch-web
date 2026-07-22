@@ -111,18 +111,20 @@ enum BloodGroup {
 }
 
 model HospitalBank {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hospitalName String
-  location     String
-  locationId   String?  @db.Uuid
-  inventory    Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
-  managedById  String?  @db.Uuid
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sequenceNumber Int      @default(autoincrement())
+  hospitalName   String
+  location       String
+  locationId     String?  @db.Uuid
+  inventory      Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
+  managedById    String?  @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
-  managedBy  User?     @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  managedBy   User?     @relation(fields: [managedById], references: [id], onDelete: SetNull)
   locationRel Location? @relation(fields: [locationId], references: [id])
 
+  @@unique([sequenceNumber])
   @@index([locationId])
   @@map("hospital_banks")
 }

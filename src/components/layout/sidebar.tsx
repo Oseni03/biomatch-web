@@ -37,6 +37,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import { useMyHospitalBank } from "@/hooks/use-hospital-bank";
+import { formatHospitalCode } from "@/lib/hospital-code";
 import { cn } from "@/lib/utils";
 
 type Role = "donor" | "hospital";
@@ -106,6 +108,9 @@ export function SidebarLayout({
 	const { data: donorAlerts } = useDonorAlerts(
 		role === "donor" ? session?.user?.id : undefined,
 	);
+	const { data: hospitalBank } = useMyHospitalBank(
+		role === "hospital" ? session?.user?.id : undefined,
+	);
 	const alertCount = (donorAlerts?.alerts ?? []).filter(
 		(a) =>
 			a.status === "alerted" ||
@@ -128,8 +133,16 @@ export function SidebarLayout({
 							orientation="vertical"
 							className="mr-2 h-4"
 						/>
-						<h1 className="text-sm font-medium">
+						<h1 className="text-sm font-medium flex items-center gap-2">
 							{SECTION_LABELS[role]}
+							{hospitalBank && (
+								<span className="font-mono text-[11px] font-normal text-sidebar-foreground/60">
+									{hospitalBank.hospitalName} ·{" "}
+									{formatHospitalCode(
+										hospitalBank.sequenceNumber,
+									)}
+								</span>
+							)}
 						</h1>
 					</div>
 					<div className="ml-auto flex items-center gap-1.5">

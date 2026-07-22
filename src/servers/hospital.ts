@@ -21,6 +21,13 @@ export async function getHospitalBankById(id: string) {
 	});
 }
 
+export async function getHospitalBankByManagedById(userId: string) {
+	return prisma.hospitalBank.findFirst({
+		where: { managedById: userId },
+		select: { id: true, hospitalName: true, sequenceNumber: true },
+	});
+}
+
 export async function createHospitalBank(data: {
 	hospitalName: string;
 	location: string;
