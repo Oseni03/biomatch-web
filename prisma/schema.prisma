@@ -256,6 +256,9 @@ model User {
   emergencyRequests EmergencyRequest[]  @relation("HospitalRequests")
   emergencyAlerts   EmergencyAlert[]    @relation("DonorAlerts")
   donations         Donation[]          @relation("DonorDonations")
+  donorScreenings          DonorScreening[] @relation("DonorScreeningDonor")
+  hospitalScreeningsGiven  DonorScreening[] @relation("DonorScreeningHospital")
+  staffScreeningsRecorded  DonorScreening[] @relation("DonorScreeningStaff")
 
   @@unique([email])
   @@index([role])
@@ -263,6 +266,35 @@ model User {
   @@index([locationId])
   @@index([lastDonationDate])
   @@map("user")
+}
+
+enum ScreeningStatus {
+  pending
+  passed
+  failed
+}
+
+model DonorScreening {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  donorId     String          @db.Uuid
+  hospitalId  String          @db.Uuid
+  staffUserId String          @db.Uuid
+  status      ScreeningStatus @default(pending)
+  screenedAt  DateTime        @default(now()) @db.Timestamptz(6)
+  resolvedAt  DateTime?       @db.Timestamptz(6)
+  notes       String?
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
+
+  donor     User @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
+  hospital  User @relation("DonorScreeningHospital", fields: [hospitalId], references: [id], onDelete: Cascade)
+  staffUser User @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+
+  @@index([donorId])
+  @@index([hospitalId])
+  @@index([status])
+  @@index([resolvedAt])
+  @@map("donor_screenings")
 }
 
 model Session {
