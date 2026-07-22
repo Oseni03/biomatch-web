@@ -18,6 +18,7 @@ import {
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
 import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
 import { useDonorSettingsForm } from "@/hooks/use-donor-settings-form";
+import { useDonorVerificationStatus } from "@/hooks/use-screening";
 import { toast } from "sonner";
 
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
@@ -30,6 +31,7 @@ import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
 import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { SuccessModal } from "@/components/donor/success-modal";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
+import { VerificationStatusBanner } from "@/components/donor/verification-status-banner";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function DonorDashboardClient() {
@@ -41,6 +43,9 @@ export function DonorDashboardClient() {
 		error: userError,
 	} = useDonorDashboard();
 	const { data: banks } = useInventory();
+	const { data: verificationStatus } = useDonorVerificationStatus(
+		session?.user?.id,
+	);
 	const [page, setPage] = useState(1);
 
 	const handleFilter = () => {
@@ -211,6 +216,12 @@ export function DonorDashboardClient() {
 					}
 				/>
 			</motion.div>
+
+			{verificationStatus && verificationStatus !== "verified" && (
+				<motion.div variants={itemVariants}>
+					<VerificationStatusBanner status={verificationStatus} />
+				</motion.div>
+			)}
 
 			{eligibility.eligible && lastDonationDate && (
 				<motion.div variants={itemVariants}>

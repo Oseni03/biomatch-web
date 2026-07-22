@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import type { ScreeningStatus } from "@generated/prisma/enums";
+import { sendScreeningResultEmail } from "./notification";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "failed";
 
@@ -120,7 +121,7 @@ export async function resolveScreening(
 		);
 	}
 
-	return prisma.donorScreening.update({
+	const updated = await prisma.donorScreening.update({
 		where: { id: screeningId },
 		data: {
 			status,
@@ -128,4 +129,10 @@ export async function resolveScreening(
 			resolvedAt: new Date(),
 		},
 	});
+
+	sendScreeningResultEmail(updated.id).catch((err) => {
+		console.error("Failed to send screening result email:", err);
+	});
+
+	return updated;
 }

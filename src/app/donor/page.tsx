@@ -6,6 +6,7 @@ import { getUserById } from "@/servers/user";
 import { getAllHospitalBanks } from "@/servers/hospital";
 import { getAlertsForDonor, getDonorHistory } from "@/servers/emergency";
 import { getAllCityLabels } from "@/servers/location";
+import { getDonorVerificationStatus } from "@/servers/screening";
 import { DonorDashboardClient } from "./donor-dashboard-client";
 
 export default async function DonorDashboardPage() {
@@ -37,6 +38,10 @@ export default async function DonorDashboardPage() {
 		queryClient.prefetchQuery({
 			queryKey: ["city-labels"],
 			queryFn: () => getAllCityLabels(),
+		}),
+		queryClient.prefetchQuery({
+			queryKey: ["donor-verification-status", userId],
+			queryFn: () => getDonorVerificationStatus(userId),
 		}),
 	]);
 
