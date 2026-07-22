@@ -4,9 +4,18 @@ import {
 	inviteStaffMember,
 	updateStaffRole,
 	removeStaffMember,
+	getMyStaffRole,
 	type StaffRole,
 } from "@/servers/staff";
 import { toast } from "sonner";
+
+export function useMyStaffRole(userId?: string) {
+	return useQuery({
+		queryKey: ["my-staff-role", userId],
+		queryFn: () => getMyStaffRole(userId!),
+		enabled: !!userId,
+	});
+}
 
 export function useStaffMembers(hospitalId?: string) {
 	return useQuery({

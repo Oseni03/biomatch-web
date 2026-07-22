@@ -224,7 +224,7 @@ See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details
 | # | Title | Type | Blocked By | Status |
 |---|---|---|---|---|
 | 47 | Donor Screening Data Model + Grandfather Migration | AFK | — | ✅ |
-| 48 | Hospital Staff Record Donor Screening | AFK | 47 | |
+| 48 | Hospital Staff Record Donor Screening | AFK | 47 | ✅ |
 | 49 | Verification Gates Matching + Donor List | AFK | 47 | |
 | 50 | Donor Verification Status + Notification | AFK | 47, 48 | |
 | 51 | Donation Confirmation Triggers Re-Screening | AFK | 47, 48 | |

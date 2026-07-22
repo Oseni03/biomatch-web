@@ -5,6 +5,22 @@ import type { ScreeningStatus } from "@generated/prisma/enums";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "failed";
 
+async function requireScreeningRole(callerUserId: string) {
+	const caller = await prisma.user.findUnique({
+		where: { id: callerUserId },
+		select: { hospitalStaffRole: true },
+	});
+	if (!caller) throw new Error("Caller not found");
+	if (
+		caller.hospitalStaffRole !== "admin" &&
+		caller.hospitalStaffRole !== "requester"
+	) {
+		throw new Error(
+			"Only admin or requester staff can record or resolve donor screenings",
+		);
+	}
+}
+
 export async function getDonorVerificationStatus(
 	donorId: string,
 ): Promise<VerificationStatus> {
@@ -45,4 +61,71 @@ export async function getVerifiedDonorIds(): Promise<string[]> {
 		if (status === "passed") verified.push(donorId);
 	}
 	return verified;
+}
+
+export async function getActiveScreeningForDonor(donorId: string) {
+	return prisma.donorScreening.findFirst({
+		where: { donorId, status: "pending" },
+		orderBy: { screenedAt: "desc" },
+	});
+}
+
+export async function getScreeningHistoryForDonor(donorId: string) {
+	return prisma.donorScreening.findMany({
+		where: { donorId },
+		orderBy: { screenedAt: "desc" },
+	});
+}
+
+export async function createScreening(
+	donorId: string,
+	hospitalId: string,
+	staffUserId: string,
+) {
+	await requireScreeningRole(staffUserId);
+
+	const existingPending = await prisma.donorScreening.findFirst({
+		where: { donorId, status: "pending" },
+	});
+	if (existingPending) {
+		return existingPending;
+	}
+
+	return prisma.donorScreening.create({
+		data: {
+			donorId,
+			hospitalId,
+			staffUserId,
+			status: "pending",
+			screenedAt: new Date(),
+		},
+	});
+}
+
+export async function resolveScreening(
+	screeningId: string,
+	status: "passed" | "failed",
+	callerUserId: string,
+	notes?: string,
+) {
+	await requireScreeningRole(callerUserId);
+
+	const existing = await prisma.donorScreening.findUnique({
+		where: { id: screeningId },
+	});
+	if (!existing) throw new Error("Screening not found");
+	if (existing.status !== "pending") {
+		throw new Error(
+			`Cannot resolve a screening that is already "${existing.status}"`,
+		);
+	}
+
+	return prisma.donorScreening.update({
+		where: { id: screeningId },
+		data: {
+			status,
+			notes: notes || existing.notes,
+			resolvedAt: new Date(),
+		},
+	});
 }

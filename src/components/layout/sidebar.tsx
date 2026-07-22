@@ -14,6 +14,7 @@ import {
 	BarChart,
 	Users,
 	UserPlus,
+	ShieldCheck,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -73,6 +74,11 @@ const NAV_ITEMS: Record<
 			title: "Donor Directory",
 			url: "/hospital/directory",
 			icon: Users,
+		},
+		{
+			title: "Donor Screening",
+			url: "/hospital/screening",
+			icon: ShieldCheck,
 		},
 		{
 			title: "Analytics & Reports",

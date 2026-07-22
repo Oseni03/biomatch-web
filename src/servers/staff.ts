@@ -45,6 +45,16 @@ export async function getStaffMembers(
 	}));
 }
 
+export async function getMyStaffRole(
+	userId: string,
+): Promise<StaffRole | null> {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { hospitalStaffRole: true },
+	});
+	return user?.hospitalStaffRole ?? null;
+}
+
 async function requireAdminRole(callerUserId: string) {
 	const caller = await prisma.user.findUnique({
 		where: { id: callerUserId },
