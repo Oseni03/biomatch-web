@@ -36,16 +36,16 @@ const TABS = [
 ];
 
 interface HospitalDashboardShellProps {
-	hospitalId: string;
+	organizationId: string;
 	children: React.ReactNode;
 }
 
 export function HospitalDashboardShell({
-	hospitalId,
+	organizationId,
 	children,
 }: HospitalDashboardShellProps) {
 	const pathname = usePathname();
-	const { data: pendingData } = usePendingEmergencyRequests(hospitalId, {
+	const { data: pendingData } = usePendingEmergencyRequests(organizationId, {
 		page: 1,
 		pageSize: 10,
 	});

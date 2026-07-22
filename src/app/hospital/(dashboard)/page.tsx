@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/get-session";
+import { getActiveOrganizationId } from "@/servers/organization";
 import { HospitalBroadcastsClient } from "./hospital-broadcasts-client";
 
 export default async function HospitalBroadcastsPage() {
@@ -8,5 +9,7 @@ export default async function HospitalBroadcastsPage() {
 		redirect("/auth/login");
 	}
 
-	return <HospitalBroadcastsClient hospitalId={session.user.id} />;
+	const organizationId = await getActiveOrganizationId(session.user.id);
+
+	return <HospitalBroadcastsClient organizationId={organizationId} />;
 }

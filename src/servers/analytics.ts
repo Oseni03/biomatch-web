@@ -17,16 +17,16 @@ function buildCreatedAtFilter(dateRange?: {
 }
 
 export async function getHospitalAnalytics(
-	hospitalId: string,
+	organizationId: string,
 	dateRange?: { startDate: string; endDate: string },
 ) {
 	const dateFilter = buildCreatedAtFilter(dateRange);
 	const requestWhere = dateFilter
-		? { hospitalId, createdAt: dateFilter }
-		: { hospitalId };
+		? { organizationId, createdAt: dateFilter }
+		: { organizationId };
 	const alertWhere = dateFilter
-		? { request: { hospitalId, createdAt: dateFilter } }
-		: { request: { hospitalId } };
+		? { request: { organizationId, createdAt: dateFilter } }
+		: { request: { organizationId } };
 
 	const [
 		totalRequests,
@@ -67,7 +67,7 @@ export async function getHospitalAnalytics(
 				)::integer AS avg
 			FROM emergency_alerts ea
 			JOIN emergency_requests er ON er.id = ea."requestId"
-			WHERE er."hospitalId" = ${hospitalId}::uuid
+			WHERE er."organizationId" = ${organizationId}::uuid
 				${dateFilter?.gte ? Prisma.sql`AND er."createdAt" >= ${dateFilter.gte}::timestamp` : Prisma.empty}
 				${dateFilter?.lte ? Prisma.sql`AND er."createdAt" <= ${dateFilter.lte}::timestamp` : Prisma.empty}
 				AND ea."respondedAt" IS NOT NULL
@@ -109,12 +109,12 @@ export async function getHospitalAnalytics(
 }
 
 export async function exportDonationRecords(
-	hospitalId: string,
+	organizationId: string,
 	dateRange?: { startDate: string; endDate: string },
 ) {
 	const dateFilter = buildCreatedAtFilter(dateRange);
 	const where: Record<string, unknown> = {
-		hospitalId,
+		organizationId,
 		status: "fulfilled",
 		...(dateFilter ? { createdAt: dateFilter } : {}),
 	};

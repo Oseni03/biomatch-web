@@ -14,6 +14,7 @@ import {
 import type { DonorAlertWithRequest } from "@/lib/donor-types";
 import { sendEmergencyAlertEmail } from "./notification";
 import { scoreDonorProximity } from "./location";
+import { getOrganizationOwnerUserId } from "./organization";
 
 function computeAlertAggregates(alerts: { status: string }[]) {
 	return {
@@ -63,7 +64,7 @@ async function applyDonationRewards(userId: string) {
 
 async function matchDonors(
 	bloodGroup: string,
-	hospitalId: string,
+	organizationId: string,
 ): Promise<{
 	donors: {
 		id: string;
@@ -83,6 +84,7 @@ async function matchDonors(
 	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
 
 	const verifiedDonorIds = await getVerifiedDonorIds();
+	const ownerUserId = await getOrganizationOwnerUserId(organizationId);
 
 	const [matchedDonors, requestLocation] = await Promise.all([
 		prisma.user.findMany({
@@ -99,7 +101,7 @@ async function matchDonors(
 			select: { id: true, location: true, locationId: true, name: true },
 		}),
 		prisma.user.findUnique({
-			where: { id: hospitalId },
+			where: { id: ownerUserId },
 			select: { location: true, locationId: true, name: true },
 		}),
 	]);
@@ -122,15 +124,18 @@ async function matchDonors(
 }
 
 export async function createEmergencyRequest(data: {
-	hospitalId: string;
+	organizationId: string;
 	bloodGroup: string;
 	unitsNeeded: number;
 	urgencyLevel: "standard" | "critical";
 	searchRadius?: number;
 }) {
+	const ownerUserId = await getOrganizationOwnerUserId(data.organizationId);
+
 	const request = await prisma.emergencyRequest.create({
 		data: {
-			hospitalId: data.hospitalId,
+			hospitalId: ownerUserId,
+			organizationId: data.organizationId,
 			bloodGroup: data.bloodGroup as any,
 			unitsNeeded: data.unitsNeeded,
 			urgencyLevel: data.urgencyLevel as any,
@@ -141,7 +146,7 @@ export async function createEmergencyRequest(data: {
 
 	const { donors: scored, hospitalLocation } = await matchDonors(
 		data.bloodGroup,
-		data.hospitalId,
+		data.organizationId,
 	);
 
 	if (scored.length > 0) {
@@ -251,8 +256,8 @@ export async function getAlertsForDonor(
 	};
 }
 
-export async function getEmergencyRequestsForHospital(
-	hospitalId: string,
+export async function getEmergencyRequestsForOrganization(
+	organizationId: string,
 	filters?: { page?: number; pageSize?: number },
 ) {
 	const page = filters?.page ?? 1;
@@ -260,7 +265,7 @@ export async function getEmergencyRequestsForHospital(
 
 	const [requests, total] = await Promise.all([
 		prisma.emergencyRequest.findMany({
-			where: { hospitalId },
+			where: { organizationId },
 			include: {
 				alerts: {
 					include: {
@@ -279,7 +284,7 @@ export async function getEmergencyRequestsForHospital(
 			skip: (page - 1) * pageSize,
 			take: pageSize,
 		}),
-		prisma.emergencyRequest.count({ where: { hospitalId } }),
+		prisma.emergencyRequest.count({ where: { organizationId } }),
 	]);
 	return {
 		requests,
@@ -290,8 +295,8 @@ export async function getEmergencyRequestsForHospital(
 	};
 }
 
-export async function getPendingEmergencyRequestsForHospital(
-	hospitalId: string,
+export async function getPendingEmergencyRequestsForOrganization(
+	organizationId: string,
 	filters?: {
 		page?: number;
 		pageSize?: number;
@@ -303,7 +308,7 @@ export async function getPendingEmergencyRequestsForHospital(
 	const [requests, total] = await Promise.all([
 		prisma.emergencyRequest.findMany({
 			where: {
-				hospitalId,
+				organizationId,
 				status: { in: ["pending", "matched"] },
 			},
 			include: {
@@ -334,7 +339,7 @@ export async function getPendingEmergencyRequestsForHospital(
 		}),
 		prisma.emergencyRequest.count({
 			where: {
-				hospitalId,
+				organizationId,
 				status: { in: ["pending", "matched"] },
 			},
 		}),
@@ -355,8 +360,11 @@ export async function getPendingEmergencyRequestsForHospital(
 export async function expandSearchRadius(requestId: string) {
 	const request = await prisma.emergencyRequest.findUnique({
 		where: { id: requestId },
-		include: {
-			hospital: { select: { id: true, location: true, name: true } },
+		select: {
+			id: true,
+			bloodGroup: true,
+			searchRadius: true,
+			organizationId: true,
 			alerts: {
 				select: { id: true, donorId: true, status: true },
 			},
@@ -365,6 +373,10 @@ export async function expandSearchRadius(requestId: string) {
 
 	if (!request) {
 		throw new Error("Emergency request not found");
+	}
+
+	if (!request.organizationId) {
+		throw new Error("Emergency request has no organization");
 	}
 
 	if (!canExpand(request.searchRadius)) {
@@ -404,9 +416,9 @@ export async function expandSearchRadius(requestId: string) {
 	const newRadius = nextRadius(request.searchRadius);
 	const alreadyAlertedIds = request.alerts.map((a) => a.donorId);
 
-	const { donors: potential } = await matchDonors(
+	const { donors: potential, hospitalLocation } = await matchDonors(
 		request.bloodGroup,
-		request.hospital.id,
+		request.organizationId,
 	);
 
 	const filteredNewDonors = potential
@@ -415,7 +427,7 @@ export async function expandSearchRadius(requestId: string) {
 			if (donor.score === 0) {
 				const donorArea = (donor.location ?? "").toLowerCase();
 				const hospitalArea = (
-					request.hospital.location ?? ""
+					hospitalLocation?.location ?? ""
 				).toLowerCase();
 				if (!donorArea) return false;
 				if (request.searchRadius <= 5)
@@ -491,7 +503,7 @@ export async function getEmergencyRequestStatus(requestId: string) {
 }
 
 export async function getEmergencyHistory(
-	hospitalId: string,
+	organizationId: string,
 	filters?: {
 		dateFrom?: string;
 		dateTo?: string;
@@ -505,7 +517,7 @@ export async function getEmergencyHistory(
 	const pageSize = filters?.pageSize ?? 10;
 
 	const where: Record<string, unknown> = {
-		hospitalId,
+		organizationId,
 		status: { in: ["fulfilled", "expired", "cancelled"] },
 	};
 
@@ -652,12 +664,18 @@ export async function updateAlertStatus(
 	return alert;
 }
 
-export async function confirmDonation(alertId: string) {
+export async function confirmDonation(alertId: string, staffUserId: string) {
 	const alert = await prisma.emergencyAlert.findUnique({
 		where: { id: alertId },
 		include: {
 			request: {
-				select: { id: true, unitsNeeded: true, bloodGroup: true, hospitalId: true },
+				select: {
+					id: true,
+					unitsNeeded: true,
+					bloodGroup: true,
+					hospitalId: true,
+					organizationId: true,
+				},
 			},
 			donor: {
 				select: { id: true, name: true },
@@ -673,6 +691,10 @@ export async function confirmDonation(alertId: string) {
 		throw new Error(
 			`Cannot confirm donation: alert status is "${alert.status}". Donation can only be confirmed for donors who have arrived.`,
 		);
+	}
+
+	if (!alert.request.organizationId) {
+		throw new Error("Emergency request has no organization");
 	}
 
 	return prisma.$transaction(async (tx) => {
@@ -700,7 +722,7 @@ export async function confirmDonation(alertId: string) {
 		});
 
 		const hospitalBank = await tx.hospitalBank.findFirst({
-			where: { managedById: alert.request.hospitalId },
+			where: { organizationId: alert.request.organizationId },
 			select: { id: true },
 		});
 
@@ -721,7 +743,7 @@ export async function confirmDonation(alertId: string) {
 			data: {
 				donorId: alert.donor.id,
 				hospitalId: alert.request.hospitalId,
-				staffUserId: alert.request.hospitalId,
+				staffUserId,
 				status: "pending",
 				screenedAt: new Date(),
 			},

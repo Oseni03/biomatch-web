@@ -38,11 +38,11 @@ const BLOOD_GROUPS = [
 ] as const;
 
 interface EmergencyRequestClientProps {
-	hospitalId: string;
+	organizationId: string;
 }
 
 export function EmergencyRequestClient({
-	hospitalId,
+	organizationId,
 }: EmergencyRequestClientProps) {
 	const router = useRouter();
 
@@ -74,7 +74,7 @@ export function EmergencyRequestClient({
 
 		try {
 			const res = await createEmergencyRequest({
-				hospitalId,
+				organizationId,
 				bloodGroup,
 				unitsNeeded,
 				urgencyLevel,

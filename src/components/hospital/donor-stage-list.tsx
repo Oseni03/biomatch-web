@@ -4,6 +4,7 @@ import { Bell, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { displayBloodGroup } from "@/lib/donor-types";
 import { useConfirmDonation } from "@/hooks/use-emergency-requests";
+import { authClient } from "@/lib/auth-client";
 
 export interface StageConfig {
 	key: string;
@@ -38,17 +39,19 @@ export function DonorStageList({
 	alerts,
 	onClose,
 }: DonorStageListProps) {
+	const { data: session } = authClient.useSession();
 	const confirmDonation = useConfirmDonation();
 	const Icon = config?.icon ?? Bell;
 	const filteredDonors = alerts.filter((a) => a.status === statusKey);
 
 	const handleConfirm = (alertId: string, donorName: string | null) => {
+		if (!session?.user?.id) return;
 		if (
 			window.confirm(
 				`Confirm donation for ${donorName}? This will update their donation record and award points.`,
 			)
 		) {
-			confirmDonation.mutate({ alertId });
+			confirmDonation.mutate({ alertId, staffUserId: session.user.id });
 		}
 	};
 

@@ -14,6 +14,19 @@ export async function getActiveOrganizationId(userId: string): Promise<string> {
 	return membership.organizationId;
 }
 
+export async function getOrganizationOwnerUserId(
+	organizationId: string,
+): Promise<string> {
+	const owner = await prisma.member.findFirst({
+		where: { organizationId, role: "owner" },
+		select: { userId: true },
+	});
+	if (!owner) {
+		throw new Error(`Organization ${organizationId} has no owner`);
+	}
+	return owner.userId;
+}
+
 export async function isUserInAnyOrganization(userId: string): Promise<boolean> {
 	const membership = await prisma.member.findFirst({
 		where: { userId },

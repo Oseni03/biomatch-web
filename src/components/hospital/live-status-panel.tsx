@@ -11,11 +11,11 @@ import {
 	Clock,
 } from "lucide-react";
 import { displayBloodGroup } from "@/lib/donor-types";
-import type { getPendingEmergencyRequestsForHospital } from "@/servers/emergency";
+import type { getPendingEmergencyRequestsForOrganization } from "@/servers/emergency";
 import { DonorStageList } from "@/components/hospital/donor-stage-list";
 
 type PendingRequest = Awaited<
-	ReturnType<typeof getPendingEmergencyRequestsForHospital>
+	ReturnType<typeof getPendingEmergencyRequestsForOrganization>
 >["requests"][number];
 
 interface LiveStatusPanelProps {

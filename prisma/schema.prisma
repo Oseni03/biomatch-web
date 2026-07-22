@@ -190,21 +190,24 @@ model Wallet {
 }
 
 model EmergencyRequest {
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hospitalId   String        @db.Uuid
-  bloodGroup   BloodGroup
-  unitsNeeded  Int
-  urgencyLevel UrgencyLevel  @default(standard)
-  status       RequestStatus @default(pending)
-  searchRadius Int           @default(15)
-  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hospitalId     String        @db.Uuid
+  organizationId String?       @db.Uuid
+  bloodGroup     BloodGroup
+  unitsNeeded    Int
+  urgencyLevel   UrgencyLevel  @default(standard)
+  status         RequestStatus @default(pending)
+  searchRadius   Int           @default(15)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(6)
 
-  hospital  User             @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
-  alerts    EmergencyAlert[]
-  donations Donation[]
+  hospital     User             @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
+  organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  alerts       EmergencyAlert[]
+  donations    Donation[]
 
   @@index([hospitalId])
+  @@index([organizationId])
   @@index([bloodGroup])
   @@index([status])
   @@index([createdAt])
@@ -328,9 +331,10 @@ model Organization {
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
 
-  members       Member[]
-  invitations   Invitation[]
-  hospitalBanks HospitalBank[]
+  members           Member[]
+  invitations       Invitation[]
+  hospitalBanks     HospitalBank[]
+  emergencyRequests EmergencyRequest[]
 
   @@map("organization")
 }
