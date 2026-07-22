@@ -227,7 +227,7 @@ See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details
 | 48 | Hospital Staff Record Donor Screening | AFK | 47 | ✅ |
 | 49 | Verification Gates Matching + Donor List | AFK | 47 | ✅ |
 | 50 | Donor Verification Status + Notification | AFK | 47, 48 | ✅ |
-| 51 | Donation Confirmation Triggers Re-Screening | AFK | 47, 48 | |
+| 51 | Donation Confirmation Triggers Re-Screening | AFK | 47, 48 | ✅ |
 
 See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details. All decision points (screening scope, actor model, data shape, expiry policy, migration strategy, etc.) were resolved during grilling — every ticket is ready-for-agent with no outstanding human decisions.
 

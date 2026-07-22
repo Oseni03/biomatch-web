@@ -713,6 +713,20 @@ export async function confirmDonation(alertId: string) {
 			},
 		});
 
+		// Re-test accompanying this donation. Opening a fresh `pending` row here
+		// does not affect the donor's derived verification status -- that always
+		// reads the latest *resolved* screening (see servers/screening.ts), so a
+		// prior "passed" result keeps them matchable while this one is pending.
+		await tx.donorScreening.create({
+			data: {
+				donorId: alert.donor.id,
+				hospitalId: alert.request.hospitalId,
+				staffUserId: alert.request.hospitalId,
+				status: "pending",
+				screenedAt: new Date(),
+			},
+		});
+
 		const completedCount = await tx.emergencyAlert.count({
 			where: {
 				requestId: alert.requestId,
