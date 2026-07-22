@@ -201,7 +201,7 @@ See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details
 
 | # | Title | Type | Blocked By | Status |
 |---|---|---|---|---|
-| 40 | Merge Donor Finder into Donor Directory | AFK | — | |
+| 40 | Merge Donor Finder into Donor Directory | AFK | — | ✅ |
 | 41 | Broaden `ink` Token as Structural Chrome Color App-Wide | AFK | — | |
 | 42 | Bolder Serif Wordmark (Non-Italic, Larger) | AFK | — | |
 | 43 | Hospital Unique Sequential Code (BIOMATCH-NNN) | AFK | — | |

@@ -11,8 +11,11 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { StatusTag } from "@/components/brand/status-tag";
+
+const PAGE_SIZE = 10;
 
 const BLOOD_GROUPS = [
 	"", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-",
@@ -32,20 +35,25 @@ const BLOOD_GROUP_VALUES: Record<string, string> = {
 export function DonorDirectory() {
 	const [searchBlood, setSearchBlood] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
+	const [location, setLocation] = useState("");
 	const [eligibleOnly, setEligibleOnly] = useState(false);
+	const [page, setPage] = useState(1);
 
 	const filters = {
 		...(searchBlood && BLOOD_GROUP_VALUES[searchBlood]
 			? { bloodGroup: BLOOD_GROUP_VALUES[searchBlood] as any }
 			: {}),
 		...(searchQuery ? { search: searchQuery } : {}),
+		...(location ? { location } : {}),
 		...(eligibleOnly ? { eligibleOnly: true } : {}),
-		page: 1,
-		pageSize: 50,
+		page,
+		pageSize: PAGE_SIZE,
 	};
 
 	const { data, isLoading } = useEligibleDonors(filters);
 	const donors = data?.donors ?? [];
+	const total = data?.total ?? 0;
+	const totalPages = Math.ceil(total / PAGE_SIZE);
 
 	return (
 		<Card className="bg-card border-border rounded-xl p-6 shadow-sm animate-in fade-in duration-300 text-left transition-shadow hover:shadow-card-hover">
@@ -59,7 +67,7 @@ export function DonorDirectory() {
 				</CardDescription>
 			</CardHeader>
 
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+			<div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
 				<div className="relative md:col-span-2">
 					<span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
 						<Search className="h-4 w-4" />
@@ -68,15 +76,34 @@ export function DonorDirectory() {
 						type="text"
 						placeholder="Search by name..."
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						onChange={(e) => {
+							setSearchQuery(e.target.value);
+							setPage(1);
+						}}
 						className="w-full pl-10 pr-4 py-2.5 bg-muted border-border rounded-xl text-xs"
+					/>
+				</div>
+
+				<div>
+					<input
+						type="text"
+						placeholder="Location, e.g. Lagos..."
+						value={location}
+						onChange={(e) => {
+							setLocation(e.target.value);
+							setPage(1);
+						}}
+						className="w-full px-3 py-2.5 bg-muted border-border rounded-xl text-xs"
 					/>
 				</div>
 
 				<div>
 					<select
 						value={searchBlood}
-						onChange={(e) => setSearchBlood(e.target.value)}
+						onChange={(e) => {
+							setSearchBlood(e.target.value);
+							setPage(1);
+						}}
 						className="w-full px-3 py-2.5 bg-muted border-border rounded-xl text-xs font-medium"
 					>
 						<option value="">All Blood Types</option>
@@ -93,7 +120,10 @@ export function DonorDirectory() {
 						<input
 							type="checkbox"
 							checked={eligibleOnly}
-							onChange={(e) => setEligibleOnly(e.target.checked)}
+							onChange={(e) => {
+								setEligibleOnly(e.target.checked);
+								setPage(1);
+							}}
 							className="size-4 rounded border-input text-brand focus:ring-ring"
 						/>
 						Eligible only
@@ -169,6 +199,17 @@ export function DonorDirectory() {
 							})}
 						</tbody>
 					</table>
+				</div>
+			)}
+
+			{totalPages > 1 && (
+				<div className="mt-6">
+					<PaginationControls
+						page={page}
+						totalPages={totalPages}
+						onPageChange={setPage}
+						variant="numbered"
+					/>
 				</div>
 			)}
 		</Card>

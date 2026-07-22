@@ -8,7 +8,6 @@ import {
 	Building2,
 	HeartPulse,
 	LayoutDashboard,
-	Search,
 	AlertTriangle,
 	Wallet,
 	History,
@@ -66,11 +65,6 @@ const NAV_ITEMS: Record<
 			title: "Emergency Request",
 			url: "/hospital/emergency",
 			icon: AlertTriangle,
-		},
-		{
-			title: "BioMatch Donor Finder",
-			url: "/hospital/donor-finder",
-			icon: Search,
 		},
 		{
 			title: "Donor Directory",
