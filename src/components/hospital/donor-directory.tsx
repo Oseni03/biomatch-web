@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Search, Phone } from "lucide-react";
+import { Fragment, useState } from "react";
+import { Users, Search, Phone, ChevronDown, Droplet } from "lucide-react";
 import { useEligibleDonors } from "@/hooks/use-eligible-donors";
+import { useDonorDonations } from "@/hooks/use-donations";
 import { getEligibility } from "@/lib/eligibility";
 import {
 	Card,
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { StatusTag } from "@/components/brand/status-tag";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
 
@@ -38,6 +40,7 @@ export function DonorDirectory() {
 	const [location, setLocation] = useState("");
 	const [eligibleOnly, setEligibleOnly] = useState(false);
 	const [page, setPage] = useState(1);
+	const [expandedDonorId, setExpandedDonorId] = useState<string | null>(null);
 
 	const filters = {
 		...(searchBlood && BLOOD_GROUP_VALUES[searchBlood]
@@ -146,6 +149,7 @@ export function DonorDirectory() {
 					<table className="w-full text-xs text-left">
 						<thead>
 							<tr className="border-border text-muted-foreground uppercase font-mono tracking-wider">
+								<th className="py-3 px-3" />
 								<th className="py-3 px-3">Donor Name</th>
 								<th className="py-3 px-3">Blood Type</th>
 								<th className="py-3 px-3">Location</th>
@@ -160,41 +164,69 @@ export function DonorDirectory() {
 										? new Date(donor.lastDonationDate).toISOString()
 										: null,
 								).eligible;
+								const isExpanded = expandedDonorId === donor.id;
 								return (
-									<tr key={donor.id} className="hover:bg-muted transition">
-										<td className="py-4 px-3">
-											<span className="font-semibold text-foreground block">
-												{donor.name}
-											</span>
-											<span className="text-[10px] text-muted-foreground font-mono">
-												{donor.email ?? ""}
-											</span>
-										</td>
-										<td className="py-4 px-3">
-											{donor.bloodGroup ? (
-												<BloodTypeBadge
-													bloodGroup={donor.bloodGroup}
-													size="sm"
+									<Fragment key={donor.id}>
+										<tr
+											className="hover:bg-muted transition cursor-pointer"
+											onClick={() =>
+												setExpandedDonorId(
+													isExpanded ? null : donor.id,
+												)
+											}
+										>
+											<td className="py-4 px-3 w-6">
+												<ChevronDown
+													className={cn(
+														"h-3.5 w-3.5 text-muted-foreground transition-transform",
+														isExpanded && "rotate-180",
+													)}
 												/>
-											) : (
-												"—"
-											)}
-										</td>
-										<td className="py-4 px-3 font-medium text-muted-foreground">
-											{donor.location ?? "—"}
-										</td>
-										<td className="py-4 px-3">
-											<StatusTag status={eligible ? "ok" : "low"}>
-												{eligible ? "Eligible" : "Deferred"}
-											</StatusTag>
-										</td>
-										<td className="py-4 px-3 text-right">
-											<Button size="sm">
-												<Phone className="h-3 w-3" />
-												Contact
-											</Button>
-										</td>
-									</tr>
+											</td>
+											<td className="py-4 px-3">
+												<span className="font-semibold text-foreground block">
+													{donor.name}
+												</span>
+												<span className="text-[10px] text-muted-foreground font-mono">
+													{donor.email ?? ""}
+												</span>
+											</td>
+											<td className="py-4 px-3">
+												{donor.bloodGroup ? (
+													<BloodTypeBadge
+														bloodGroup={donor.bloodGroup}
+														size="sm"
+													/>
+												) : (
+													"—"
+												)}
+											</td>
+											<td className="py-4 px-3 font-medium text-muted-foreground">
+												{donor.location ?? "—"}
+											</td>
+											<td className="py-4 px-3">
+												<StatusTag status={eligible ? "ok" : "low"}>
+													{eligible ? "Eligible" : "Deferred"}
+												</StatusTag>
+											</td>
+											<td className="py-4 px-3 text-right">
+												<Button
+													size="sm"
+													onClick={(e) => e.stopPropagation()}
+												>
+													<Phone className="h-3 w-3" />
+													Contact
+												</Button>
+											</td>
+										</tr>
+										{isExpanded && (
+											<tr>
+												<td colSpan={6} className="bg-muted/50 px-3 py-4">
+													<DonationHistoryPanel donorId={donor.id} />
+												</td>
+											</tr>
+										)}
+									</Fragment>
 								);
 							})}
 						</tbody>
@@ -213,5 +245,63 @@ export function DonorDirectory() {
 				</div>
 			)}
 		</Card>
+	);
+}
+
+function DonationHistoryPanel({ donorId }: { donorId: string }) {
+	const { data: donations, isLoading } = useDonorDonations(donorId, true);
+
+	if (isLoading) {
+		return (
+			<div className="space-y-2">
+				{Array.from({ length: 2 }).map((_, i) => (
+					<div key={i} className="h-8 animate-pulse rounded bg-muted" />
+				))}
+			</div>
+		);
+	}
+
+	if (!donations || donations.length === 0) {
+		return (
+			<div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
+				<Droplet className="h-3.5 w-3.5" />
+				No donations yet
+			</div>
+		);
+	}
+
+	return (
+		<div className="space-y-2">
+			<h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+				Donation History
+			</h4>
+			<table className="w-full text-xs text-left">
+				<thead>
+					<tr className="text-muted-foreground">
+						<th className="py-1.5 pr-3 font-medium">Date</th>
+						<th className="py-1.5 pr-3 font-medium">Blood Type</th>
+						<th className="py-1.5 pr-3 font-medium">Hospital</th>
+					</tr>
+				</thead>
+				<tbody className="divide-y divide-border">
+					{donations.map((donation) => (
+						<tr key={donation.id}>
+							<td className="py-2 pr-3 font-mono text-muted-foreground">
+								{new Date(donation.donatedAt).toLocaleDateString()}
+							</td>
+							<td className="py-2 pr-3">
+								<BloodTypeBadge
+									bloodGroup={donation.bloodGroup}
+									size="sm"
+								/>
+							</td>
+							<td className="py-2 pr-3 text-foreground">
+								{donation.hospitalBank?.hospitalName ?? "—"}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
 	);
 }

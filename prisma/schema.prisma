@@ -121,12 +121,32 @@ model HospitalBank {
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
-  managedBy   User?     @relation(fields: [managedById], references: [id], onDelete: SetNull)
-  locationRel Location? @relation(fields: [locationId], references: [id])
+  managedBy   User?      @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  locationRel Location?  @relation(fields: [locationId], references: [id])
+  donations   Donation[]
 
   @@unique([sequenceNumber])
   @@index([locationId])
   @@map("hospital_banks")
+}
+
+model Donation {
+  id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  donorId            String     @db.Uuid
+  hospitalBankId     String?    @db.Uuid
+  emergencyRequestId String?    @db.Uuid
+  bloodGroup         BloodGroup
+  donatedAt          DateTime   @default(now()) @db.Timestamptz(6)
+  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
+
+  donor            User              @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Cascade)
+  hospitalBank     HospitalBank?     @relation(fields: [hospitalBankId], references: [id], onDelete: SetNull)
+  emergencyRequest EmergencyRequest? @relation(fields: [emergencyRequestId], references: [id], onDelete: SetNull)
+
+  @@index([donorId])
+  @@index([hospitalBankId])
+  @@index([donatedAt])
+  @@map("donations")
 }
 
 model Wallet {
@@ -153,8 +173,9 @@ model EmergencyRequest {
   createdAt    DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
 
-  hospital User               @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
-  alerts   EmergencyAlert[]
+  hospital  User               @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
+  alerts    EmergencyAlert[]
+  donations Donation[]
 
   @@index([hospitalId])
   @@index([bloodGroup])
@@ -210,6 +231,7 @@ model User {
   managedBanks      HospitalBank[]
   emergencyRequests EmergencyRequest[]  @relation("HospitalRequests")
   emergencyAlerts   EmergencyAlert[]    @relation("DonorAlerts")
+  donations         Donation[]          @relation("DonorDonations")
 
   @@unique([email])
   @@index([role])
