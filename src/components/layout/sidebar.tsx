@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+import { Wordmark } from "@/components/brand/wordmark";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { Button } from "@/components/ui/button";
@@ -275,9 +276,7 @@ function AppSidebar({
 									<BloodDropIcon className="size-5" />
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-serif font-semibold italic tracking-tight">
-										BioMatch
-									</span>
+									<Wordmark size="sm" className="truncate" />
 									<span className="truncate text-[11px] text-sidebar-foreground/60">
 										Blood Management
 									</span>
