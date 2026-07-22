@@ -120,7 +120,7 @@ export function SidebarLayout({
 				alertCount={alertCount}
 			/>
 			<SidebarInset>
-				<header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
+				<header className="on-ink flex h-14 shrink-0 items-center gap-2 border-b border-border bg-sidebar px-4">
 					<div className="flex items-center gap-2">
 						<SidebarTrigger className="-ml-1" />
 						<Separator
@@ -278,7 +278,7 @@ function AppSidebar({
 									<span className="truncate font-serif font-semibold italic tracking-tight">
 										BioMatch
 									</span>
-									<span className="truncate text-[11px] text-muted-foreground">
+									<span className="truncate text-[11px] text-sidebar-foreground/60">
 										Blood Management
 									</span>
 								</div>

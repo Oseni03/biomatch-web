@@ -53,7 +53,7 @@ export function NavUser({
 						className="rounded-full"
 					>
 						<Avatar className="h-7 w-7">
-							<AvatarFallback className="text-xs font-medium">
+							<AvatarFallback className="bg-sidebar-accent text-xs font-medium text-sidebar-foreground">
 								{initials}
 							</AvatarFallback>
 						</Avatar>

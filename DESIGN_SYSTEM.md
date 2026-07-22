@@ -29,7 +29,7 @@ colors:
 | `--emergency` | `emergency` | Critical, live-urgency accents |
 | `--cream` | `cream` | Warm off-white, text-on-red |
 | `--paper` | `paper` | Clinical working canvas (marketing + dashboard backgrounds) |
-| `--ink` | `ink` | Near-black navy (dark sections, footer) |
+| `--ink` | `ink` | Near-black navy — structural chrome (dashboard sidebar/header, marketing dark sections, footer) |
 | `--slate` | `slate` | Secondary text accent |
 
 **Semantic status (inventory & alerts)** — use these, not raw Tailwind palette
@@ -43,14 +43,32 @@ state:
 | `--status-ok` | `status-ok` / `status-ok-bg` | Healthy stock, fulfilled, eligible |
 | `--status-info` | `status-info` / `status-info-bg` | Informational / in-progress state |
 
-The shadcn tokens (`--primary`, `--destructive`, `--ring`, `--sidebar-*`, etc.)
-all resolve through `--red`, so light/dark mode stay in sync automatically —
-don't hardcode hex anywhere in components.
+The shadcn tokens (`--primary`, `--destructive`, `--ring`, etc.) resolve through
+`--red`, so light/dark mode stay in sync automatically — don't hardcode hex
+anywhere in components. `--sidebar-background`/`--sidebar-foreground`/
+`--sidebar-accent` are the exception: they resolve through `--ink`, not `--red`
+(see below).
 
 `.on-red` (in `globals.css`) recolors `--foreground`/`--border`/`--muted-foreground`
 for content sitting directly on a red background. Only wrap the minimum region
 that needs it — nested clinical-surface content (a white card floating on a red
 section) should sit outside `.on-red`, not inside it.
+
+**`ink` as structural chrome.** Beyond the marketing dark-contrast blocks it was
+originally scoped to (Impact section, footer, auth split-screen, phone mockup —
+all still `bg-ink`, unchanged), `ink` is also the persistent background for the
+dashboard sidebar and top bar in both the donor and hospital portals
+(`--sidebar-background`/`--sidebar-foreground`/`--sidebar-accent` in
+`globals.css`, exposed as `bg-sidebar`/`text-sidebar-foreground`/
+`bg-sidebar-accent`). Unlike the marketing blocks, these don't read `ink`
+directly — they're pinned to a fixed dark value so the chrome doesn't flip
+color if dark mode is ever reintroduced (see issue #26). `.on-ink` (in
+`globals.css`) mirrors `.on-red`, recoloring `--foreground`/`--border`/
+`--secondary`/`--muted-foreground` for content sitting on that chrome (the
+dashboard header uses it). Main dashboard content areas stay on `paper`/`cream`
+— `ink` frames the app, it doesn't fill it. `--border`/`--input` are also tinted
+toward `ink`'s hue (rather than a neutral gray) so card borders and section
+dividers read as part of the same structural-chrome family app-wide.
 
 ## 2. Typography
 
