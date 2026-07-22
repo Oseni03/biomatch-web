@@ -239,7 +239,7 @@ See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details
 |---|---|---|---|---|
 | 52 | Organization Foundation + Auto-Create at Signup | AFK | — | ✅ |
 | 53 | Staff Invite/Accept Flow (replaces instant-provision) | AFK | 52 | ✅ |
-| 54 | Migrate HospitalBank to Organization | AFK | 52 | |
+| 54 | Migrate HospitalBank to Organization | AFK | 52 | ✅ |
 | 55 | Migrate EmergencyRequest to Organization | AFK | 52 | |
 | 56 | Migrate DonorScreening to Organization | AFK | 52, 47-51 | |
 | 57 | [Backlog] Drop Legacy Hospital Tenant Columns | HITL | 54, 55, 56 | needs-triage |
