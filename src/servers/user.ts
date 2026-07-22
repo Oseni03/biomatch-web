@@ -5,6 +5,7 @@ import type { Availability, BloodGroup, Role } from "@generated/prisma/enums";
 import type { Prisma } from "@generated/prisma/client";
 import { buildLocationLabel } from "./location";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
+import { getVerifiedDonorIds } from "./screening";
 
 export async function getUserById(id: string) {
 	return prisma.user.findUnique({
@@ -113,6 +114,7 @@ export async function listDonors(filters?: ListDonorsFilters) {
 			{ lastDonationDate: null },
 			{ lastDonationDate: { lt: cutoff } },
 		];
+		where.id = { in: await getVerifiedDonorIds() };
 	}
 
 	if (filters?.search) {
