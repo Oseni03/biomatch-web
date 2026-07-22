@@ -102,12 +102,14 @@ const SECTION_LABELS: Record<Role, string> = {
 interface SidebarLayoutProps {
 	role: Role;
 	userName?: string;
+	organizationId?: string;
 	children: React.ReactNode;
 }
 
 export function SidebarLayout({
 	role,
 	userName,
+	organizationId,
 	children,
 }: SidebarLayoutProps) {
 	const { data: session } = authClient.useSession();
@@ -115,7 +117,7 @@ export function SidebarLayout({
 		role === "donor" ? session?.user?.id : undefined,
 	);
 	const { data: hospitalBank } = useMyHospitalBank(
-		role === "hospital" ? session?.user?.id : undefined,
+		role === "hospital" ? organizationId : undefined,
 	);
 	const alertCount = (donorAlerts?.alerts ?? []).filter(
 		(a) =>

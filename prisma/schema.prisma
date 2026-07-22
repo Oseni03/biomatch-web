@@ -118,16 +118,19 @@ model HospitalBank {
   locationId     String?  @db.Uuid
   inventory      Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
   managedById    String?  @db.Uuid
+  organizationId String?  @db.Uuid
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
   managedBy    User?                  @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  organization Organization?          @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   locationRel  Location?              @relation(fields: [locationId], references: [id])
   donations    Donation[]
   transactions InventoryTransaction[]
 
   @@unique([sequenceNumber])
   @@index([locationId])
+  @@index([organizationId])
   @@map("hospital_banks")
 }
 
@@ -325,8 +328,9 @@ model Organization {
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
 
-  members     Member[]
-  invitations Invitation[]
+  members       Member[]
+  invitations   Invitation[]
+  hospitalBanks HospitalBank[]
 
   @@map("organization")
 }

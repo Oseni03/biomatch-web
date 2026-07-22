@@ -1,7 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { BLOOD_GROUPS, inventorySchema, toBloodGroupEnum } from "@/lib/inventory-schema";
+import {
+	BLOOD_GROUPS,
+	inventorySchema,
+	toBloodGroupEnum,
+} from "@/lib/inventory-schema";
 import { BloodGroup } from "@generated/prisma/enums";
 import type { InventoryTransactionReason } from "@generated/prisma/enums";
 
@@ -23,9 +27,9 @@ export async function getHospitalBankById(id: string) {
 	});
 }
 
-export async function getHospitalBankByManagedById(userId: string) {
+export async function getHospitalBankByOrganizationId(organizationId: string) {
 	return prisma.hospitalBank.findFirst({
-		where: { managedById: userId },
+		where: { organizationId },
 		select: { id: true, hospitalName: true, sequenceNumber: true },
 	});
 }
@@ -35,6 +39,7 @@ export async function createHospitalBank(data: {
 	location: string;
 	locationId?: string;
 	managedById?: string;
+	organizationId?: string;
 }) {
 	return prisma.hospitalBank.create({
 		data: {
@@ -42,6 +47,7 @@ export async function createHospitalBank(data: {
 			location: data.location,
 			locationId: data.locationId,
 			managedById: data.managedById,
+			organizationId: data.organizationId,
 			inventory: {
 				"A+": 0,
 				"A-": 0,

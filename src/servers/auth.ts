@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { buildLocationLabel } from "./location";
+import { createHospitalBank } from "./hospital";
 import type { Availability } from "@generated/prisma/enums";
 
 function slugify(name: string): string {
@@ -93,13 +94,22 @@ export async function signUpWithProfile(formData: {
 			}
 
 			const slug = await generateUniqueOrgSlug(fullName);
-			await auth.api.createOrganization({
+			const organization = await auth.api.createOrganization({
 				body: {
 					name: fullName,
 					slug,
 					userId: data.user.id,
 				},
 			});
+
+			if (organization) {
+				await createHospitalBank({
+					hospitalName: fullName,
+					location: "",
+					managedById: data.user.id,
+					organizationId: organization.id,
+				});
+			}
 		}
 
 		return { success: true, userId: data.user.id };
