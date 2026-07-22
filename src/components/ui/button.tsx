@@ -12,7 +12,7 @@ const buttonVariants = cva(
 				default:
 					"bg-brand text-white shadow-brand hover:bg-brand-hover hover:scale-[1.01] active:scale-[0.99]",
 				secondary:
-					"bg-white text-foreground border border-border hover:bg-secondary",
+					"bg-card text-foreground border border-border hover:bg-muted",
 				destructive:
 					"bg-destructive/10 text-destructive hover:bg-destructive/20",
 				ghost: "text-muted-foreground hover:text-foreground hover:bg-secondary",

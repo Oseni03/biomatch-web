@@ -126,41 +126,43 @@ export function SidebarLayout({
 				alertCount={alertCount}
 			/>
 			<SidebarInset>
-				<header className="on-ink flex h-14 shrink-0 items-center gap-2 border-b border-border bg-sidebar px-4">
-					<div className="flex items-center gap-2">
-						<SidebarTrigger className="-ml-1" />
-						<Separator
-							orientation="vertical"
-							className="mr-2 h-4"
-						/>
-						<h1 className="text-sm font-medium flex items-center gap-2">
-							{SECTION_LABELS[role]}
-							{hospitalBank && (
-								<span className="font-mono text-[11px] font-normal text-sidebar-foreground/60">
-									{hospitalBank.hospitalName} ·{" "}
-									{formatHospitalCode(
-										hospitalBank.sequenceNumber,
-									)}
-								</span>
-							)}
-						</h1>
-					</div>
-					<div className="ml-auto flex items-center gap-1.5">
-						<TopBarActions role={role} alertCount={alertCount} />
-						<Separator
-							orientation="vertical"
-							className="mx-1 h-5"
-						/>
-						<NavUser
-							user={{
-								name: userName ?? "BioMatch User",
-								email: role,
-							}}
-							variant="topbar"
-						/>
-					</div>
-				</header>
-				<div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+				<div className="flex flex-1 flex-col gap-4 p-4">
+					<header className="on-ink flex h-14 shrink-0 items-center gap-2 rounded-2xl border border-sidebar-border bg-sidebar px-4 shadow-card">
+						<div className="flex items-center gap-2">
+							<SidebarTrigger className="-ml-1" />
+							<Separator
+								orientation="vertical"
+								className="mr-2 h-4"
+							/>
+							<h1 className="text-sm font-medium flex items-center gap-2">
+								{SECTION_LABELS[role]}
+								{hospitalBank && (
+									<span className="font-mono text-[11px] font-normal text-sidebar-foreground/60">
+										{hospitalBank.hospitalName} ·{" "}
+										{formatHospitalCode(
+											hospitalBank.sequenceNumber,
+										)}
+									</span>
+								)}
+							</h1>
+						</div>
+						<div className="ml-auto flex items-center gap-1.5">
+							<TopBarActions role={role} alertCount={alertCount} />
+							<Separator
+								orientation="vertical"
+								className="mx-1 h-5"
+							/>
+							<NavUser
+								user={{
+									name: userName ?? "BioMatch User",
+									email: role,
+								}}
+								variant="topbar"
+							/>
+						</div>
+					</header>
+					{children}
+				</div>
 			</SidebarInset>
 		</SidebarProvider>
 	);
@@ -195,7 +197,7 @@ function TopBarActions({
 }) {
 	return (
 		<>
-			{role === "hospital" && (
+			{/* {role === "hospital" && (
 				<Button
 					variant="ghost"
 					size="icon-sm"
@@ -239,7 +241,7 @@ function TopBarActions({
 				<Bell className="size-4" />
 				<BadgeCount count={alertCount} className="bg-brand" />
 				<span className="sr-only">Notifications</span>
-			</Button>
+			</Button> */}
 		</>
 	);
 }

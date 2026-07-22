@@ -169,9 +169,9 @@ See `contexts/` directory for the detailed improvement plan:
 | 23 | Promote Staff Role to Typed Schema Columns | AFK | — | ✅ |
 | 24 | Validate Hospital Inventory Writes with Zod | AFK | — | ✅ |
 | 25 | Replace `alert-context.tsx` with a Shared Query Hook | AFK | — | ✅ |
-| 26 | [Backlog] Dark-Only Theme Redesign | HITL | — (needs design decision first) | needs-triage |
+| 26 | [Backlog] Dark-Only Theme Redesign | HITL | — | ✅ |
 
-See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details. Issue #26 is explicitly **not** ready-for-agent — it requires a human palette/contrast decision before implementation.
+See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details. Issue #26 was scoped to require a human palette/contrast decision before implementation; that decision was made directly by the user (2026-07-22), refining the existing `.dark` tokens rather than a from-scratch palette, and the redesign was implemented in the same session — dark is now the app's only theme, light palette and toggle removed.
 
 ## Optimization & Page-Decomposition Issues (from codebase audit, 2026-07-19)
 
@@ -209,7 +209,7 @@ See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details
 | 45 | Inventory Usage Tracking + Trend Chart | AFK | — | ✅ |
 | 46 | [Backlog] Verify Donor Search "Divine" Report Against Production Data | HITL | — | needs-triage |
 
-See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details. Issue #46 is explicitly **not** ready-for-agent — it requires a human to check a production `User.name` value; #41 is a real design-system boundary change (broadening `ink`'s documented scope) distinct from issue #26 (dark-only theme).
+See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details. Issue #46 is explicitly **not** ready-for-agent — it requires a human to check a production `User.name` value; #41 is a real design-system boundary change (broadening `ink`'s documented scope), separate from and predating issue #26's dark-only theme redesign (done).
 
 ## Agent skills
 
