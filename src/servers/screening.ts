@@ -3,24 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import type { ScreeningStatus } from "@generated/prisma/enums";
 import { sendScreeningResultEmail } from "./notification";
+import { authorizeOrgAction, getOrganizationOwnerUserId } from "./organization";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "failed";
-
-async function requireScreeningRole(callerUserId: string) {
-	const caller = await prisma.user.findUnique({
-		where: { id: callerUserId },
-		select: { hospitalStaffRole: true },
-	});
-	if (!caller) throw new Error("Caller not found");
-	if (
-		caller.hospitalStaffRole !== "admin" &&
-		caller.hospitalStaffRole !== "requester"
-	) {
-		throw new Error(
-			"Only admin or requester staff can record or resolve donor screenings",
-		);
-	}
-}
 
 export async function getDonorVerificationStatus(
 	donorId: string,
@@ -80,10 +65,12 @@ export async function getScreeningHistoryForDonor(donorId: string) {
 
 export async function createScreening(
 	donorId: string,
-	hospitalId: string,
+	organizationId: string,
 	staffUserId: string,
 ) {
-	await requireScreeningRole(staffUserId);
+	await authorizeOrgAction(organizationId, staffUserId, {
+		screening: ["create"],
+	});
 
 	const existingPending = await prisma.donorScreening.findFirst({
 		where: { donorId, status: "pending" },
@@ -92,10 +79,13 @@ export async function createScreening(
 		return existingPending;
 	}
 
+	const hospitalId = await getOrganizationOwnerUserId(organizationId);
+
 	return prisma.donorScreening.create({
 		data: {
 			donorId,
 			hospitalId,
+			organizationId,
 			staffUserId,
 			status: "pending",
 			screenedAt: new Date(),
@@ -109,8 +99,6 @@ export async function resolveScreening(
 	callerUserId: string,
 	notes?: string,
 ) {
-	await requireScreeningRole(callerUserId);
-
 	const existing = await prisma.donorScreening.findUnique({
 		where: { id: screeningId },
 	});
@@ -120,6 +108,13 @@ export async function resolveScreening(
 			`Cannot resolve a screening that is already "${existing.status}"`,
 		);
 	}
+	if (!existing.organizationId) {
+		throw new Error("Screening has no organization");
+	}
+
+	await authorizeOrgAction(existing.organizationId, callerUserId, {
+		screening: ["resolve"],
+	});
 
 	const updated = await prisma.donorScreening.update({
 		where: { id: screeningId },

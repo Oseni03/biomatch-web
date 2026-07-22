@@ -54,13 +54,13 @@ export function useCreateScreening() {
 	return useMutation({
 		mutationFn: ({
 			donorId,
-			hospitalId,
+			organizationId,
 			staffUserId,
 		}: {
 			donorId: string;
-			hospitalId: string;
+			organizationId: string;
 			staffUserId: string;
-		}) => createScreening(donorId, hospitalId, staffUserId),
+		}) => createScreening(donorId, organizationId, staffUserId),
 		onSuccess: (_data, variables) => {
 			invalidateScreeningQueries(queryClient, variables.donorId);
 			toast.success("Screening started");

@@ -743,6 +743,7 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 			data: {
 				donorId: alert.donor.id,
 				hospitalId: alert.request.hospitalId,
+				organizationId: alert.request.organizationId,
 				staffUserId,
 				status: "pending",
 				screenedAt: new Date(),

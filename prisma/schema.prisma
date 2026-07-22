@@ -283,23 +283,26 @@ enum ScreeningStatus {
 }
 
 model DonorScreening {
-  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  donorId     String          @db.Uuid
-  hospitalId  String          @db.Uuid
-  staffUserId String          @db.Uuid
-  status      ScreeningStatus @default(pending)
-  screenedAt  DateTime        @default(now()) @db.Timestamptz(6)
-  resolvedAt  DateTime?       @db.Timestamptz(6)
-  notes       String?
-  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  donorId        String          @db.Uuid
+  hospitalId     String          @db.Uuid
+  organizationId String?         @db.Uuid
+  staffUserId    String          @db.Uuid
+  status         ScreeningStatus @default(pending)
+  screenedAt     DateTime        @default(now()) @db.Timestamptz(6)
+  resolvedAt     DateTime?       @db.Timestamptz(6)
+  notes          String?
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
 
-  donor     User @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
-  hospital  User @relation("DonorScreeningHospital", fields: [hospitalId], references: [id], onDelete: Cascade)
-  staffUser User @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  donor        User          @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
+  hospital     User          @relation("DonorScreeningHospital", fields: [hospitalId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  staffUser    User          @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
 
   @@index([donorId])
   @@index([hospitalId])
+  @@index([organizationId])
   @@index([status])
   @@index([resolvedAt])
   @@map("donor_screenings")
@@ -335,6 +338,7 @@ model Organization {
   invitations       Invitation[]
   hospitalBanks     HospitalBank[]
   emergencyRequests EmergencyRequest[]
+  donorScreenings   DonorScreening[]
 
   @@map("organization")
 }

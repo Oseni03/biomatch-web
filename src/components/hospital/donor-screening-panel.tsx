@@ -43,11 +43,16 @@ interface DirectoryDonor {
 	bloodGroup: string | null;
 }
 
-export function DonorScreeningPanel({ hospitalId }: { hospitalId: string }) {
+export function DonorScreeningPanel({
+	organizationId,
+}: {
+	organizationId: string;
+}) {
 	const { data: session } = authClient.useSession();
-	const staffUserId = session?.user?.id ?? hospitalId;
+	const staffUserId = session?.user?.id;
 	const { data: myRole } = useMyStaffRole(staffUserId);
-	const canRecord = myRole === "admin" || myRole === "requester";
+	const canRecord =
+		myRole === "admin" || myRole === "requester" || myRole === "owner";
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [page, setPage] = useState(1);
@@ -138,7 +143,7 @@ export function DonorScreeningPanel({ hospitalId }: { hospitalId: string }) {
 										)
 									}
 									canRecord={canRecord}
-									hospitalId={hospitalId}
+									organizationId={organizationId}
 									staffUserId={staffUserId!}
 								/>
 							))}
@@ -166,14 +171,14 @@ function DonorScreeningRow({
 	isExpanded,
 	onToggle,
 	canRecord,
-	hospitalId,
+	organizationId,
 	staffUserId,
 }: {
 	donor: DirectoryDonor;
 	isExpanded: boolean;
 	onToggle: () => void;
 	canRecord: boolean;
-	hospitalId: string;
+	organizationId: string;
 	staffUserId: string;
 }) {
 	const { data: verificationStatus } = useDonorVerificationStatus(donor.id);
@@ -216,7 +221,7 @@ function DonorScreeningRow({
 					<td colSpan={5} className="bg-muted/50 px-3 py-4">
 						<ScreeningActions
 							donorId={donor.id}
-							hospitalId={hospitalId}
+							organizationId={organizationId}
 							staffUserId={staffUserId}
 							canRecord={canRecord}
 						/>
@@ -229,12 +234,12 @@ function DonorScreeningRow({
 
 function ScreeningActions({
 	donorId,
-	hospitalId,
+	organizationId,
 	staffUserId,
 	canRecord,
 }: {
 	donorId: string;
-	hospitalId: string;
+	organizationId: string;
 	staffUserId: string;
 	canRecord: boolean;
 }) {
@@ -261,7 +266,11 @@ function ScreeningActions({
 			<Button
 				size="sm"
 				onClick={() =>
-					createScreening.mutate({ donorId, hospitalId, staffUserId })
+					createScreening.mutate({
+						donorId,
+						organizationId,
+						staffUserId,
+					})
 				}
 				disabled={createScreening.isPending}
 			>
