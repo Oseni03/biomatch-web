@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 import { getQueryClient } from "@/lib/get-query-client";
 import { getServerSession } from "@/lib/get-session";
-import { getAllHospitalBanks } from "@/servers/hospital";
+import { getAllHospitalBanks, getBloodGroupUsageSummary } from "@/servers/hospital";
 import { listDonors } from "@/servers/user";
 import { HospitalInventoryClient } from "./inventory-client";
 
@@ -23,6 +23,10 @@ export default async function HospitalInventoryPage() {
 		queryClient.prefetchQuery({
 			queryKey: ["eligible-donors", donorFilters],
 			queryFn: () => listDonors({ pageSize: 20, ...donorFilters }),
+		}),
+		queryClient.prefetchQuery({
+			queryKey: ["blood-group-usage"],
+			queryFn: () => getBloodGroupUsageSummary(),
 		}),
 	]);
 

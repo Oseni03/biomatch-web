@@ -121,13 +121,37 @@ model HospitalBank {
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
-  managedBy   User?      @relation(fields: [managedById], references: [id], onDelete: SetNull)
-  locationRel Location?  @relation(fields: [locationId], references: [id])
-  donations   Donation[]
+  managedBy    User?                  @relation(fields: [managedById], references: [id], onDelete: SetNull)
+  locationRel  Location?              @relation(fields: [locationId], references: [id])
+  donations    Donation[]
+  transactions InventoryTransaction[]
 
   @@unique([sequenceNumber])
   @@index([locationId])
   @@map("hospital_banks")
+}
+
+enum InventoryTransactionReason {
+  donation
+  dispatch
+  manual_adjustment
+  expiry
+}
+
+model InventoryTransaction {
+  id             String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  hospitalBankId String                      @db.Uuid
+  bloodGroup     BloodGroup
+  delta          Int
+  reason         InventoryTransactionReason
+  createdAt      DateTime                    @default(now()) @db.Timestamptz(6)
+
+  hospitalBank HospitalBank @relation(fields: [hospitalBankId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalBankId])
+  @@index([bloodGroup])
+  @@index([createdAt])
+  @@map("inventory_transactions")
 }
 
 model Donation {
