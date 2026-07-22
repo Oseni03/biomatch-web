@@ -92,6 +92,12 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 - **Server actions** always placed in `servers/` directory, one file per domain
 - **React Query hooks** in `hooks/`, named `use-<domain>.ts`
 
+## Database Safety
+
+- **Never make a database modification that can drop or reset data.** This includes `prisma migrate reset`, `prisma db push --accept-data-loss`, `DROP TABLE`/`DROP COLUMN`, truncating tables, or any migration that silently discards existing rows (e.g. narrowing a column, dropping a default that existing rows rely on).
+- Schema changes that risk data loss (dropping/renaming a column, changing a type, tightening nullable-to-required) must use an additive/expand-then-contract path — add the new shape alongside the old, backfill, migrate call sites, and only remove the old shape once nothing depends on it and a human has explicitly confirmed the removal.
+- If it's unclear whether a change is destructive, treat it as destructive and confirm with the user before running it.
+
 ## Agent Instructions
 
 ### Before making ANY modifications:
@@ -210,6 +216,20 @@ See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details
 | 46 | [Backlog] Verify Donor Search "Divine" Report Against Production Data | HITL | — | needs-triage |
 
 See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details. Issue #46 is explicitly **not** ready-for-agent — it requires a human to check a production `User.name` value; #41 is a real design-system boundary change (broadening `ink`'s documented scope), separate from and predating issue #26's dark-only theme redesign (done).
+
+## Donor Verification & Eligibility Issues (grilling session, 2026-07-22)
+
+5 vertical-slice issues derived from a grilling session on "donors aren't matchable until tested and verified." Listed in dependency order. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 47 | Donor Screening Data Model + Grandfather Migration | AFK | — | |
+| 48 | Hospital Staff Record Donor Screening | AFK | 47 | |
+| 49 | Verification Gates Matching + Donor List | AFK | 47 | |
+| 50 | Donor Verification Status + Notification | AFK | 47, 48 | |
+| 51 | Donation Confirmation Triggers Re-Screening | AFK | 47, 48 | |
+
+See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details. All decision points (screening scope, actor model, data shape, expiry policy, migration strategy, etc.) were resolved during grilling — every ticket is ready-for-agent with no outstanding human decisions.
 
 ## Agent skills
 
