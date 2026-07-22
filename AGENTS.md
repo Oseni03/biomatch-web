@@ -241,7 +241,7 @@ See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details
 | 53 | Staff Invite/Accept Flow (replaces instant-provision) | AFK | 52 | ✅ |
 | 54 | Migrate HospitalBank to Organization | AFK | 52 | ✅ |
 | 55 | Migrate EmergencyRequest to Organization | AFK | 52 | ✅ |
-| 56 | Migrate DonorScreening to Organization | AFK | 52, 47-51 | |
+| 56 | Migrate DonorScreening to Organization | AFK | 52, 47-51 | ✅ |
 | 57 | [Backlog] Drop Legacy Hospital Tenant Columns | HITL | 54, 55, 56 | needs-triage |
 
 See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details. Key decisions from grilling: full replacement (not an additive layer); `admin`/`requester`/`viewer` become real BetterAuth custom org roles (framework `owner` treated as admin-equivalent, never exposed in invite UI); real invite+accept lifecycle replaces today's instant-provision (which silently overwrites existing accounts — a real bug); one organization per user for now (app-level policy, not a schema limit); "who did this" audit fields keep referencing `User`, not `Member`. Issue 57 is explicitly **not ready-for-agent** — it drops columns and needs explicit human sign-off per the Database Safety rules above, matching how issue 46 was flagged.
