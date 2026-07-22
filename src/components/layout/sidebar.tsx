@@ -8,7 +8,6 @@ import {
 	Building2,
 	HeartPulse,
 	LayoutDashboard,
-	Search,
 	AlertTriangle,
 	Wallet,
 	History,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+import { Wordmark } from "@/components/brand/wordmark";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import { useMyHospitalBank } from "@/hooks/use-hospital-bank";
+import { formatHospitalCode } from "@/lib/hospital-code";
 import { cn } from "@/lib/utils";
 
 type Role = "donor" | "hospital";
@@ -66,11 +68,6 @@ const NAV_ITEMS: Record<
 			title: "Emergency Request",
 			url: "/hospital/emergency",
 			icon: AlertTriangle,
-		},
-		{
-			title: "BioMatch Donor Finder",
-			url: "/hospital/donor-finder",
-			icon: Search,
 		},
 		{
 			title: "Donor Directory",
@@ -111,6 +108,9 @@ export function SidebarLayout({
 	const { data: donorAlerts } = useDonorAlerts(
 		role === "donor" ? session?.user?.id : undefined,
 	);
+	const { data: hospitalBank } = useMyHospitalBank(
+		role === "hospital" ? session?.user?.id : undefined,
+	);
 	const alertCount = (donorAlerts?.alerts ?? []).filter(
 		(a) =>
 			a.status === "alerted" ||
@@ -126,33 +126,43 @@ export function SidebarLayout({
 				alertCount={alertCount}
 			/>
 			<SidebarInset>
-				<header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
-					<div className="flex items-center gap-2">
-						<SidebarTrigger className="-ml-1" />
-						<Separator
-							orientation="vertical"
-							className="mr-2 h-4"
-						/>
-						<h1 className="text-sm font-medium">
-							{SECTION_LABELS[role]}
-						</h1>
-					</div>
-					<div className="ml-auto flex items-center gap-1.5">
-						<TopBarActions role={role} alertCount={alertCount} />
-						<Separator
-							orientation="vertical"
-							className="mx-1 h-5"
-						/>
-						<NavUser
-							user={{
-								name: userName ?? "BioMatch User",
-								email: role,
-							}}
-							variant="topbar"
-						/>
-					</div>
-				</header>
-				<div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+				<div className="flex flex-1 flex-col gap-4 p-4">
+					<header className="on-ink flex h-14 shrink-0 items-center gap-2 rounded-2xl border border-sidebar-border bg-sidebar px-4 shadow-card">
+						<div className="flex items-center gap-2">
+							<SidebarTrigger className="-ml-1" />
+							<Separator
+								orientation="vertical"
+								className="mr-2 h-4"
+							/>
+							<h1 className="text-sm font-medium flex items-center gap-2">
+								{SECTION_LABELS[role]}
+								{hospitalBank && (
+									<span className="font-mono text-[11px] font-normal text-sidebar-foreground/60">
+										{hospitalBank.hospitalName} ·{" "}
+										{formatHospitalCode(
+											hospitalBank.sequenceNumber,
+										)}
+									</span>
+								)}
+							</h1>
+						</div>
+						<div className="ml-auto flex items-center gap-1.5">
+							<TopBarActions role={role} alertCount={alertCount} />
+							<Separator
+								orientation="vertical"
+								className="mx-1 h-5"
+							/>
+							<NavUser
+								user={{
+									name: userName ?? "BioMatch User",
+									email: role,
+								}}
+								variant="topbar"
+							/>
+						</div>
+					</header>
+					{children}
+				</div>
 			</SidebarInset>
 		</SidebarProvider>
 	);
@@ -187,7 +197,7 @@ function TopBarActions({
 }) {
 	return (
 		<>
-			{role === "hospital" && (
+			{/* {role === "hospital" && (
 				<Button
 					variant="ghost"
 					size="icon-sm"
@@ -231,7 +241,7 @@ function TopBarActions({
 				<Bell className="size-4" />
 				<BadgeCount count={alertCount} className="bg-brand" />
 				<span className="sr-only">Notifications</span>
-			</Button>
+			</Button> */}
 		</>
 	);
 }
@@ -281,10 +291,8 @@ function AppSidebar({
 									<BloodDropIcon className="size-5" />
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-serif font-semibold italic tracking-tight">
-										BioMatch
-									</span>
-									<span className="truncate text-[11px] text-muted-foreground">
+									<Wordmark size="sm" className="truncate" />
+									<span className="truncate text-[11px] text-sidebar-foreground/60">
 										Blood Management
 									</span>
 								</div>

@@ -8,6 +8,7 @@ import { Menu, X, LayoutDashboard } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+import { Wordmark } from "@/components/brand/wordmark";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -53,9 +54,7 @@ export function Navbar() {
 					<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-6deg]">
 						<BloodDropIcon className="size-4" />
 					</div>
-					<span className="font-serif text-xl font-semibold italic tracking-tight text-foreground">
-						BioMatch
-					</span>
+					<Wordmark size="lg" className="text-foreground" />
 				</Link>
 
 				<div className="hidden md:flex items-center gap-10 text-sm">

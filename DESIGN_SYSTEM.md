@@ -1,13 +1,16 @@
 # BioMatch — Design System
 
 Digital blood banking for Nigeria. A warm, editorial brand wrapped around a calm,
-clinical product. "Classic red + clinical white" is a rule about **where color
-lives**, not just a palette:
+clinical product, rendered as a single premium **dark** theme (issue #26) — there
+is no light mode and no toggle. "Classic red + clinical dark" is a rule about
+**where color lives**, not just a palette:
 
 - **Red surfaces = human & urgent.** Marketing hero, emergency alerts, primary
   CTAs, brand moments (`bg-brand`, `.on-red`).
-- **Paper / white surfaces = clinical & clear.** Dashboards, inventory, search,
-  donor data, forms (`bg-paper`, `bg-card`).
+- **Paper / card surfaces = clinical & clear.** Dashboards, inventory, search,
+  donor data, forms (`bg-paper`, `bg-card`) — dark, but a step lighter than the
+  `ink` chrome around them, so content reads as the calm layer and chrome reads
+  as structural.
 
 Red frames and punctuates; it never floods a data-heavy screen.
 
@@ -17,8 +20,13 @@ separate stylesheet or static mockup file — this is the live app.
 
 ## 1. Color
 
-Defined as HSL triplets in `:root` / `.dark` in `globals.css`, exposed as Tailwind
-colors:
+Defined as HSL triplets in a single `:root` block in `globals.css` (no light
+palette, no `.dark` class variant), exposed as Tailwind colors. `<html>` in
+`layout.tsx` always carries a hardcoded `dark` class — not from a toggle, but so
+shadcn primitives' baked-in `dark:` utility variants resolve instead of going
+dead. Elevation is expressed purely through lightness, darkest to lightest:
+`ink` (4% L, structural chrome) → `paper`/`background` (7%) → `card` (11%) →
+`popover` (13%) → `secondary`/`muted` (15–16%).
 
 | Token | Tailwind class | Role |
 |---|---|---|
@@ -29,7 +37,7 @@ colors:
 | `--emergency` | `emergency` | Critical, live-urgency accents |
 | `--cream` | `cream` | Warm off-white, text-on-red |
 | `--paper` | `paper` | Clinical working canvas (marketing + dashboard backgrounds) |
-| `--ink` | `ink` | Near-black navy (dark sections, footer) |
+| `--ink` | `ink` | Near-black navy — structural chrome (dashboard sidebar/header, marketing dark sections, footer) |
 | `--slate` | `slate` | Secondary text accent |
 
 **Semantic status (inventory & alerts)** — use these, not raw Tailwind palette
@@ -43,14 +51,32 @@ state:
 | `--status-ok` | `status-ok` / `status-ok-bg` | Healthy stock, fulfilled, eligible |
 | `--status-info` | `status-info` / `status-info-bg` | Informational / in-progress state |
 
-The shadcn tokens (`--primary`, `--destructive`, `--ring`, `--sidebar-*`, etc.)
-all resolve through `--red`, so light/dark mode stay in sync automatically —
-don't hardcode hex anywhere in components.
+The shadcn tokens (`--primary`, `--destructive`, `--ring`, etc.) resolve through
+`--red` — don't hardcode hex anywhere in components, extend the token set
+instead. `--sidebar-background`/`--sidebar-foreground`/`--sidebar-accent` are
+the exception: they resolve through `--ink`, not `--red` (see below).
 
 `.on-red` (in `globals.css`) recolors `--foreground`/`--border`/`--muted-foreground`
 for content sitting directly on a red background. Only wrap the minimum region
-that needs it — nested clinical-surface content (a white card floating on a red
-section) should sit outside `.on-red`, not inside it.
+that needs it — nested clinical-surface content (a `bg-card` panel floating on
+a red section) should sit outside `.on-red`, not inside it.
+
+**`ink` as structural chrome.** Beyond the marketing dark-contrast blocks it was
+originally scoped to (Impact section, footer, auth split-screen, phone mockup —
+all still `bg-ink`, unchanged), `ink` is also the persistent background for the
+dashboard sidebar and top bar in both the donor and hospital portals
+(`--sidebar-background`/`--sidebar-foreground`/`--sidebar-accent` in
+`globals.css`, exposed as `bg-sidebar`/`text-sidebar-foreground`/
+`bg-sidebar-accent`). These don't read `--ink` directly — they're pinned to
+their own values one notch darker than `--paper`/`--background`, so the chrome
+reads as a distinct structural layer wrapping the app rather than blending into
+whatever page content sits inside it. `.on-ink` (in `globals.css`) mirrors
+`.on-red`, recoloring `--foreground`/`--border`/`--secondary`/
+`--muted-foreground` for content sitting on that chrome (the dashboard header
+uses it). Main dashboard content areas stay on `paper`/`card` — `ink` frames the
+app, it doesn't fill it. `--border`/`--input` are also tinted toward `ink`'s hue
+(rather than a neutral gray) so card borders and section dividers read as part
+of the same structural-chrome family app-wide.
 
 ## 2. Typography
 

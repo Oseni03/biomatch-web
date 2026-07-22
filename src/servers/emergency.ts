@@ -653,7 +653,7 @@ export async function confirmDonation(alertId: string) {
 		where: { id: alertId },
 		include: {
 			request: {
-				select: { id: true, unitsNeeded: true },
+				select: { id: true, unitsNeeded: true, bloodGroup: true, hospitalId: true },
 			},
 			donor: {
 				select: { id: true, name: true },
@@ -692,6 +692,20 @@ export async function confirmDonation(alertId: string) {
 			update: {
 				points: { increment: 100 },
 				lifetimeDonations: { increment: 1 },
+			},
+		});
+
+		const hospitalBank = await tx.hospitalBank.findFirst({
+			where: { managedById: alert.request.hospitalId },
+			select: { id: true },
+		});
+
+		await tx.donation.create({
+			data: {
+				donorId: alert.donor.id,
+				hospitalBankId: hospitalBank?.id,
+				emergencyRequestId: alert.requestId,
+				bloodGroup: alert.request.bloodGroup,
 			},
 		});
 

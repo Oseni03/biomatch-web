@@ -6,6 +6,7 @@ import { useEligibleDonors } from "@/hooks/use-eligible-donors";
 import type { EligibleDonor } from "@/components/donor/eligible-donors-list";
 import { BloodSearchCards } from "@/components/hospital/blood-search-cards";
 import { DonorCards } from "@/components/hospital/donor-cards";
+import { BloodUsageChart } from "@/components/hospital/blood-usage-chart";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
 export function HospitalInventoryClient() {
@@ -43,6 +44,8 @@ export function HospitalInventoryClient() {
 					inventory: b.inventory as Record<string, number>,
 				}))}
 			/>
+
+			<BloodUsageChart />
 
 			<DonorCards donors={eligibleDonors} />
 		</div>

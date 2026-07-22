@@ -6,7 +6,7 @@ import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
 export default async function HospitalDirectoryPage() {
 	const queryClient = getQueryClient();
-	const filters = { page: 1, pageSize: 50 };
+	const filters = { page: 1, pageSize: 10 };
 
 	await queryClient.prefetchQuery({
 		queryKey: ["eligible-donors", filters],

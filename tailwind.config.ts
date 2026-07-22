@@ -55,6 +55,16 @@ const config: Config = {
 					DEFAULT: "hsl(var(--card))",
 					foreground: "hsl(var(--card-foreground))",
 				},
+				sidebar: {
+					DEFAULT: "hsl(var(--sidebar-background))",
+					foreground: "hsl(var(--sidebar-foreground))",
+					primary: "hsl(var(--sidebar-primary))",
+					"primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+					accent: "hsl(var(--sidebar-accent))",
+					"accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+					border: "hsl(var(--sidebar-border))",
+					ring: "hsl(var(--sidebar-ring))",
+				},
 				brand: {
 					DEFAULT: "hsl(var(--red))",
 					deep: "hsl(var(--red-deep))",
@@ -78,11 +88,6 @@ const config: Config = {
 					info: "hsl(var(--status-info))",
 					"info-bg": "hsl(var(--status-info-bg))",
 				},
-				dark: {
-					bg: "#0F0F0E",
-					surface: "#1C1C1A",
-					border: "#2A2A28",
-				},
 			},
 			fontFamily: {
 				sans: ["var(--font-sans)", "system-ui", "sans-serif"],
@@ -101,9 +106,10 @@ const config: Config = {
 				card: "16px",
 			},
 			boxShadow: {
-				"card": "0 2px 8px rgba(70,10,18,0.07)",
-				"card-hover": "0 8px 32px rgba(70,10,18,0.12)",
-				"brand": "0 4px 20px rgba(205,4,38,0.25)",
+				"card": "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 24px -6px rgba(0,0,0,0.5)",
+				"card-hover": "0 1px 0 0 rgba(255,255,255,0.06) inset, 0 16px 40px -8px rgba(0,0,0,0.65)",
+				"brand": "0 4px 24px rgba(244,26,68,0.35), 0 0 0 1px rgba(244,26,68,0.12)",
+				"glow": "0 0 40px rgba(244,26,68,0.28)",
 			},
 		},
 	},

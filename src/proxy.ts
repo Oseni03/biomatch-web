@@ -5,7 +5,7 @@ export async function proxy(request: NextRequest) {
 	const { nextUrl } = request;
 	const pathname = nextUrl.pathname;
 
-	const authOnlyPublicRoutes = ["/auth/login", "/auth/signup"];
+	const authOnlyPublicRoutes = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password"];
 	const publicPrefixes = ["/api/auth"];
 
 	if (
@@ -20,14 +20,14 @@ export async function proxy(request: NextRequest) {
 			headers: request.headers,
 		});
 
-		if (pathname === "/") {
-			if (session?.user?.role) {
-				return NextResponse.redirect(
-					new URL(`/${session.user.role}`, request.url),
-				);
-			}
-			return NextResponse.next();
-		}
+		// if (pathname === "/") {
+		// 	if (session?.user?.role) {
+		// 		return NextResponse.redirect(
+		// 			new URL(`/${session.user.role}`, request.url),
+		// 		);
+		// 	}
+		// 	return NextResponse.next();
+		// }
 
 		if (!session?.user?.id) {
 			const loginUrl = new URL("/auth/login", request.url);

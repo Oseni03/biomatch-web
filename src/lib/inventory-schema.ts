@@ -25,3 +25,19 @@ export const inventorySchema = z.object({
 });
 
 export type Inventory = z.infer<typeof inventorySchema>;
+
+const BLOOD_GROUP_ENUM_MAP = {
+  "A+": "A_PLUS",
+  "A-": "A_MINUS",
+  "B+": "B_PLUS",
+  "B-": "B_MINUS",
+  "AB+": "AB_PLUS",
+  "AB-": "AB_MINUS",
+  "O+": "O_PLUS",
+  "O-": "O_MINUS",
+} as const;
+
+// "A+" -> "A_PLUS", "AB-" -> "AB_MINUS" — matches the BloodGroup DB enum.
+export function toBloodGroupEnum(display: (typeof BLOOD_GROUPS)[number]) {
+  return BLOOD_GROUP_ENUM_MAP[display];
+}

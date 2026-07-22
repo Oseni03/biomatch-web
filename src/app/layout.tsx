@@ -34,12 +34,11 @@ export default function RootLayout({
 		<html
 			lang="en"
 			className={cn(
-				"font-sans",
+				"dark font-sans",
 				hankenGrotesk.variable,
 				newsreader.variable,
 				geistMono.variable,
 			)}
-			suppressHydrationWarning
 		>
 			<body className="antialiased text-foreground">
 				<Providers>{children}</Providers>

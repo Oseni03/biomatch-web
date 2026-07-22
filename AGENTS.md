@@ -169,9 +169,9 @@ See `contexts/` directory for the detailed improvement plan:
 | 23 | Promote Staff Role to Typed Schema Columns | AFK | — | ✅ |
 | 24 | Validate Hospital Inventory Writes with Zod | AFK | — | ✅ |
 | 25 | Replace `alert-context.tsx` with a Shared Query Hook | AFK | — | ✅ |
-| 26 | [Backlog] Dark-Only Theme Redesign | HITL | — (needs design decision first) | needs-triage |
+| 26 | [Backlog] Dark-Only Theme Redesign | HITL | — | ✅ |
 
-See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details. Issue #26 is explicitly **not** ready-for-agent — it requires a human palette/contrast decision before implementation.
+See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details. Issue #26 was scoped to require a human palette/contrast decision before implementation; that decision was made directly by the user (2026-07-22), refining the existing `.dark` tokens rather than a from-scratch palette, and the redesign was implemented in the same session — dark is now the app's only theme, light palette and toggle removed.
 
 ## Optimization & Page-Decomposition Issues (from codebase audit, 2026-07-19)
 
@@ -194,6 +194,22 @@ See `contexts/issues/19-*.md` through `contexts/issues/26-*.md` for full details
 | 39 | Decompose Donor History Page | AFK | — | ✅ |
 
 See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details. Issue #36 flags a product placement question (Emergency Preferences section) for human input but is otherwise ready-for-agent; #39 naturally follows #37/#38 but isn't strictly blocked by them.
+
+## UI/UX Feedback Report Issues (grilling session, 2026-07-21)
+
+7 issues derived from a stakeholder UI/UX + debugging report, fact-checked and scoped via grilling. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 40 | Merge Donor Finder into Donor Directory | AFK | — | ✅ |
+| 41 | Broaden `ink` Token as Structural Chrome Color App-Wide | AFK | — | ✅ |
+| 42 | Bolder Serif Wordmark (Non-Italic, Larger) | AFK | — | ✅ |
+| 43 | Hospital Unique Sequential Code (BIOMATCH-NNN) | AFK | — | ✅ |
+| 44 | Donor Donation History (Real Model + UI) | AFK | 40 | ✅ |
+| 45 | Inventory Usage Tracking + Trend Chart | AFK | — | ✅ |
+| 46 | [Backlog] Verify Donor Search "Divine" Report Against Production Data | HITL | — | needs-triage |
+
+See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details. Issue #46 is explicitly **not** ready-for-agent — it requires a human to check a production `User.name` value; #41 is a real design-system boundary change (broadening `ink`'s documented scope), separate from and predating issue #26's dark-only theme redesign (done).
 
 ## Agent skills
 
