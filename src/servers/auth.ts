@@ -7,6 +7,25 @@ import { headers } from "next/headers";
 import { buildLocationLabel } from "./location";
 import type { Availability } from "@generated/prisma/enums";
 
+function slugify(name: string): string {
+	return name
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
+async function generateUniqueOrgSlug(name: string): Promise<string> {
+	const base = slugify(name) || "hospital";
+	let slug = base;
+	let suffix = 0;
+	while (await prisma.organization.findUnique({ where: { slug } })) {
+		suffix += 1;
+		slug = `${base}-${suffix}`;
+	}
+	return slug;
+}
+
 export async function signUpWithProfile(formData: {
 	email: string;
 	password: string;
@@ -63,6 +82,24 @@ export async function signUpWithProfile(formData: {
 					data: updateData as any,
 				});
 			}
+		}
+
+		if (role === "hospital") {
+			const existingMembership = await prisma.member.findFirst({
+				where: { userId: data.user.id },
+			});
+			if (existingMembership) {
+				return { error: "Account is already part of an organization" };
+			}
+
+			const slug = await generateUniqueOrgSlug(fullName);
+			await auth.api.createOrganization({
+				body: {
+					name: fullName,
+					slug,
+					userId: data.user.id,
+				},
+			});
 		}
 
 		return { success: true, userId: data.user.id };
