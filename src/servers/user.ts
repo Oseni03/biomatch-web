@@ -12,7 +12,6 @@ export async function getUserById(id: string) {
 		where: { id },
 		include: {
 			wallet: true,
-			managedBanks: true,
 		},
 	});
 }

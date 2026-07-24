@@ -78,7 +78,10 @@ export function DonorDashboardClient() {
 			(a: {
 				id: string;
 				request: {
-					hospital: { name: string; location: string | null };
+					organization: {
+						name: string;
+						hospitalBanks: { location: string }[];
+					} | null;
 					bloodGroup: string;
 					unitsNeeded: number;
 					urgencyLevel: string;
@@ -88,8 +91,9 @@ export function DonorDashboardClient() {
 				status: string;
 			}) => ({
 				id: a.id,
-				hospitalName: a.request.hospital.name,
-				location: a.request.hospital.location ?? "Unknown",
+				hospitalName: a.request.organization?.name ?? "Unknown",
+				location:
+					a.request.organization?.hospitalBanks[0]?.location ?? "Unknown",
 				bloodType: displayBloodGroup(a.request.bloodGroup),
 				requiredPints: a.request.unitsNeeded,
 				contactPhone: "N/A",

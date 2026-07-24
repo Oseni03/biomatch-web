@@ -11,8 +11,12 @@ export async function sendEmergencyAlertEmail(alertId: string) {
 		include: {
 			request: {
 				include: {
-					hospital: {
-						select: { id: true, name: true, location: true },
+					organization: {
+						select: {
+							id: true,
+							name: true,
+							hospitalBanks: { select: { location: true }, take: 1 },
+						},
 					},
 				},
 			},
@@ -30,13 +34,17 @@ export async function sendEmergencyAlertEmail(alertId: string) {
 	let emailError: string | null = null;
 
 	try {
+		const hospitalName = alert.request.organization?.name ?? "Unknown";
+		const hospitalLocation =
+			alert.request.organization?.hospitalBanks[0]?.location ?? "";
+
 		const result = await sendEmail({
 			to: alert.donor.email,
-			subject: `Urgent Blood Donation Needed - ${alert.request.hospital.name}`,
+			subject: `Urgent Blood Donation Needed - ${hospitalName}`,
 			react: EmergencyAlertEmail({
 				donorName: alert.donor.name,
-				hospitalName: alert.request.hospital.name,
-				hospitalLocation: alert.request.hospital.location ?? "",
+				hospitalName,
+				hospitalLocation,
 				bloodGroup: alert.request.bloodGroup,
 				urgencyLevel: alert.request.urgencyLevel,
 				distance: "Nearby",

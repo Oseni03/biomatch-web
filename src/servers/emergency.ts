@@ -134,7 +134,6 @@ export async function createEmergencyRequest(data: {
 
 	const request = await prisma.emergencyRequest.create({
 		data: {
-			hospitalId: ownerUserId,
 			organizationId: data.organizationId,
 			bloodGroup: data.bloodGroup as any,
 			unitsNeeded: data.unitsNeeded,
@@ -197,8 +196,12 @@ export async function getActiveEmergencyRequests(filters?: {
 				status: { in: ["pending", "matched"] },
 			},
 			include: {
-				hospital: {
-					select: { id: true, name: true, location: true },
+				organization: {
+					select: {
+						id: true,
+						name: true,
+						hospitalBanks: { select: { location: true }, take: 1 },
+					},
 				},
 				alerts: {
 					select: { id: true, donorId: true, status: true },
@@ -234,8 +237,12 @@ export async function getAlertsForDonor(
 			include: {
 				request: {
 					include: {
-						hospital: {
-							select: { id: true, name: true, location: true },
+						organization: {
+							select: {
+								id: true,
+								name: true,
+								hospitalBanks: { select: { location: true }, take: 1 },
+							},
 						},
 					},
 				},
@@ -312,8 +319,12 @@ export async function getPendingEmergencyRequestsForOrganization(
 				status: { in: ["pending", "matched"] },
 			},
 			include: {
-				hospital: {
-					select: { id: true, name: true, location: true },
+				organization: {
+					select: {
+						id: true,
+						name: true,
+						hospitalBanks: { select: { location: true }, take: 1 },
+					},
 				},
 				alerts: {
 					select: {
@@ -476,8 +487,12 @@ export async function getEmergencyRequestStatus(requestId: string) {
 	const request = await prisma.emergencyRequest.findUnique({
 		where: { id: requestId },
 		include: {
-			hospital: {
-				select: { id: true, name: true, location: true },
+			organization: {
+				select: {
+					id: true,
+					name: true,
+					hospitalBanks: { select: { location: true }, take: 1 },
+				},
 			},
 			alerts: {
 				include: {
@@ -673,7 +688,6 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 					id: true,
 					unitsNeeded: true,
 					bloodGroup: true,
-					hospitalId: true,
 					organizationId: true,
 				},
 			},
@@ -742,7 +756,6 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 		await tx.donorScreening.create({
 			data: {
 				donorId: alert.donor.id,
-				hospitalId: alert.request.hospitalId,
 				organizationId: alert.request.organizationId,
 				staffUserId,
 				status: "pending",
@@ -786,8 +799,11 @@ export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
 						bloodGroup: true,
 						unitsNeeded: true,
 						createdAt: true,
-						hospital: {
-							select: { name: true, location: true },
+						organization: {
+							select: {
+								name: true,
+								hospitalBanks: { select: { location: true }, take: 1 },
+							},
 						},
 					},
 				},
@@ -804,8 +820,8 @@ export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
 	const records = alerts.map((a) => ({
 		id: a.id,
 		date: a.updatedAt.toISOString().split("T")[0],
-		hospitalName: a.request.hospital.name,
-		hospitalLocation: a.request.hospital.location,
+		hospitalName: a.request.organization?.name ?? "Unknown",
+		hospitalLocation: a.request.organization?.hospitalBanks[0]?.location ?? null,
 		bloodGroup: a.request.bloodGroup,
 		unitsNeeded: a.request.unitsNeeded,
 	}));
@@ -840,14 +856,22 @@ export async function getLocalDemandStats(userId: string) {
 		});
 		const stateId = state?.parentId;
 
-		baseWhere.hospital = {
-			locationRel: stateId
-				? { parentId: stateId }
-				: { id: user.locationId },
+		baseWhere.organization = {
+			hospitalBanks: {
+				some: {
+					locationRel: stateId
+						? { parentId: stateId }
+						: { id: user.locationId },
+				},
+			},
 		};
 	} else if (user?.location) {
-		baseWhere.hospital = {
-			location: { contains: user.location, mode: "insensitive" },
+		baseWhere.organization = {
+			hospitalBanks: {
+				some: {
+					location: { contains: user.location, mode: "insensitive" },
+				},
+			},
 		};
 	}
 

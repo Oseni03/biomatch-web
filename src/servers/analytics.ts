@@ -121,7 +121,7 @@ export async function exportDonationRecords(
 	const requests = await prisma.emergencyRequest.findMany({
 		where,
 		include: {
-			hospital: {
+			organization: {
 				select: { id: true, name: true },
 			},
 			alerts: {
@@ -142,7 +142,7 @@ export async function exportDonationRecords(
 			rows.push(
 				[
 					req.createdAt.toISOString().split("T")[0],
-					`"${req.hospital.name}"`,
+					`"${req.organization?.name ?? "Unknown"}"`,
 					alert.donor.name,
 					alert.donor.email,
 					alert.donor.bloodGroup?.replace("_", " ") ?? "N/A",

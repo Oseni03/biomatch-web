@@ -111,6 +111,9 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 3. If a plan phase step is completed, update the relevant `phase-*.md` to mark it done
 4. **Immediately update the issue's Status in its tracker table** (the PRD Issue Map above, the Redesign Issues table, or the Simplification Issues table) — ✅ when fully done, 🔶 when partially done. Do this in the same session as the implementation, not as a follow-up — a stale status table is worse than no status table, since future agents trust it over re-reading every issue file.
 
+### Verification:
+- **Never run `npm run build`.** It's slow and the user runs it themselves. Use `npx tsc --noEmit` (and `npm run lint` where relevant) to verify changes compile and type-check; leave the full production build to the user.
+
 ### When implementing planned work:
 - Start with the lowest-numbered incomplete phase (Phase 1 → Phase 2 → Phase 3)
 - Within a phase, follow the numbered steps in order
@@ -242,9 +245,9 @@ See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details
 | 54 | Migrate HospitalBank to Organization | AFK | 52 | ✅ |
 | 55 | Migrate EmergencyRequest to Organization | AFK | 52 | ✅ |
 | 56 | Migrate DonorScreening to Organization | AFK | 52, 47-51 | ✅ |
-| 57 | [Backlog] Drop Legacy Hospital Tenant Columns | HITL | 54, 55, 56 | needs-triage |
+| 57 | [Backlog] Drop Legacy Hospital Tenant Columns | HITL | 54, 55, 56 | ✅ |
 
-See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details. Key decisions from grilling: full replacement (not an additive layer); `admin`/`requester`/`viewer` become real BetterAuth custom org roles (framework `owner` treated as admin-equivalent, never exposed in invite UI); real invite+accept lifecycle replaces today's instant-provision (which silently overwrites existing accounts — a real bug); one organization per user for now (app-level policy, not a schema limit); "who did this" audit fields keep referencing `User`, not `Member`. Issue 57 is explicitly **not ready-for-agent** — it drops columns and needs explicit human sign-off per the Database Safety rules above, matching how issue 46 was flagged.
+See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details. Key decisions from grilling: full replacement (not an additive layer); `admin`/`requester`/`viewer` become real BetterAuth custom org roles (framework `owner` treated as admin-equivalent, never exposed in invite UI); real invite+accept lifecycle replaces today's instant-provision (which silently overwrites existing accounts — a real bug); one organization per user for now (app-level policy, not a schema limit); "who did this" audit fields keep referencing `User`, not `Member`. Issue 57 required explicit human sign-off per the Database Safety rules above (matching how issue 46 was flagged) before it could be implemented; the user confirmed on 2026-07-24 that the database had no data yet, removing the data-loss risk. Implementing it also surfaced that tickets 54-56 had left `managedById`/`hospitalId` as live dual-writes (not dead columns as assumed) — those write paths and every remaining `hospital`-relation read (email/notification templates, live status panel, donor dashboard, analytics export, local demand stats) were migrated to read hospital name/location through `organization` → `hospitalBanks` instead. The now-obsolete one-time backfill scripts in `prisma/scripts/` (from 54-56) were deleted since their source columns no longer exist.
 
 ## Agent skills
 

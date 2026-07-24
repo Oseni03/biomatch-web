@@ -22,12 +22,6 @@ enum Availability {
   anytime
 }
 
-enum HospitalStaffRole {
-  admin
-  requester
-  viewer
-}
-
 enum UrgencyLevel {
   standard
   critical
@@ -117,12 +111,10 @@ model HospitalBank {
   location       String
   locationId     String?  @db.Uuid
   inventory      Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
-  managedById    String?  @db.Uuid
   organizationId String?  @db.Uuid
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
-  managedBy    User?                  @relation(fields: [managedById], references: [id], onDelete: SetNull)
   organization Organization?          @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   locationRel  Location?              @relation(fields: [locationId], references: [id])
   donations    Donation[]
@@ -191,7 +183,6 @@ model Wallet {
 
 model EmergencyRequest {
   id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hospitalId     String        @db.Uuid
   organizationId String?       @db.Uuid
   bloodGroup     BloodGroup
   unitsNeeded    Int
@@ -201,12 +192,10 @@ model EmergencyRequest {
   createdAt      DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime      @updatedAt @db.Timestamptz(6)
 
-  hospital     User             @relation("HospitalRequests", fields: [hospitalId], references: [id], onDelete: Cascade)
   organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   alerts       EmergencyAlert[]
   donations    Donation[]
 
-  @@index([hospitalId])
   @@index([organizationId])
   @@index([bloodGroup])
   @@index([status])
@@ -248,7 +237,6 @@ model User {
   locationId        String?            @db.Uuid
   availability      Availability?
   isActive          Boolean            @default(true)
-  hospitalStaffRole HospitalStaffRole?
   lastDonationDate  DateTime?          @db.Timestamptz(6)
   createdAt         DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
@@ -258,12 +246,9 @@ model User {
   sessions                Session[]
   accounts                Account[]
   wallet                  Wallet?
-  managedBanks            HospitalBank[]
-  emergencyRequests       EmergencyRequest[] @relation("HospitalRequests")
   emergencyAlerts         EmergencyAlert[]   @relation("DonorAlerts")
   donations               Donation[]         @relation("DonorDonations")
   donorScreenings         DonorScreening[]   @relation("DonorScreeningDonor")
-  hospitalScreeningsGiven DonorScreening[]   @relation("DonorScreeningHospital")
   staffScreeningsRecorded DonorScreening[]   @relation("DonorScreeningStaff")
   members                 Member[]
   sentInvitations         Invitation[]
@@ -285,7 +270,6 @@ enum ScreeningStatus {
 model DonorScreening {
   id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   donorId        String          @db.Uuid
-  hospitalId     String          @db.Uuid
   organizationId String?         @db.Uuid
   staffUserId    String          @db.Uuid
   status         ScreeningStatus @default(pending)
@@ -296,12 +280,10 @@ model DonorScreening {
   updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
 
   donor        User          @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
-  hospital     User          @relation("DonorScreeningHospital", fields: [hospitalId], references: [id], onDelete: Cascade)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   staffUser    User          @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
 
   @@index([donorId])
-  @@index([hospitalId])
   @@index([organizationId])
   @@index([status])
   @@index([resolvedAt])

@@ -106,7 +106,6 @@ export async function signUpWithProfile(formData: {
 				await createHospitalBank({
 					hospitalName: fullName,
 					location: "",
-					managedById: data.user.id,
 					organizationId: organization.id,
 				});
 			}

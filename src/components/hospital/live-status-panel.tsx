@@ -88,12 +88,12 @@ export function LiveStatusPanel({ request }: LiveStatusPanelProps) {
 						{request.unitsNeeded > 1 ? "s" : ""}
 					</h3>
 					<p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 font-medium">
-						{request.hospital.name}
-						{request.hospital.location && (
+						{request.organization?.name ?? "Unknown"}
+						{request.organization?.hospitalBanks[0]?.location && (
 							<>
 								<span>&bull;</span>
 								<MapPin className="h-3 w-3" />
-								{request.hospital.location}
+								{request.organization.hospitalBanks[0].location}
 							</>
 						)}
 						<span>&bull;</span>

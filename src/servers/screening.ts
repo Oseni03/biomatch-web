@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import type { ScreeningStatus } from "@generated/prisma/enums";
 import { sendScreeningResultEmail } from "./notification";
-import { authorizeOrgAction, getOrganizationOwnerUserId } from "./organization";
+import { authorizeOrgAction } from "./organization";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "failed";
 
@@ -79,12 +79,9 @@ export async function createScreening(
 		return existingPending;
 	}
 
-	const hospitalId = await getOrganizationOwnerUserId(organizationId);
-
 	return prisma.donorScreening.create({
 		data: {
 			donorId,
-			hospitalId,
 			organizationId,
 			staffUserId,
 			status: "pending",
