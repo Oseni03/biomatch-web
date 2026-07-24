@@ -249,6 +249,19 @@ See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details
 
 See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details. Key decisions from grilling: full replacement (not an additive layer); `admin`/`requester`/`viewer` become real BetterAuth custom org roles (framework `owner` treated as admin-equivalent, never exposed in invite UI); real invite+accept lifecycle replaces today's instant-provision (which silently overwrites existing accounts — a real bug); one organization per user for now (app-level policy, not a schema limit); "who did this" audit fields keep referencing `User`, not `Member`. Issue 57 required explicit human sign-off per the Database Safety rules above (matching how issue 46 was flagged) before it could be implemented; the user confirmed on 2026-07-24 that the database had no data yet, removing the data-loss risk. Implementing it also surfaced that tickets 54-56 had left `managedById`/`hospitalId` as live dual-writes (not dead columns as assumed) — those write paths and every remaining `hospital`-relation read (email/notification templates, live status panel, donor dashboard, analytics export, local demand stats) were migrated to read hospital name/location through `organization` → `hospitalBanks` instead. The now-obsolete one-time backfill scripts in `prisma/scripts/` (from 54-56) were deleted since their source columns no longer exist.
 
+## Donor Eligibility & Screening Rework Issues (grilling session, 2026-07-24)
+
+4 vertical-slice issues derived from a grilling session reworking donor donation eligibility: screening moves from a pre-registration gate to a per-visit, on-arrival check; screening failure gains lasting defer/blacklist consequences; donation confirmation gains a non-blocking donor-side reminder. Sequel to the donor verification/eligibility work in issues 47-51. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 58 | Screening-History Gate + 3-Month Cooldown in Matching | AFK | — | |
+| 59 | Per-Visit Screening Gates Donation Confirmation | AFK | — | |
+| 60 | Screening Failure → Defer or Blacklist Donor | AFK | 59 | |
+| 61 | Donor Donation Confirmation Reminder | AFK | — | |
+
+See `contexts/issues/58-*.md` through `contexts/issues/61-*.md` for full details. Key decisions from grilling: unscreened-but-previously-screened donors stay in the emergency dispatch pool (screening happens fresh at each visit, not as a pre-filter) — only donors with *zero* screening history ever are excluded from dispatch; the 56-day cooldown becomes 3 calendar months; screening failure is no longer a flat outcome — staff choose to defer (temporary, date-bound) or blacklist (permanent) the donor, both of which exclude them from future matching, with blacklist also hiding alerts from the donor's own feed; donor-side donation confirmation is an explicitly non-blocking reminder surfaced on the hospital dashboard, never a gate on `confirmDonation()`. `listDonors({ eligibleOnly })` in the hospital donor directory is explicitly left unchanged (separate read path from emergency dispatch).
+
 ## Agent skills
 
 ### Issue tracker
