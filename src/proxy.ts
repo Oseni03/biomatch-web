@@ -5,7 +5,7 @@ export async function proxy(request: NextRequest) {
 	const { nextUrl } = request;
 	const pathname = nextUrl.pathname;
 
-	const authOnlyPublicRoutes = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password"];
+	const authOnlyPublicRoutes = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/accept-invitation"];
 	const publicPrefixes = ["/api/auth"];
 
 	if (

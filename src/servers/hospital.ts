@@ -1,17 +1,29 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { BLOOD_GROUPS, inventorySchema, toBloodGroupEnum } from "@/lib/inventory-schema";
+import {
+	BLOOD_GROUPS,
+	inventorySchema,
+	toBloodGroupEnum,
+} from "@/lib/inventory-schema";
 import { BloodGroup } from "@generated/prisma/enums";
 import type { InventoryTransactionReason } from "@generated/prisma/enums";
 
-export async function getAllHospitalBanks() {
-	return prisma.hospitalBank.findMany({
+const ORGANIZATION_OWNER_INCLUDE = {
+	organization: {
 		include: {
-			managedBy: {
-				select: { id: true, name: true, email: true },
+			members: {
+				where: { role: "owner" },
+				include: { user: { select: { id: true, name: true, email: true } } },
+				take: 1,
 			},
 		},
+	},
+} as const;
+
+export async function getAllHospitalBanks() {
+	return prisma.hospitalBank.findMany({
+		include: ORGANIZATION_OWNER_INCLUDE,
 		orderBy: { createdAt: "desc" },
 	});
 }
@@ -19,13 +31,13 @@ export async function getAllHospitalBanks() {
 export async function getHospitalBankById(id: string) {
 	return prisma.hospitalBank.findUnique({
 		where: { id },
-		include: { managedBy: true },
+		include: ORGANIZATION_OWNER_INCLUDE,
 	});
 }
 
-export async function getHospitalBankByManagedById(userId: string) {
+export async function getHospitalBankByOrganizationId(organizationId: string) {
 	return prisma.hospitalBank.findFirst({
-		where: { managedById: userId },
+		where: { organizationId },
 		select: { id: true, hospitalName: true, sequenceNumber: true },
 	});
 }
@@ -34,14 +46,14 @@ export async function createHospitalBank(data: {
 	hospitalName: string;
 	location: string;
 	locationId?: string;
-	managedById?: string;
+	organizationId?: string;
 }) {
 	return prisma.hospitalBank.create({
 		data: {
 			hospitalName: data.hospitalName,
 			location: data.location,
 			locationId: data.locationId,
-			managedById: data.managedById,
+			organizationId: data.organizationId,
 			inventory: {
 				"A+": 0,
 				"A-": 0,
@@ -53,7 +65,6 @@ export async function createHospitalBank(data: {
 				"O-": 0,
 			},
 		},
-		include: { managedBy: true },
 	});
 }
 
@@ -99,7 +110,6 @@ export async function updateHospitalBankInventory(
 		return tx.hospitalBank.update({
 			where: { id },
 			data: { inventory: parsed.data },
-			include: { managedBy: true },
 		});
 	});
 }

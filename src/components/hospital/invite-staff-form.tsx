@@ -6,24 +6,20 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { StaffRole } from "@/servers/staff";
-
-const ROLE_OPTIONS: StaffRole[] = ["admin", "requester", "viewer"];
+import { INVITABLE_ROLES, type InvitableRole } from "@/lib/organization-access";
 
 interface InviteStaffFormProps {
-	onSubmit: (name: string, email: string, role: StaffRole) => void;
+	onSubmit: (email: string, role: InvitableRole) => void;
 }
 
 export function InviteStaffForm({ onSubmit }: InviteStaffFormProps) {
-	const [newName, setNewName] = useState("");
 	const [newEmail, setNewEmail] = useState("");
-	const [newRole, setNewRole] = useState<StaffRole>("requester");
+	const [newRole, setNewRole] = useState<InvitableRole>("requester");
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!newName || !newEmail) return;
-		onSubmit(newName, newEmail, newRole);
-		setNewName("");
+		if (!newEmail) return;
+		onSubmit(newEmail, newRole);
 		setNewEmail("");
 	};
 
@@ -34,25 +30,11 @@ export function InviteStaffForm({ onSubmit }: InviteStaffFormProps) {
 					Authorize Practitioner
 				</CardTitle>
 				<CardDescription className="text-xs text-muted-foreground">
-					Grant dispatch permissions
+					Send an invitation to grant dispatch permissions
 				</CardDescription>
 			</CardHeader>
 
 			<form onSubmit={handleSubmit} className="space-y-4">
-				<div>
-					<label className="block text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
-						Doctor/Nurse Name
-					</label>
-					<input
-						type="text"
-						placeholder="Dr. Ayomide Oseni"
-						value={newName}
-						onChange={(e) => setNewName(e.target.value)}
-						className="w-full px-3.5 py-2.5 bg-muted border-border rounded-xl text-xs"
-						required
-					/>
-				</div>
-
 				<div>
 					<label className="block text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
 						Email
@@ -74,11 +56,11 @@ export function InviteStaffForm({ onSubmit }: InviteStaffFormProps) {
 					<select
 						value={newRole}
 						onChange={(e) =>
-							setNewRole(e.target.value as StaffRole)
+							setNewRole(e.target.value as InvitableRole)
 						}
 						className="w-full px-3 py-2.5 bg-muted border-border rounded-xl text-xs"
 					>
-						{ROLE_OPTIONS.map((r) => (
+						{INVITABLE_ROLES.map((r) => (
 							<option key={r} value={r}>
 								{r}
 							</option>
@@ -87,7 +69,7 @@ export function InviteStaffForm({ onSubmit }: InviteStaffFormProps) {
 				</div>
 
 				<Button type="submit" className="w-full">
-					Add Authorized Staff
+					Send Invitation
 				</Button>
 			</form>
 		</Card>

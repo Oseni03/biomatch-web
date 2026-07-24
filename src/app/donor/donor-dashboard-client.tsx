@@ -18,6 +18,7 @@ import {
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
 import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
 import { useDonorSettingsForm } from "@/hooks/use-donor-settings-form";
+import { useDonorVerificationStatus } from "@/hooks/use-screening";
 import { toast } from "sonner";
 
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
@@ -30,6 +31,7 @@ import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
 import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { SuccessModal } from "@/components/donor/success-modal";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
+import { VerificationStatusBanner } from "@/components/donor/verification-status-banner";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function DonorDashboardClient() {
@@ -41,6 +43,9 @@ export function DonorDashboardClient() {
 		error: userError,
 	} = useDonorDashboard();
 	const { data: banks } = useInventory();
+	const { data: verificationStatus } = useDonorVerificationStatus(
+		session?.user?.id,
+	);
 	const [page, setPage] = useState(1);
 
 	const handleFilter = () => {
@@ -73,7 +78,10 @@ export function DonorDashboardClient() {
 			(a: {
 				id: string;
 				request: {
-					hospital: { name: string; location: string | null };
+					organization: {
+						name: string;
+						hospitalBanks: { location: string }[];
+					} | null;
 					bloodGroup: string;
 					unitsNeeded: number;
 					urgencyLevel: string;
@@ -83,8 +91,9 @@ export function DonorDashboardClient() {
 				status: string;
 			}) => ({
 				id: a.id,
-				hospitalName: a.request.hospital.name,
-				location: a.request.hospital.location ?? "Unknown",
+				hospitalName: a.request.organization?.name ?? "Unknown",
+				location:
+					a.request.organization?.hospitalBanks[0]?.location ?? "Unknown",
 				bloodType: displayBloodGroup(a.request.bloodGroup),
 				requiredPints: a.request.unitsNeeded,
 				contactPhone: "N/A",
@@ -211,6 +220,12 @@ export function DonorDashboardClient() {
 					}
 				/>
 			</motion.div>
+
+			{verificationStatus && verificationStatus !== "verified" && (
+				<motion.div variants={itemVariants}>
+					<VerificationStatusBanner status={verificationStatus} />
+				</motion.div>
+			)}
 
 			{eligibility.eligible && lastDonationDate && (
 				<motion.div variants={itemVariants}>

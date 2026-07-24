@@ -11,10 +11,12 @@ import { RequestVolumeChart } from "@/components/hospital/request-volume-chart";
 import { CoverageGapsCard } from "@/components/hospital/coverage-gaps-card";
 
 interface AnalyticsDashboardProps {
-	hospitalId: string;
+	organizationId: string;
 }
 
-export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({
+	organizationId,
+}: AnalyticsDashboardProps) {
 	const today = new Date().toISOString().split("T")[0];
 	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 		.toISOString()
@@ -24,13 +26,13 @@ export function AnalyticsDashboard({ hospitalId }: AnalyticsDashboardProps) {
 
 	const dateRange = { startDate, endDate };
 	const { data: analytics, isLoading } = useHospitalAnalytics(
-		hospitalId,
+		organizationId,
 		dateRange,
 	);
 
 	const handleExport = async () => {
 		try {
-			const csv = await exportDonationRecords(hospitalId, dateRange);
+			const csv = await exportDonationRecords(organizationId, dateRange);
 			const blob = new Blob([csv], { type: "text/csv" });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");

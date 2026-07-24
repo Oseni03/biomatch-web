@@ -16,17 +16,20 @@ import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 const EXPANSION_COUNTDOWN_S = Math.floor(EXPANSION_TIMEOUT_MS / 1000);
 
 interface HospitalBroadcastsClientProps {
-	hospitalId: string;
+	organizationId: string;
 }
 
 export function HospitalBroadcastsClient({
-	hospitalId,
+	organizationId,
 }: HospitalBroadcastsClientProps) {
 	const [page, setPage] = useState(1);
-	const { data: pendingRequests } = usePendingEmergencyRequests(hospitalId, {
-		page,
-		pageSize: 10,
-	});
+	const { data: pendingRequests } = usePendingEmergencyRequests(
+		organizationId,
+		{
+			page,
+			pageSize: 10,
+		},
+	);
 	const expandMutation = useExpandSearchRadius();
 
 	const pendingServerReqs = pendingRequests?.requests ?? [];

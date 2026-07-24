@@ -47,11 +47,11 @@ export interface DonorAlertWithRequest {
 			urgencyLevel: string;
 			status: string;
 			createdAt: Date;
-			hospital: {
+			organization: {
 				id: string;
 				name: string;
-				location: string | null;
-			};
+				hospitalBanks: { location: string }[];
+			} | null;
 		};
 	}[];
 	total: number;

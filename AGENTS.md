@@ -92,6 +92,12 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 - **Server actions** always placed in `servers/` directory, one file per domain
 - **React Query hooks** in `hooks/`, named `use-<domain>.ts`
 
+## Database Safety
+
+- **Never make a database modification that can drop or reset data.** This includes `prisma migrate reset`, `prisma db push --accept-data-loss`, `DROP TABLE`/`DROP COLUMN`, truncating tables, or any migration that silently discards existing rows (e.g. narrowing a column, dropping a default that existing rows rely on).
+- Schema changes that risk data loss (dropping/renaming a column, changing a type, tightening nullable-to-required) must use an additive/expand-then-contract path — add the new shape alongside the old, backfill, migrate call sites, and only remove the old shape once nothing depends on it and a human has explicitly confirmed the removal.
+- If it's unclear whether a change is destructive, treat it as destructive and confirm with the user before running it.
+
 ## Agent Instructions
 
 ### Before making ANY modifications:
@@ -104,6 +110,9 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 2. Update `contexts/architecture.md` if the data model, routing, or patterns changed
 3. If a plan phase step is completed, update the relevant `phase-*.md` to mark it done
 4. **Immediately update the issue's Status in its tracker table** (the PRD Issue Map above, the Redesign Issues table, or the Simplification Issues table) — ✅ when fully done, 🔶 when partially done. Do this in the same session as the implementation, not as a follow-up — a stale status table is worse than no status table, since future agents trust it over re-reading every issue file.
+
+### Verification:
+- **Never run `npm run build`.** It's slow and the user runs it themselves. Use `npx tsc --noEmit` (and `npm run lint` where relevant) to verify changes compile and type-check; leave the full production build to the user.
 
 ### When implementing planned work:
 - Start with the lowest-numbered incomplete phase (Phase 1 → Phase 2 → Phase 3)
@@ -210,6 +219,35 @@ See `contexts/issues/27-*.md` through `contexts/issues/39-*.md` for full details
 | 46 | [Backlog] Verify Donor Search "Divine" Report Against Production Data | HITL | — | needs-triage |
 
 See `contexts/issues/40-*.md` through `contexts/issues/46-*.md` for full details. Issue #46 is explicitly **not** ready-for-agent — it requires a human to check a production `User.name` value; #41 is a real design-system boundary change (broadening `ink`'s documented scope), separate from and predating issue #26's dark-only theme redesign (done).
+
+## Donor Verification & Eligibility Issues (grilling session, 2026-07-22)
+
+5 vertical-slice issues derived from a grilling session on "donors aren't matchable until tested and verified." Listed in dependency order. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 47 | Donor Screening Data Model + Grandfather Migration | AFK | — | ✅ |
+| 48 | Hospital Staff Record Donor Screening | AFK | 47 | ✅ |
+| 49 | Verification Gates Matching + Donor List | AFK | 47 | ✅ |
+| 50 | Donor Verification Status + Notification | AFK | 47, 48 | ✅ |
+| 51 | Donation Confirmation Triggers Re-Screening | AFK | 47, 48 | ✅ |
+
+See `contexts/issues/47-*.md` through `contexts/issues/51-*.md` for full details. All decision points (screening scope, actor model, data shape, expiry policy, migration strategy, etc.) were resolved during grilling — every ticket is ready-for-agent with no outstanding human decisions.
+
+## Hospital-as-Organization Issues (grilling session, 2026-07-22)
+
+6 tickets derived from a grilling session on replacing the ad-hoc `User.hospitalStaffRole` tenant model with BetterAuth's organization plugin. Deferred follow-up to the donor verification work above (47-51) — sequenced after it, not blocking it. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 52 | Organization Foundation + Auto-Create at Signup | AFK | — | ✅ |
+| 53 | Staff Invite/Accept Flow (replaces instant-provision) | AFK | 52 | ✅ |
+| 54 | Migrate HospitalBank to Organization | AFK | 52 | ✅ |
+| 55 | Migrate EmergencyRequest to Organization | AFK | 52 | ✅ |
+| 56 | Migrate DonorScreening to Organization | AFK | 52, 47-51 | ✅ |
+| 57 | [Backlog] Drop Legacy Hospital Tenant Columns | HITL | 54, 55, 56 | ✅ |
+
+See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details. Key decisions from grilling: full replacement (not an additive layer); `admin`/`requester`/`viewer` become real BetterAuth custom org roles (framework `owner` treated as admin-equivalent, never exposed in invite UI); real invite+accept lifecycle replaces today's instant-provision (which silently overwrites existing accounts — a real bug); one organization per user for now (app-level policy, not a schema limit); "who did this" audit fields keep referencing `User`, not `Member`. Issue 57 required explicit human sign-off per the Database Safety rules above (matching how issue 46 was flagged) before it could be implemented; the user confirmed on 2026-07-24 that the database had no data yet, removing the data-loss risk. Implementing it also surfaced that tickets 54-56 had left `managedById`/`hospitalId` as live dual-writes (not dead columns as assumed) — those write paths and every remaining `hospital`-relation read (email/notification templates, live status panel, donor dashboard, analytics export, local demand stats) were migrated to read hospital name/location through `organization` → `hospitalBanks` instead. The now-obsolete one-time backfill scripts in `prisma/scripts/` (from 54-56) were deleted since their source columns no longer exist.
 
 ## Agent skills
 

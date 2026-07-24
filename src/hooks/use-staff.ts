@@ -4,83 +4,134 @@ import {
 	inviteStaffMember,
 	updateStaffRole,
 	removeStaffMember,
-	type StaffRole,
+	cancelStaffInvitation,
+	getMyStaffRole,
 } from "@/servers/staff";
+import type { InvitableRole } from "@/lib/organization-access";
 import { toast } from "sonner";
 
-export function useStaffMembers(hospitalId?: string) {
+export function useMyStaffRole(userId?: string) {
 	return useQuery({
-		queryKey: ["staff", hospitalId],
-		queryFn: () => getStaffMembers(hospitalId!),
-		enabled: !!hospitalId,
+		queryKey: ["my-staff-role", userId],
+		queryFn: () => getMyStaffRole(userId!),
+		enabled: !!userId,
 	});
 }
 
-export function useInviteStaffMember(hospitalId?: string) {
+export function useStaffMembers(organizationId?: string) {
+	return useQuery({
+		queryKey: ["staff", organizationId],
+		queryFn: () => getStaffMembers(organizationId!),
+		enabled: !!organizationId,
+	});
+}
+
+export function useInviteStaffMember(organizationId?: string) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: ({
 			email,
-			name,
 			role,
 			callerUserId,
 		}: {
 			email: string;
-			name: string;
-			role: StaffRole;
+			role: InvitableRole;
 			callerUserId: string;
-		}) => inviteStaffMember(hospitalId!, email, name, role, callerUserId),
+		}) => inviteStaffMember(organizationId!, email, role, callerUserId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["staff", hospitalId] });
-			toast.success("Staff member added");
+			queryClient.invalidateQueries({
+				queryKey: ["staff", organizationId],
+			});
+			toast.success("Invitation sent");
 		},
-		onError: () => {
-			toast.error("Failed to add staff member");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to invite staff member",
+			);
 		},
 	});
 }
 
-export function useUpdateStaffRole(hospitalId?: string) {
+export function useUpdateStaffRole(organizationId?: string) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: ({
-			userId,
+			memberId,
 			role,
 			callerUserId,
 		}: {
-			userId: string;
-			role: StaffRole;
+			memberId: string;
+			role: InvitableRole;
 			callerUserId: string;
-		}) => updateStaffRole(userId, role, callerUserId),
+		}) => updateStaffRole(organizationId!, memberId, role, callerUserId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["staff", hospitalId] });
+			queryClient.invalidateQueries({
+				queryKey: ["staff", organizationId],
+			});
 			toast.success("Role updated");
 		},
-		onError: () => {
-			toast.error("Failed to update role");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to update role",
+			);
 		},
 	});
 }
 
-export function useRemoveStaffMember(hospitalId?: string) {
+export function useRemoveStaffMember(organizationId?: string) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: ({
-			userId,
+			memberId,
 			callerUserId,
 		}: {
-			userId: string;
+			memberId: string;
 			callerUserId: string;
-		}) => removeStaffMember(userId, callerUserId),
+		}) => removeStaffMember(organizationId!, memberId, callerUserId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["staff", hospitalId] });
+			queryClient.invalidateQueries({
+				queryKey: ["staff", organizationId],
+			});
 			toast.success("Staff member removed");
 		},
-		onError: () => {
-			toast.error("Failed to remove staff member");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to remove staff member",
+			);
+		},
+	});
+}
+
+export function useCancelStaffInvitation(organizationId?: string) {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			invitationId,
+			callerUserId,
+		}: {
+			invitationId: string;
+			callerUserId: string;
+		}) => cancelStaffInvitation(organizationId!, invitationId, callerUserId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["staff", organizationId],
+			});
+			toast.success("Invitation canceled");
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to cancel invitation",
+			);
 		},
 	});
 }
