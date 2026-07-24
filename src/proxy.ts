@@ -15,19 +15,14 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
+	if (pathname === "/") {
+		return NextResponse.next();
+	}
+
 	try {
 		const session = await auth.api.getSession({
 			headers: request.headers,
 		});
-
-		// if (pathname === "/") {
-		// 	if (session?.user?.role) {
-		// 		return NextResponse.redirect(
-		// 			new URL(`/${session.user.role}`, request.url),
-		// 		);
-		// 	}
-		// 	return NextResponse.next();
-		// }
 
 		if (!session?.user?.id) {
 			const loginUrl = new URL("/auth/login", request.url);
