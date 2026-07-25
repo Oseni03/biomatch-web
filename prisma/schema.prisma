@@ -216,6 +216,7 @@ model EmergencyAlert {
   request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
   notificationLogs NotificationLog[]
+  screenings       DonorScreening[]
 
   @@index([requestId])
   @@index([donorId])
@@ -272,6 +273,7 @@ model DonorScreening {
   donorId        String          @db.Uuid
   organizationId String?         @db.Uuid
   staffUserId    String          @db.Uuid
+  alertId        String?         @db.Uuid
   status         ScreeningStatus @default(pending)
   screenedAt     DateTime        @default(now()) @db.Timestamptz(6)
   resolvedAt     DateTime?       @db.Timestamptz(6)
@@ -279,14 +281,16 @@ model DonorScreening {
   createdAt      DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
 
-  donor        User          @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  staffUser    User          @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  donor        User            @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
+  organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  alert        EmergencyAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
 
   @@index([donorId])
   @@index([organizationId])
   @@index([status])
   @@index([resolvedAt])
+  @@index([alertId])
   @@map("donor_screenings")
 }
 

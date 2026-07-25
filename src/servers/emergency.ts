@@ -710,6 +710,16 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 		throw new Error("Emergency request has no organization");
 	}
 
+	const passedScreening = await prisma.donorScreening.findFirst({
+		where: { alertId, status: "passed" },
+	});
+
+	if (!passedScreening) {
+		throw new Error(
+			"Cannot confirm donation: this donor must pass an on-site screening for this visit first.",
+		);
+	}
+
 	return prisma.$transaction(async (tx) => {
 		const updatedAlert = await tx.emergencyAlert.update({
 			where: { id: alertId },
@@ -745,20 +755,6 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 				hospitalBankId: hospitalBank?.id,
 				emergencyRequestId: alert.requestId,
 				bloodGroup: alert.request.bloodGroup,
-			},
-		});
-
-		// Re-test accompanying this donation. Opening a fresh `pending` row here
-		// does not affect the donor's derived verification status -- that always
-		// reads the latest *resolved* screening (see servers/screening.ts), so a
-		// prior "passed" result keeps them matchable while this one is pending.
-		await tx.donorScreening.create({
-			data: {
-				donorId: alert.donor.id,
-				organizationId: alert.request.organizationId,
-				staffUserId,
-				status: "pending",
-				screenedAt: new Date(),
 			},
 		});
 

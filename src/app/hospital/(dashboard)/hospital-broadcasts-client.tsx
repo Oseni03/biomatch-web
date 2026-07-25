@@ -172,7 +172,11 @@ export function HospitalBroadcastsClient({
 							Live Status Panel
 						</h4>
 						{pendingServerReqs.map((req) => (
-							<LiveStatusPanel key={req.id} request={req} />
+							<LiveStatusPanel
+								key={req.id}
+								request={req}
+								organizationId={organizationId}
+							/>
 						))}
 						{pendingRequests && pendingRequests.totalPages > 1 && (
 							<PaginationControls

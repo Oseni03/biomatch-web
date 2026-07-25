@@ -64,6 +64,13 @@ export async function getActiveScreeningForDonor(donorId: string) {
 	});
 }
 
+export async function getScreeningForAlert(alertId: string) {
+	return prisma.donorScreening.findFirst({
+		where: { alertId },
+		orderBy: { screenedAt: "desc" },
+	});
+}
+
 export async function getScreeningHistoryForDonor(donorId: string) {
 	return prisma.donorScreening.findMany({
 		where: { donorId },
@@ -75,13 +82,14 @@ export async function createScreening(
 	donorId: string,
 	organizationId: string,
 	staffUserId: string,
+	alertId?: string,
 ) {
 	await authorizeOrgAction(organizationId, staffUserId, {
 		screening: ["create"],
 	});
 
 	const existingPending = await prisma.donorScreening.findFirst({
-		where: { donorId, status: "pending" },
+		where: { donorId, status: "pending", alertId: alertId ?? null },
 	});
 	if (existingPending) {
 		return existingPending;
@@ -92,6 +100,7 @@ export async function createScreening(
 			donorId,
 			organizationId,
 			staffUserId,
+			alertId,
 			status: "pending",
 			screenedAt: new Date(),
 		},

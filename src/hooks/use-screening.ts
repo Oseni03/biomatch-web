@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getDonorVerificationStatus,
 	getActiveScreeningForDonor,
+	getScreeningForAlert,
 	getScreeningHistoryForDonor,
 	createScreening,
 	resolveScreening,
@@ -24,6 +25,14 @@ export function useActiveScreening(donorId?: string) {
 	});
 }
 
+export function useScreeningForAlert(alertId?: string) {
+	return useQuery({
+		queryKey: ["screening-for-alert", alertId],
+		queryFn: () => getScreeningForAlert(alertId!),
+		enabled: !!alertId,
+	});
+}
+
 export function useScreeningHistory(donorId?: string) {
 	return useQuery({
 		queryKey: ["screening-history", donorId],
@@ -35,6 +44,7 @@ export function useScreeningHistory(donorId?: string) {
 function invalidateScreeningQueries(
 	queryClient: ReturnType<typeof useQueryClient>,
 	donorId: string,
+	alertId?: string,
 ) {
 	queryClient.invalidateQueries({
 		queryKey: ["active-screening", donorId],
@@ -46,6 +56,11 @@ function invalidateScreeningQueries(
 		queryKey: ["screening-history", donorId],
 	});
 	queryClient.invalidateQueries({ queryKey: ["eligible-donors"] });
+	if (alertId) {
+		queryClient.invalidateQueries({
+			queryKey: ["screening-for-alert", alertId],
+		});
+	}
 }
 
 export function useCreateScreening() {
@@ -56,13 +71,19 @@ export function useCreateScreening() {
 			donorId,
 			organizationId,
 			staffUserId,
+			alertId,
 		}: {
 			donorId: string;
 			organizationId: string;
 			staffUserId: string;
-		}) => createScreening(donorId, organizationId, staffUserId),
+			alertId?: string;
+		}) => createScreening(donorId, organizationId, staffUserId, alertId),
 		onSuccess: (_data, variables) => {
-			invalidateScreeningQueries(queryClient, variables.donorId);
+			invalidateScreeningQueries(
+				queryClient,
+				variables.donorId,
+				variables.alertId,
+			);
 			toast.success("Screening started");
 		},
 		onError: (err: Error) => {
@@ -86,9 +107,14 @@ export function useResolveScreening() {
 			callerUserId: string;
 			notes?: string;
 			donorId: string;
+			alertId?: string;
 		}) => resolveScreening(screeningId, status, callerUserId, notes),
 		onSuccess: (_data, variables) => {
-			invalidateScreeningQueries(queryClient, variables.donorId);
+			invalidateScreeningQueries(
+				queryClient,
+				variables.donorId,
+				variables.alertId,
+			);
 			toast.success("Screening resolved");
 		},
 		onError: (err: Error) => {
