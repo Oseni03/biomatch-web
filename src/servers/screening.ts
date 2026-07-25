@@ -49,6 +49,14 @@ export async function getVerifiedDonorIds(): Promise<string[]> {
 	return verified;
 }
 
+export async function getScreenedDonorIds(): Promise<string[]> {
+	const rows = await prisma.donorScreening.findMany({
+		distinct: ["donorId"],
+		select: { donorId: true },
+	});
+	return rows.map((row) => row.donorId);
+}
+
 export async function getActiveScreeningForDonor(donorId: string) {
 	return prisma.donorScreening.findFirst({
 		where: { donorId, status: "pending" },

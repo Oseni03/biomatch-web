@@ -255,7 +255,7 @@ See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details
 
 | # | Title | Type | Blocked By | Status |
 |---|---|---|---|---|
-| 58 | Screening-History Gate + 3-Month Cooldown in Matching | AFK | — | |
+| 58 | Screening-History Gate + 3-Month Cooldown in Matching | AFK | — | ✅ |
 | 59 | Per-Visit Screening Gates Donation Confirmation | AFK | — | |
 | 60 | Screening Failure → Defer or Blacklist Donor | AFK | 59 | |
 | 61 | Donor Donation Confirmation Reminder | AFK | — | |

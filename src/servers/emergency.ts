@@ -2,9 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCompatibleDonorGroups } from "@/lib/blood-compatibility";
-import { ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { getEligibilityCutoffDate } from "@/lib/eligibility";
 import { ACTIVE_ALERT_STATUSES } from "@/lib/constants";
-import { getVerifiedDonorIds } from "./screening";
+import { getScreenedDonorIds } from "./screening";
 import {
 	INITIAL_RADIUS,
 	MAX_ALERTS_PER_REQUEST,
@@ -80,10 +80,9 @@ async function matchDonors(
 	} | null;
 }> {
 	const compatibleGroups = getCompatibleDonorGroups(bloodGroup);
-	const cutoffDate = new Date();
-	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
+	const cutoffDate = getEligibilityCutoffDate();
 
-	const verifiedDonorIds = await getVerifiedDonorIds();
+	const screenedDonorIds = await getScreenedDonorIds();
 	const ownerUserId = await getOrganizationOwnerUserId(organizationId);
 
 	const [matchedDonors, requestLocation] = await Promise.all([
@@ -92,7 +91,7 @@ async function matchDonors(
 				role: "donor",
 				isActive: true,
 				bloodGroup: { in: compatibleGroups as any },
-				id: { in: verifiedDonorIds },
+				id: { in: screenedDonorIds },
 				OR: [
 					{ lastDonationDate: null },
 					{ lastDonationDate: { lt: cutoffDate } },

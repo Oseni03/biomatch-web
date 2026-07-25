@@ -10,7 +10,6 @@ import { useInventory } from "@/hooks/use-inventory";
 import { useCityLabels } from "@/hooks/use-city-labels";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
-import { ELIGIBILITY_DAYS } from "@/lib/constants";
 import {
 	displayBloodGroup,
 	type EmergencyMatchRequest,
@@ -120,14 +119,17 @@ export function DonorDashboardClient() {
 		}
 	}, [alerts]);
 
-	const deferralPercent = Math.min(
-		100,
-		Math.floor(
-			((ELIGIBILITY_DAYS - eligibility.daysRemaining) /
-				ELIGIBILITY_DAYS) *
-				100,
-		),
-	);
+	const deferralPercent =
+		eligibility.windowDays > 0
+			? Math.min(
+					100,
+					Math.floor(
+						((eligibility.windowDays - eligibility.daysRemaining) /
+							eligibility.windowDays) *
+							100,
+					),
+				)
+			: 100;
 
 	const {
 		donorStatus,

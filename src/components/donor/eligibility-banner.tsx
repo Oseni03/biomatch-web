@@ -9,7 +9,7 @@ export function EligibilityBanner() {
 					You are eligible to donate again!
 				</p>
 				<p className="text-xs text-status-ok/80 mt-0.5">
-					Your 56-day deferral period has ended. Check for active
+					Your 3-month deferral period has ended. Check for active
 					emergency requests above.
 				</p>
 			</div>
