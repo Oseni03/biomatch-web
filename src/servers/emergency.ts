@@ -80,7 +80,8 @@ async function matchDonors(
 	} | null;
 }> {
 	const compatibleGroups = getCompatibleDonorGroups(bloodGroup);
-	const cutoffDate = getEligibilityCutoffDate();
+	const now = new Date();
+	const cutoffDate = getEligibilityCutoffDate(now);
 
 	const screenedDonorIds = await getScreenedDonorIds();
 	const ownerUserId = await getOrganizationOwnerUserId(organizationId);
@@ -92,9 +93,20 @@ async function matchDonors(
 				isActive: true,
 				bloodGroup: { in: compatibleGroups as any },
 				id: { in: screenedDonorIds },
-				OR: [
-					{ lastDonationDate: null },
-					{ lastDonationDate: { lt: cutoffDate } },
+				blacklistedAt: null,
+				AND: [
+					{
+						OR: [
+							{ lastDonationDate: null },
+							{ lastDonationDate: { lt: cutoffDate } },
+						],
+					},
+					{
+						OR: [
+							{ deferredUntil: null },
+							{ deferredUntil: { lt: now } },
+						],
+					},
 				],
 			},
 			select: { id: true, location: true, locationId: true, name: true },
@@ -230,6 +242,22 @@ export async function getAlertsForDonor(
 	const page = filters?.page ?? 1;
 	const pageSize = filters?.pageSize ?? 10;
 
+	const donor = await prisma.user.findUnique({
+		where: { id: donorId },
+		select: { blacklistedAt: true },
+	});
+
+	if (donor?.blacklistedAt) {
+		return {
+			alerts: [],
+			total: 0,
+			page,
+			pageSize,
+			totalPages: 0,
+			blacklisted: true,
+		};
+	}
+
 	const [alerts, total] = await Promise.all([
 		prisma.emergencyAlert.findMany({
 			where: { donorId },
@@ -259,6 +287,7 @@ export async function getAlertsForDonor(
 		page,
 		pageSize,
 		totalPages: Math.ceil(total / pageSize),
+		blacklisted: false,
 	};
 }
 

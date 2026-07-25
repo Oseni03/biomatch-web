@@ -58,4 +58,5 @@ export interface DonorAlertWithRequest {
 	page: number;
 	pageSize: number;
 	totalPages: number;
+	blacklisted: boolean;
 }

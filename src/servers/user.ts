@@ -132,6 +132,8 @@ export async function listDonors(filters?: ListDonorsFilters) {
 				lastDonationDate: true,
 				location: true,
 				locationId: true,
+				deferredUntil: true,
+				blacklistedAt: true,
 			},
 			orderBy: { createdAt: "desc" },
 			skip,

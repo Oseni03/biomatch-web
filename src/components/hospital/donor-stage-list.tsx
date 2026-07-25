@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Bell, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { displayBloodGroup } from "@/lib/donor-types";
@@ -10,6 +11,7 @@ import {
 	useResolveScreening,
 } from "@/hooks/use-screening";
 import { authClient } from "@/lib/auth-client";
+import { ScreeningFailurePrompt } from "@/components/hospital/screening-failure-prompt";
 
 export interface StageConfig {
 	key: string;
@@ -148,6 +150,7 @@ function ArrivedStageAction({
 	const createScreening = useCreateScreening();
 	const resolveScreening = useResolveScreening();
 	const confirmDonation = useConfirmDonation();
+	const [showFailurePrompt, setShowFailurePrompt] = useState(false);
 
 	if (isLoading || !staffUserId) {
 		return (
@@ -156,6 +159,25 @@ function ArrivedStageAction({
 	}
 
 	if (screening?.status === "pending") {
+		if (showFailurePrompt) {
+			return (
+				<ScreeningFailurePrompt
+					isPending={resolveScreening.isPending}
+					onCancel={() => setShowFailurePrompt(false)}
+					onConfirm={(consequence) =>
+						resolveScreening.mutate({
+							screeningId: screening.id,
+							status: "failed",
+							callerUserId: staffUserId,
+							donorId,
+							alertId,
+							consequence,
+						})
+					}
+				/>
+			);
+		}
+
 		return (
 			<div className="flex items-center gap-2">
 				<Button
@@ -179,15 +201,7 @@ function ArrivedStageAction({
 					variant="destructive"
 					disabled={resolveScreening.isPending}
 					className="h-auto px-3 py-1.5 text-[10px]"
-					onClick={() =>
-						resolveScreening.mutate({
-							screeningId: screening.id,
-							status: "failed",
-							callerUserId: staffUserId,
-							donorId,
-							alertId,
-						})
-					}
+					onClick={() => setShowFailurePrompt(true)}
 				>
 					Mark Failed
 				</Button>

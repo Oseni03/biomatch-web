@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { StatusTag } from "@/components/brand/status-tag";
+import { DeferralBadge } from "@/components/hospital/deferral-badge";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
@@ -205,9 +206,23 @@ export function DonorDirectory() {
 												{donor.location ?? "—"}
 											</td>
 											<td className="py-4 px-3">
-												<StatusTag status={eligible ? "ok" : "low"}>
-													{eligible ? "Eligible" : "Deferred"}
-												</StatusTag>
+												<div className="flex flex-wrap gap-1.5">
+													<StatusTag
+														status={eligible ? "ok" : "low"}
+													>
+														{eligible
+															? "Eligible"
+															: "Deferred"}
+													</StatusTag>
+													<DeferralBadge
+														deferredUntil={
+															donor.deferredUntil
+														}
+														blacklistedAt={
+															donor.blacklistedAt
+														}
+													/>
+												</div>
 											</td>
 											<td className="py-4 px-3 text-right">
 												<Button

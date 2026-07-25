@@ -7,6 +7,10 @@ import { authorizeOrgAction } from "./organization";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "failed";
 
+export type ScreeningFailureConsequence =
+	| { type: "defer"; until: Date }
+	| { type: "blacklist" };
+
 export async function getDonorVerificationStatus(
 	donorId: string,
 ): Promise<VerificationStatus> {
@@ -112,6 +116,7 @@ export async function resolveScreening(
 	status: "passed" | "failed",
 	callerUserId: string,
 	notes?: string,
+	consequence?: ScreeningFailureConsequence,
 ) {
 	const existing = await prisma.donorScreening.findUnique({
 		where: { id: screeningId },
@@ -130,13 +135,40 @@ export async function resolveScreening(
 		screening: ["resolve"],
 	});
 
-	const updated = await prisma.donorScreening.update({
-		where: { id: screeningId },
-		data: {
-			status,
-			notes: notes || existing.notes,
-			resolvedAt: new Date(),
-		},
+	if (status === "failed" && !consequence) {
+		throw new Error(
+			"Resolving a screening as failed requires choosing to defer or blacklist the donor",
+		);
+	}
+
+	const updated = await prisma.$transaction(async (tx) => {
+		const updatedScreening = await tx.donorScreening.update({
+			where: { id: screeningId },
+			data: {
+				status,
+				notes: notes || existing.notes,
+				resolvedAt: new Date(),
+			},
+		});
+
+		if (status === "failed" && consequence) {
+			await tx.user.update({
+				where: { id: existing.donorId },
+				data:
+					consequence.type === "blacklist"
+						? { blacklistedAt: new Date(), deferredUntil: null }
+						: { deferredUntil: consequence.until, blacklistedAt: null },
+			});
+
+			if (existing.alertId) {
+				await tx.emergencyAlert.update({
+					where: { id: existing.alertId },
+					data: { status: "screening_failed" },
+				});
+			}
+		}
+
+		return updatedScreening;
 	});
 
 	sendScreeningResultEmail(updated.id).catch((err) => {

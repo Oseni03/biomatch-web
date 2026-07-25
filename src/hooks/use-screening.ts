@@ -7,6 +7,7 @@ import {
 	createScreening,
 	resolveScreening,
 } from "@/servers/screening";
+import type { ScreeningFailureConsequence } from "@/servers/screening";
 import { toast } from "sonner";
 
 export function useDonorVerificationStatus(donorId?: string) {
@@ -60,6 +61,9 @@ function invalidateScreeningQueries(
 		queryClient.invalidateQueries({
 			queryKey: ["screening-for-alert", alertId],
 		});
+		queryClient.invalidateQueries({
+			queryKey: ["pending-emergency-requests"],
+		});
 	}
 }
 
@@ -101,6 +105,7 @@ export function useResolveScreening() {
 			status,
 			callerUserId,
 			notes,
+			consequence,
 		}: {
 			screeningId: string;
 			status: "passed" | "failed";
@@ -108,7 +113,9 @@ export function useResolveScreening() {
 			notes?: string;
 			donorId: string;
 			alertId?: string;
-		}) => resolveScreening(screeningId, status, callerUserId, notes),
+			consequence?: ScreeningFailureConsequence;
+		}) =>
+			resolveScreening(screeningId, status, callerUserId, notes, consequence),
 		onSuccess: (_data, variables) => {
 			invalidateScreeningQueries(
 				queryClient,

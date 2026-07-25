@@ -31,6 +31,7 @@ import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { SuccessModal } from "@/components/donor/success-modal";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
 import { VerificationStatusBanner } from "@/components/donor/verification-status-banner";
+import { BlacklistedBanner } from "@/components/donor/blacklisted-banner";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function DonorDashboardClient() {
@@ -282,19 +283,23 @@ export function DonorDashboardClient() {
 				</div>
 
 				<div className="space-y-8 lg:col-span-2">
-					<EmergencyAlertsFeed
-						requests={requests}
-						bloodType={bloodType}
-						eligibility={eligibility}
-						donorStatus={donorStatus}
-						donorAlertStatuses={donorAlertStatuses}
-						activeTrackingId={activeTrackingId}
-						onRespond={handleRespond}
-						onDecline={handleDecline}
-						onMarkEnRoute={handleMarkEnRoute}
-						onMarkArrived={handleMarkArrived}
-					/>
-					{alerts && alerts.totalPages > 1 && (
+					{alerts?.blacklisted ? (
+						<BlacklistedBanner />
+					) : (
+						<EmergencyAlertsFeed
+							requests={requests}
+							bloodType={bloodType}
+							eligibility={eligibility}
+							donorStatus={donorStatus}
+							donorAlertStatuses={donorAlertStatuses}
+							activeTrackingId={activeTrackingId}
+							onRespond={handleRespond}
+							onDecline={handleDecline}
+							onMarkEnRoute={handleMarkEnRoute}
+							onMarkArrived={handleMarkArrived}
+						/>
+					)}
+					{alerts && !alerts.blacklisted && alerts.totalPages > 1 && (
 						<PaginationControls
 							page={page}
 							totalPages={alerts.totalPages}
