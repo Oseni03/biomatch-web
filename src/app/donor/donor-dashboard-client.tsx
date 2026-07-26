@@ -14,7 +14,10 @@ import {
 	displayBloodGroup,
 	type EmergencyMatchRequest,
 } from "@/lib/donor-types";
-import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import {
+	useDonorAlerts,
+	useDonorConfirmDonation,
+} from "@/hooks/use-emergency-requests";
 import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
 import { useDonorSettingsForm } from "@/hooks/use-donor-settings-form";
 import { useDonorVerificationStatus } from "@/hooks/use-screening";
@@ -77,6 +80,7 @@ export function DonorDashboardClient() {
 		.map(
 			(a: {
 				id: string;
+				donorConfirmedAt: Date | null;
 				request: {
 					organization: {
 						name: string;
@@ -103,6 +107,9 @@ export function DonorDashboardClient() {
 						: ("high" as const),
 				timestamp: new Date(a.request.createdAt).toISOString(),
 				status: a.request.status as "pending" | "matched" | "completed",
+				donorConfirmedAt: a.donorConfirmedAt
+					? new Date(a.donorConfirmedAt).toISOString()
+					: null,
 			}),
 		);
 
@@ -163,6 +170,12 @@ export function DonorDashboardClient() {
 		handleMarkArrived,
 		handleManualComplete,
 	} = useEmergencyMissionTracker(setLastDonationDateInput);
+
+	const donorConfirmDonation = useDonorConfirmDonation();
+	const handleConfirmDonation = (alertId: string) => {
+		if (!session?.user?.id) return;
+		donorConfirmDonation.mutate({ alertId, donorId: session.user.id });
+	};
 
 	const donationRecords = historyData?.records ?? [];
 	const activeRequest = requests.find((r) => r.id === activeTrackingId);
@@ -297,6 +310,7 @@ export function DonorDashboardClient() {
 							onDecline={handleDecline}
 							onMarkEnRoute={handleMarkEnRoute}
 							onMarkArrived={handleMarkArrived}
+							onConfirmDonation={handleConfirmDonation}
 						/>
 					)}
 					{alerts && !alerts.blacklisted && alerts.totalPages > 1 && (

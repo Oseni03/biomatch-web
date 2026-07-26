@@ -205,14 +205,15 @@ model EmergencyRequest {
 }
 
 model EmergencyAlert {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  requestId   String      @db.Uuid
-  donorId     String      @db.Uuid
-  status      AlertStatus @default(alerted)
-  openedAt    DateTime?   @db.Timestamptz(6)
-  respondedAt DateTime?   @db.Timestamptz(6)
-  createdAt   DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime    @updatedAt @db.Timestamptz(6)
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId        String      @db.Uuid
+  donorId          String      @db.Uuid
+  status           AlertStatus @default(alerted)
+  openedAt         DateTime?   @db.Timestamptz(6)
+  respondedAt      DateTime?   @db.Timestamptz(6)
+  donorConfirmedAt DateTime?   @db.Timestamptz(6)
+  createdAt        DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime    @updatedAt @db.Timestamptz(6)
 
   request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)

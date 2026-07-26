@@ -811,6 +811,46 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 	});
 }
 
+export async function donorConfirmDonation(alertId: string, donorId: string) {
+	const alert = await prisma.emergencyAlert.findUnique({
+		where: { id: alertId },
+	});
+
+	if (!alert) {
+		throw new Error("Alert not found");
+	}
+
+	if (alert.donorId !== donorId) {
+		throw new Error("Not authorized to confirm this alert");
+	}
+
+	if (alert.status !== "arrived") {
+		throw new Error(
+			`Cannot confirm donation: alert status is "${alert.status}". Donation can only be self-confirmed while arrived.`,
+		);
+	}
+
+	return prisma.emergencyAlert.update({
+		where: { id: alertId },
+		data: { donorConfirmedAt: new Date() },
+	});
+}
+
+export async function getAlertsAwaitingConfirmation(organizationId: string) {
+	return prisma.emergencyAlert.findMany({
+		where: {
+			status: "arrived",
+			donorConfirmedAt: { not: null },
+			request: { organizationId },
+		},
+		include: {
+			donor: { select: { id: true, name: true, bloodGroup: true } },
+			request: { select: { bloodGroup: true, unitsNeeded: true } },
+		},
+		orderBy: { donorConfirmedAt: "asc" },
+	});
+}
+
 export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
 	const skip = (page - 1) * pageSize;
 

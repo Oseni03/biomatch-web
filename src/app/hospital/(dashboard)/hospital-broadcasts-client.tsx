@@ -6,6 +6,7 @@ import { EXPANSION_TIMEOUT_MS } from "@/lib/radius-expansion";
 import { RadiusExpansionCard } from "@/components/hospital/radius-expansion-card";
 import { EmergencyRequestForm } from "@/components/hospital/emergency-request-form";
 import { LiveStatusPanel } from "@/components/hospital/live-status-panel";
+import { PendingDonationConfirmations } from "@/components/hospital/pending-donation-confirmations";
 import {
 	usePendingEmergencyRequests,
 	useExpandSearchRadius,
@@ -116,6 +117,8 @@ export function HospitalBroadcastsClient({
 				title="Emergency Broadcasts"
 				subtitle="Dispatch requests and track live donor response"
 			/>
+
+			<PendingDonationConfirmations organizationId={organizationId} />
 
 			{hasPendingServerReq && expandingRequestId && (
 				<RadiusExpansionCard

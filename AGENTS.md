@@ -258,7 +258,7 @@ See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details
 | 58 | Screening-History Gate + 3-Month Cooldown in Matching | AFK | — | ✅ |
 | 59 | Per-Visit Screening Gates Donation Confirmation | AFK | — | ✅ |
 | 60 | Screening Failure → Defer or Blacklist Donor | AFK | 59 | ✅ |
-| 61 | Donor Donation Confirmation Reminder | AFK | — | |
+| 61 | Donor Donation Confirmation Reminder | AFK | — | ✅ |
 
 See `contexts/issues/58-*.md` through `contexts/issues/61-*.md` for full details. Key decisions from grilling: unscreened-but-previously-screened donors stay in the emergency dispatch pool (screening happens fresh at each visit, not as a pre-filter) — only donors with *zero* screening history ever are excluded from dispatch; the 56-day cooldown becomes 3 calendar months; screening failure is no longer a flat outcome — staff choose to defer (temporary, date-bound) or blacklist (permanent) the donor, both of which exclude them from future matching, with blacklist also hiding alerts from the donor's own feed; donor-side donation confirmation is an explicitly non-blocking reminder surfaced on the hospital dashboard, never a gate on `confirmDonation()`. `listDonors({ eligibleOnly })` in the hospital donor directory is explicitly left unchanged (separate read path from emergency dispatch).
 
