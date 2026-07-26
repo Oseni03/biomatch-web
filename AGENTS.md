@@ -262,6 +262,20 @@ See `contexts/issues/52-*.md` through `contexts/issues/57-*.md` for full details
 
 See `contexts/issues/58-*.md` through `contexts/issues/61-*.md` for full details. Key decisions from grilling: unscreened-but-previously-screened donors stay in the emergency dispatch pool (screening happens fresh at each visit, not as a pre-filter) — only donors with *zero* screening history ever are excluded from dispatch; the 56-day cooldown becomes 3 calendar months; screening failure is no longer a flat outcome — staff choose to defer (temporary, date-bound) or blacklist (permanent) the donor, both of which exclude them from future matching, with blacklist also hiding alerts from the donor's own feed; donor-side donation confirmation is an explicitly non-blocking reminder surfaced on the hospital dashboard, never a gate on `confirmDonation()`. `listDonors({ eligibleOnly })` in the hospital donor directory is explicitly left unchanged (separate read path from emergency dispatch).
 
+## Schema Hardening Issues (database audit, 2026-07-26)
+
+5 issues surfaced by a direct audit of `prisma/schema.prisma` against how it's actually used in `servers/emergency.ts`, `servers/hospital.ts`, and `servers/screening.ts` — not derived from a grilling session. Theme: several places rely on application-level checks (in-memory dedup, check-then-write) with no database constraint backing them, and one relation cascade is a latent landmine for a user-deletion feature that doesn't exist yet. Status: blank = not started, 🔶 = in progress, ✅ = done.
+
+| # | Title | Type | Blocked By | Status |
+|---|---|---|---|---|
+| 62 | Prevent Duplicate EmergencyAlert Rows Under Concurrent Dispatch | AFK | — | |
+| 63 | Prevent Duplicate/Racing Donor Screenings | AFK | — | |
+| 64 | Derive Hospital Inventory from Transaction Ledger (fix lost-update race) | AFK | — | |
+| 65 | Harden Delete-Cascade Rules + Add Matching-Query Index | AFK | — | |
+| 66 | [Needs-triage] Donor Hard-Delete Data-Retention Policy | HITL | — | needs-triage |
+
+See `contexts/issues/62-*.md` through `contexts/issues/66-*.md` for full details. Key decisions: issue 66 is filed as `needs-triage`, not `ready-for-agent`, since it requires a human product/legal decision on donor data retention before any schema change; issues 62-65 are schema/server-only fixes with no user-deletion or admin-delete code path currently affected, so they're low-risk despite touching cascade rules.
+
 ## Agent skills
 
 ### Issue tracker
