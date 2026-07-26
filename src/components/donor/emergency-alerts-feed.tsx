@@ -18,6 +18,7 @@ interface EmergencyAlertsFeedProps {
 	onDecline: (reqId: string) => void;
 	onMarkEnRoute: (reqId: string) => void;
 	onMarkArrived: (reqId: string) => void;
+	onConfirmDonation: (reqId: string) => void;
 }
 
 export function EmergencyAlertsFeed({
@@ -31,6 +32,7 @@ export function EmergencyAlertsFeed({
 	onDecline,
 	onMarkEnRoute,
 	onMarkArrived,
+	onConfirmDonation,
 }: EmergencyAlertsFeedProps) {
 	const [collapsedDeclined, setCollapsedDeclined] = useState<
 		Record<string, boolean>
@@ -103,6 +105,7 @@ export function EmergencyAlertsFeed({
 								onDecline={onDecline}
 								onMarkEnRoute={onMarkEnRoute}
 								onMarkArrived={onMarkArrived}
+								onConfirmDonation={onConfirmDonation}
 								onToggleCollapse={() => toggleDeclined(req.id)}
 							/>
 						);

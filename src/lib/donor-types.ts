@@ -24,6 +24,7 @@ export interface EmergencyMatchRequest {
 	urgency: "critical" | "high" | "medium";
 	timestamp: string;
 	status: "pending" | "matched" | "completed";
+	donorConfirmedAt: string | null;
 }
 
 export interface DonationRecord {
@@ -41,6 +42,7 @@ export interface DonorAlertWithRequest {
 	alerts: {
 		id: string;
 		status: string;
+		donorConfirmedAt: Date | null;
 		request: {
 			bloodGroup: string;
 			unitsNeeded: number;
@@ -58,4 +60,5 @@ export interface DonorAlertWithRequest {
 	page: number;
 	pageSize: number;
 	totalPages: number;
+	blacklisted: boolean;
 }

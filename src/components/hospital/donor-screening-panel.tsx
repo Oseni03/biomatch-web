@@ -22,6 +22,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { StatusTag } from "@/components/brand/status-tag";
+import { DeferralBadge } from "@/components/hospital/deferral-badge";
+import { ScreeningFailurePrompt } from "@/components/hospital/screening-failure-prompt";
 import type { VerificationStatus } from "@/servers/screening";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +43,8 @@ interface DirectoryDonor {
 	id: string;
 	name: string;
 	bloodGroup: string | null;
+	deferredUntil: Date | string | null;
+	blacklistedAt: Date | string | null;
 }
 
 export function DonorScreeningPanel({
@@ -210,7 +214,13 @@ function DonorScreeningRow({
 					)}
 				</td>
 				<td className="py-4 px-3">
-					<StatusTag status={badge.status}>{badge.label}</StatusTag>
+					<div className="flex flex-wrap gap-1.5">
+						<StatusTag status={badge.status}>{badge.label}</StatusTag>
+						<DeferralBadge
+							deferredUntil={donor.deferredUntil}
+							blacklistedAt={donor.blacklistedAt}
+						/>
+					</div>
 				</td>
 				<td className="py-4 px-3 text-right text-muted-foreground text-[10px]">
 					{isExpanded ? "Hide" : "Manage"}
@@ -244,6 +254,7 @@ function ScreeningActions({
 	canRecord: boolean;
 }) {
 	const [notes, setNotes] = useState("");
+	const [showFailurePrompt, setShowFailurePrompt] = useState(false);
 	const { data: activeScreening, isLoading } = useActiveScreening(donorId);
 	const createScreening = useCreateScreening();
 	const resolveScreening = useResolveScreening();
@@ -292,40 +303,49 @@ function ScreeningActions({
 				onChange={(e) => setNotes(e.target.value)}
 				className="text-xs"
 			/>
-			<div className="flex gap-2">
-				<Button
-					size="sm"
-					className="bg-status-ok text-white hover:bg-status-ok hover:opacity-90"
-					disabled={resolveScreening.isPending}
-					onClick={() =>
-						resolveScreening.mutate({
-							screeningId: activeScreening.id,
-							status: "passed",
-							callerUserId: staffUserId,
-							notes,
-							donorId,
-						})
-					}
-				>
-					Mark Passed
-				</Button>
-				<Button
-					size="sm"
-					variant="destructive"
-					disabled={resolveScreening.isPending}
-					onClick={() =>
+			{showFailurePrompt ? (
+				<ScreeningFailurePrompt
+					isPending={resolveScreening.isPending}
+					onCancel={() => setShowFailurePrompt(false)}
+					onConfirm={(consequence) =>
 						resolveScreening.mutate({
 							screeningId: activeScreening.id,
 							status: "failed",
 							callerUserId: staffUserId,
 							notes,
 							donorId,
+							consequence,
 						})
 					}
-				>
-					Mark Failed
-				</Button>
-			</div>
+				/>
+			) : (
+				<div className="flex gap-2">
+					<Button
+						size="sm"
+						className="bg-status-ok text-white hover:bg-status-ok hover:opacity-90"
+						disabled={resolveScreening.isPending}
+						onClick={() =>
+							resolveScreening.mutate({
+								screeningId: activeScreening.id,
+								status: "passed",
+								callerUserId: staffUserId,
+								notes,
+								donorId,
+							})
+						}
+					>
+						Mark Passed
+					</Button>
+					<Button
+						size="sm"
+						variant="destructive"
+						disabled={resolveScreening.isPending}
+						onClick={() => setShowFailurePrompt(true)}
+					>
+						Mark Failed
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 }

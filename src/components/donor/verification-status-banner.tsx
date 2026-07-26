@@ -22,7 +22,7 @@ const CONTENT: Record<
 	unverified: {
 		icon: ShieldAlert,
 		title: "Get screened to start receiving requests",
-		body: "Visit a partner hospital for a walk-in blood screening. Once staff record your result, you'll be eligible for emergency donation requests.",
+		body: "You have no screening on record, which is what's blocking emergency donation requests — not any past result. Visit a partner hospital for a walk-in blood screening to start receiving requests.",
 		tagStatus: "low",
 		tagLabel: "Unverified",
 	},
@@ -36,7 +36,7 @@ const CONTENT: Record<
 	failed: {
 		icon: ShieldX,
 		title: "You're not currently cleared to donate",
-		body: "Visit a partner hospital again for a follow-up screening at any time — a new screening can update your status.",
+		body: "Your most recent screening wasn't passed, but having screening history keeps you eligible for emergency donation requests. Visit a partner hospital again for a follow-up screening at any time — a new screening can update your status.",
 		tagStatus: "critical",
 		tagLabel: "Not Cleared",
 	},

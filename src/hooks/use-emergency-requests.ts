@@ -7,6 +7,8 @@ import {
 	respondToAlert,
 	updateAlertStatus,
 	confirmDonation,
+	donorConfirmDonation,
+	getAlertsAwaitingConfirmation,
 } from "@/servers/emergency";
 import { toast } from "sonner";
 import { POLL_INTERVAL_MS } from "@/lib/constants";
@@ -115,6 +117,9 @@ export function useConfirmDonation() {
 			queryClient.invalidateQueries({
 				queryKey: ["donor-alerts"],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ["alerts-awaiting-confirmation"],
+			});
 			toast.success(
 				`Donation confirmed for ${data.donorName}. ${data.completedCount}/${data.unitsNeeded} units completed.`,
 			);
@@ -122,6 +127,38 @@ export function useConfirmDonation() {
 		onError: (err: Error) => {
 			toast.error(err.message);
 		},
+	});
+}
+
+export function useDonorConfirmDonation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			alertId,
+			donorId,
+		}: {
+			alertId: string;
+			donorId: string;
+		}) => donorConfirmDonation(alertId, donorId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+			queryClient.invalidateQueries({
+				queryKey: ["alerts-awaiting-confirmation"],
+			});
+		},
+		onError: (err: Error) => {
+			toast.error(err.message);
+		},
+	});
+}
+
+export function useAlertsAwaitingConfirmation(organizationId?: string) {
+	return useQuery({
+		queryKey: ["alerts-awaiting-confirmation", organizationId],
+		queryFn: () => getAlertsAwaitingConfirmation(organizationId!),
+		enabled: !!organizationId,
+		refetchInterval: POLL_INTERVAL_MS,
 	});
 }
 

@@ -2,9 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCompatibleDonorGroups } from "@/lib/blood-compatibility";
-import { ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { getEligibilityCutoffDate } from "@/lib/eligibility";
 import { ACTIVE_ALERT_STATUSES } from "@/lib/constants";
-import { getVerifiedDonorIds } from "./screening";
+import { getScreenedDonorIds } from "./screening";
 import {
 	INITIAL_RADIUS,
 	MAX_ALERTS_PER_REQUEST,
@@ -80,10 +80,10 @@ async function matchDonors(
 	} | null;
 }> {
 	const compatibleGroups = getCompatibleDonorGroups(bloodGroup);
-	const cutoffDate = new Date();
-	cutoffDate.setDate(cutoffDate.getDate() - ELIGIBILITY_DAYS);
+	const now = new Date();
+	const cutoffDate = getEligibilityCutoffDate(now);
 
-	const verifiedDonorIds = await getVerifiedDonorIds();
+	const screenedDonorIds = await getScreenedDonorIds();
 	const ownerUserId = await getOrganizationOwnerUserId(organizationId);
 
 	const [matchedDonors, requestLocation] = await Promise.all([
@@ -92,10 +92,21 @@ async function matchDonors(
 				role: "donor",
 				isActive: true,
 				bloodGroup: { in: compatibleGroups as any },
-				id: { in: verifiedDonorIds },
-				OR: [
-					{ lastDonationDate: null },
-					{ lastDonationDate: { lt: cutoffDate } },
+				id: { in: screenedDonorIds },
+				blacklistedAt: null,
+				AND: [
+					{
+						OR: [
+							{ lastDonationDate: null },
+							{ lastDonationDate: { lt: cutoffDate } },
+						],
+					},
+					{
+						OR: [
+							{ deferredUntil: null },
+							{ deferredUntil: { lt: now } },
+						],
+					},
 				],
 			},
 			select: { id: true, location: true, locationId: true, name: true },
@@ -231,6 +242,22 @@ export async function getAlertsForDonor(
 	const page = filters?.page ?? 1;
 	const pageSize = filters?.pageSize ?? 10;
 
+	const donor = await prisma.user.findUnique({
+		where: { id: donorId },
+		select: { blacklistedAt: true },
+	});
+
+	if (donor?.blacklistedAt) {
+		return {
+			alerts: [],
+			total: 0,
+			page,
+			pageSize,
+			totalPages: 0,
+			blacklisted: true,
+		};
+	}
+
 	const [alerts, total] = await Promise.all([
 		prisma.emergencyAlert.findMany({
 			where: { donorId },
@@ -260,6 +287,7 @@ export async function getAlertsForDonor(
 		page,
 		pageSize,
 		totalPages: Math.ceil(total / pageSize),
+		blacklisted: false,
 	};
 }
 
@@ -711,6 +739,16 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 		throw new Error("Emergency request has no organization");
 	}
 
+	const passedScreening = await prisma.donorScreening.findFirst({
+		where: { alertId, status: "passed" },
+	});
+
+	if (!passedScreening) {
+		throw new Error(
+			"Cannot confirm donation: this donor must pass an on-site screening for this visit first.",
+		);
+	}
+
 	return prisma.$transaction(async (tx) => {
 		const updatedAlert = await tx.emergencyAlert.update({
 			where: { id: alertId },
@@ -749,20 +787,6 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 			},
 		});
 
-		// Re-test accompanying this donation. Opening a fresh `pending` row here
-		// does not affect the donor's derived verification status -- that always
-		// reads the latest *resolved* screening (see servers/screening.ts), so a
-		// prior "passed" result keeps them matchable while this one is pending.
-		await tx.donorScreening.create({
-			data: {
-				donorId: alert.donor.id,
-				organizationId: alert.request.organizationId,
-				staffUserId,
-				status: "pending",
-				screenedAt: new Date(),
-			},
-		});
-
 		const completedCount = await tx.emergencyAlert.count({
 			where: {
 				requestId: alert.requestId,
@@ -784,6 +808,46 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 			completedCount,
 			unitsNeeded: alert.request.unitsNeeded,
 		};
+	});
+}
+
+export async function donorConfirmDonation(alertId: string, donorId: string) {
+	const alert = await prisma.emergencyAlert.findUnique({
+		where: { id: alertId },
+	});
+
+	if (!alert) {
+		throw new Error("Alert not found");
+	}
+
+	if (alert.donorId !== donorId) {
+		throw new Error("Not authorized to confirm this alert");
+	}
+
+	if (alert.status !== "arrived") {
+		throw new Error(
+			`Cannot confirm donation: alert status is "${alert.status}". Donation can only be self-confirmed while arrived.`,
+		);
+	}
+
+	return prisma.emergencyAlert.update({
+		where: { id: alertId },
+		data: { donorConfirmedAt: new Date() },
+	});
+}
+
+export async function getAlertsAwaitingConfirmation(organizationId: string) {
+	return prisma.emergencyAlert.findMany({
+		where: {
+			status: "arrived",
+			donorConfirmedAt: { not: null },
+			request: { organizationId },
+		},
+		include: {
+			donor: { select: { id: true, name: true, bloodGroup: true } },
+			request: { select: { bloodGroup: true, unitsNeeded: true } },
+		},
+		orderBy: { donorConfirmedAt: "asc" },
 	});
 }
 

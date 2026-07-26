@@ -45,6 +45,7 @@ export function EmergencyRequestForm({
 			contactPhone: reqPhone,
 			timestamp: new Date().toISOString(),
 			status: "pending",
+			donorConfirmedAt: null,
 		};
 
 		onSubmit(newRequest);

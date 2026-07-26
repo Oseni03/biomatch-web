@@ -42,6 +42,7 @@ enum AlertStatus {
   en_route
   arrived
   completed
+  screening_failed
 }
 
 enum NotificationChannel {
@@ -204,18 +205,20 @@ model EmergencyRequest {
 }
 
 model EmergencyAlert {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  requestId   String      @db.Uuid
-  donorId     String      @db.Uuid
-  status      AlertStatus @default(alerted)
-  openedAt    DateTime?   @db.Timestamptz(6)
-  respondedAt DateTime?   @db.Timestamptz(6)
-  createdAt   DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime    @updatedAt @db.Timestamptz(6)
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId        String      @db.Uuid
+  donorId          String      @db.Uuid
+  status           AlertStatus @default(alerted)
+  openedAt         DateTime?   @db.Timestamptz(6)
+  respondedAt      DateTime?   @db.Timestamptz(6)
+  donorConfirmedAt DateTime?   @db.Timestamptz(6)
+  createdAt        DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime    @updatedAt @db.Timestamptz(6)
 
   request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
   notificationLogs NotificationLog[]
+  screenings       DonorScreening[]
 
   @@index([requestId])
   @@index([donorId])
@@ -238,6 +241,8 @@ model User {
   availability      Availability?
   isActive          Boolean            @default(true)
   lastDonationDate  DateTime?          @db.Timestamptz(6)
+  deferredUntil     DateTime?          @db.Timestamptz(6)
+  blacklistedAt     DateTime?          @db.Timestamptz(6)
   createdAt         DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
 
@@ -272,6 +277,7 @@ model DonorScreening {
   donorId        String          @db.Uuid
   organizationId String?         @db.Uuid
   staffUserId    String          @db.Uuid
+  alertId        String?         @db.Uuid
   status         ScreeningStatus @default(pending)
   screenedAt     DateTime        @default(now()) @db.Timestamptz(6)
   resolvedAt     DateTime?       @db.Timestamptz(6)
@@ -279,14 +285,16 @@ model DonorScreening {
   createdAt      DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
 
-  donor        User          @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  staffUser    User          @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  donor        User            @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
+  organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  alert        EmergencyAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
 
   @@index([donorId])
   @@index([organizationId])
   @@index([status])
   @@index([resolvedAt])
+  @@index([alertId])
   @@map("donor_screenings")
 }
 

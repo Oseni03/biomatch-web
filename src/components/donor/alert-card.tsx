@@ -26,6 +26,7 @@ interface AlertCardProps {
 	onDecline: (reqId: string) => void;
 	onMarkEnRoute: (reqId: string) => void;
 	onMarkArrived: (reqId: string) => void;
+	onConfirmDonation: (reqId: string) => void;
 	onToggleCollapse: () => void;
 }
 
@@ -34,7 +35,8 @@ function donorActionLabel(
 	isTrackingThis: boolean,
 ): string {
 	if (isTrackingThis) return "In Transit";
-	if (status === "arrived" || status === "completed") return "Fulfilled";
+	if (status === "arrived") return "Awaiting Confirmation";
+	if (status === "completed") return "Fulfilled";
 	if (status === "en_route") return "Mark Arrived";
 	if (status === "accepted") return "Mark En Route";
 	if (status === "declined") return "Declined";
@@ -53,6 +55,7 @@ export function AlertCard({
 	onDecline,
 	onMarkEnRoute,
 	onMarkArrived,
+	onConfirmDonation,
 	onToggleCollapse,
 }: AlertCardProps) {
 	return (
@@ -185,13 +188,30 @@ export function AlertCard({
 									Mark Arrived
 								</Button>
 							)}
-							{(alertStatus === "arrived" ||
-								alertStatus === "completed") && (
+							{alertStatus === "completed" && (
 								<span className="px-4 py-2 bg-status-ok-bg text-status-ok border border-status-ok/20 rounded-2xl text-xs font-semibold flex items-center gap-1.5">
 									<Check className="h-3.5 w-3.5" />
 									Fulfilled
 								</span>
 							)}
+							{alertStatus === "arrived" &&
+								(request.donorConfirmedAt ? (
+									<span className="px-4 py-2 bg-status-info-bg text-status-info border border-status-info/20 rounded-2xl text-xs font-semibold flex items-center gap-1.5">
+										<Check className="h-3.5 w-3.5" />
+										Waiting for hospital confirmation
+									</span>
+								) : (
+									<Button
+										size="sm"
+										onClick={() =>
+											onConfirmDonation(request.id)
+										}
+										className="bg-status-ok text-white hover:bg-status-ok hover:opacity-90 hover:scale-100"
+									>
+										<Check className="h-3.5 w-3.5" />
+										I Confirm I Donated
+									</Button>
+								))}
 						</>
 					) : (
 						<>

@@ -20,6 +20,7 @@ type PendingRequest = Awaited<
 
 interface LiveStatusPanelProps {
 	request: PendingRequest;
+	organizationId: string;
 }
 
 const STATUS_CONFIG = [
@@ -73,7 +74,10 @@ const STATUS_CONFIG = [
 	},
 ];
 
-export function LiveStatusPanel({ request }: LiveStatusPanelProps) {
+export function LiveStatusPanel({
+	request,
+	organizationId,
+}: LiveStatusPanelProps) {
 	const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
 
 	const bloodGroup = displayBloodGroup(request.bloodGroup);
@@ -149,6 +153,7 @@ export function LiveStatusPanel({ request }: LiveStatusPanelProps) {
 					statusKey={expandedStatus}
 					config={STATUS_CONFIG.find((s) => s.key === expandedStatus)}
 					alerts={request.alerts}
+					organizationId={organizationId}
 					onClose={() => setExpandedStatus(null)}
 				/>
 			)}

@@ -7,6 +7,10 @@ import { authorizeOrgAction } from "./organization";
 
 export type VerificationStatus = "unverified" | "pending" | "verified" | "failed";
 
+export type ScreeningFailureConsequence =
+	| { type: "defer"; until: Date }
+	| { type: "blacklist" };
+
 export async function getDonorVerificationStatus(
 	donorId: string,
 ): Promise<VerificationStatus> {
@@ -49,9 +53,24 @@ export async function getVerifiedDonorIds(): Promise<string[]> {
 	return verified;
 }
 
+export async function getScreenedDonorIds(): Promise<string[]> {
+	const rows = await prisma.donorScreening.findMany({
+		distinct: ["donorId"],
+		select: { donorId: true },
+	});
+	return rows.map((row) => row.donorId);
+}
+
 export async function getActiveScreeningForDonor(donorId: string) {
 	return prisma.donorScreening.findFirst({
 		where: { donorId, status: "pending" },
+		orderBy: { screenedAt: "desc" },
+	});
+}
+
+export async function getScreeningForAlert(alertId: string) {
+	return prisma.donorScreening.findFirst({
+		where: { alertId },
 		orderBy: { screenedAt: "desc" },
 	});
 }
@@ -67,13 +86,14 @@ export async function createScreening(
 	donorId: string,
 	organizationId: string,
 	staffUserId: string,
+	alertId?: string,
 ) {
 	await authorizeOrgAction(organizationId, staffUserId, {
 		screening: ["create"],
 	});
 
 	const existingPending = await prisma.donorScreening.findFirst({
-		where: { donorId, status: "pending" },
+		where: { donorId, status: "pending", alertId: alertId ?? null },
 	});
 	if (existingPending) {
 		return existingPending;
@@ -84,6 +104,7 @@ export async function createScreening(
 			donorId,
 			organizationId,
 			staffUserId,
+			alertId,
 			status: "pending",
 			screenedAt: new Date(),
 		},
@@ -95,6 +116,7 @@ export async function resolveScreening(
 	status: "passed" | "failed",
 	callerUserId: string,
 	notes?: string,
+	consequence?: ScreeningFailureConsequence,
 ) {
 	const existing = await prisma.donorScreening.findUnique({
 		where: { id: screeningId },
@@ -113,13 +135,40 @@ export async function resolveScreening(
 		screening: ["resolve"],
 	});
 
-	const updated = await prisma.donorScreening.update({
-		where: { id: screeningId },
-		data: {
-			status,
-			notes: notes || existing.notes,
-			resolvedAt: new Date(),
-		},
+	if (status === "failed" && !consequence) {
+		throw new Error(
+			"Resolving a screening as failed requires choosing to defer or blacklist the donor",
+		);
+	}
+
+	const updated = await prisma.$transaction(async (tx) => {
+		const updatedScreening = await tx.donorScreening.update({
+			where: { id: screeningId },
+			data: {
+				status,
+				notes: notes || existing.notes,
+				resolvedAt: new Date(),
+			},
+		});
+
+		if (status === "failed" && consequence) {
+			await tx.user.update({
+				where: { id: existing.donorId },
+				data:
+					consequence.type === "blacklist"
+						? { blacklistedAt: new Date(), deferredUntil: null }
+						: { deferredUntil: consequence.until, blacklistedAt: null },
+			});
+
+			if (existing.alertId) {
+				await tx.emergencyAlert.update({
+					where: { id: existing.alertId },
+					data: { status: "screening_failed" },
+				});
+			}
+		}
+
+		return updatedScreening;
 	});
 
 	sendScreeningResultEmail(updated.id).catch((err) => {
