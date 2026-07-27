@@ -159,7 +159,7 @@ model Donation {
   donatedAt          DateTime   @default(now()) @db.Timestamptz(6)
   createdAt          DateTime   @default(now()) @db.Timestamptz(6)
 
-  donor            User              @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Cascade)
+  donor            User              @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Restrict)
   hospitalBank     HospitalBank?     @relation(fields: [hospitalBankId], references: [id], onDelete: SetNull)
   emergencyRequest EmergencyRequest? @relation(fields: [emergencyRequestId], references: [id], onDelete: SetNull)
 
