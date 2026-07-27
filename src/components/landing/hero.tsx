@@ -12,16 +12,16 @@ import { PhoneMockup } from "@/components/landing/phone-mockup";
 export function Hero() {
 	return (
 		<section className="relative overflow-hidden bg-paper px-4 pb-20 pt-20 md:pb-28 md:pt-28">
-			<div className="absolute inset-0" aria-hidden>
+			<div className="absolute inset-0 overflow-hidden" aria-hidden>
 				<Image
 					src="/images/hero-bg.jpg"
 					alt=""
 					fill
 					priority
-					className="object-cover opacity-50"
+					className="scale-[1.8] object-cover object-center opacity-35"
 				/>
-				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_transparent_30%,_hsl(var(--paper))_80%)]" />
-				<div className="absolute inset-0 bg-gradient-to-b from-paper/90 via-transparent to-paper" />
+				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_transparent_25%,_hsl(var(--paper))_78%)]" />
+				<div className="absolute inset-0 bg-gradient-to-b from-paper/95 via-transparent to-paper" />
 			</div>
 			<motion.div
 				aria-hidden
@@ -60,10 +60,10 @@ export function Hero() {
 					}}
 					className="font-serif text-4xl font-medium leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl"
 				>
-					Meet BIOMATCH,
+					Blood banking in your pocket.
 					<br />
 					<span className="font-bold text-brand">
-						blood banking in your pocket on any device.
+						Real-time matching across Nigeria.
 					</span>
 				</motion.h1>
 
@@ -77,9 +77,9 @@ export function Hero() {
 					}}
 					className="mx-auto mt-6 max-w-lg text-base text-muted-foreground md:text-lg"
 				>
-					BioMatch connects verified donors with hospitals across
-					Nigeria in real time. Every second counts when lives are on
-					the line.
+					BioMatch connects verified donors with hospitals the
+					moment blood is needed. Every second counts when lives
+					are on the line.
 				</motion.p>
 
 				<motion.div
@@ -90,15 +90,23 @@ export function Hero() {
 						ease: EASE_SMOOTH,
 						delay: 0.3,
 					}}
-					className="mt-8"
+					className="mt-8 flex flex-wrap items-center justify-center gap-3"
 				>
 					<Button
 						size="lg"
 						className="h-11 rounded-full px-7 text-sm font-semibold"
 						asChild
 					>
-						<Link href="/auth/signup">
-							Get Started
+						<Link href="/auth/signup">Become a Donor</Link>
+					</Button>
+					<Button
+						size="lg"
+						variant="outline"
+						className="h-11 rounded-full px-7 text-sm font-semibold"
+						asChild
+					>
+						<Link href="/auth/login">
+							Find Blood
 							<ArrowRight className="ml-1.5 h-4 w-4" />
 						</Link>
 					</Button>
