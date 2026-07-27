@@ -84,7 +84,7 @@ model Location {
   name          String
   type          LocationType
   parentId      String?        @db.Uuid
-  parent        Location?      @relation("LocationHierarchy", fields: [parentId], references: [id])
+  parent        Location?      @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children      Location[]     @relation("LocationHierarchy")
   users         User[]
   hospitalBanks HospitalBank[]
@@ -264,6 +264,7 @@ model User {
   @@index([bloodGroup])
   @@index([locationId])
   @@index([lastDonationDate])
+  @@index([role, isActive, bloodGroup, blacklistedAt])
   @@map("user")
 }
 
@@ -292,7 +293,7 @@ model DonorScreening {
 
   donor        User            @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
   organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Restrict)
   alert        EmergencyAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
 
   @@index([donorId])
