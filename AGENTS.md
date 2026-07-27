@@ -268,7 +268,7 @@ See `contexts/issues/58-*.md` through `contexts/issues/61-*.md` for full details
 
 | # | Title | Type | Blocked By | Status |
 |---|---|---|---|---|
-| 62 | Prevent Duplicate EmergencyAlert Rows Under Concurrent Dispatch | AFK | — | |
+| 62 | Prevent Duplicate EmergencyAlert Rows Under Concurrent Dispatch | AFK | — | ✅ |
 | 63 | Prevent Duplicate/Racing Donor Screenings | AFK | — | |
 | 64 | Derive Hospital Inventory from Transaction Ledger (fix lost-update race) | AFK | — | |
 | 65 | Harden Delete-Cascade Rules + Add Matching-Query Index | AFK | — | |
