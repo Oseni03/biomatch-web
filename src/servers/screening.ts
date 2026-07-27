@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@generated/prisma/client";
 import type { ScreeningStatus } from "@generated/prisma/enums";
 import { sendScreeningResultEmail } from "./notification";
 import { authorizeOrgAction } from "./organization";
@@ -92,23 +93,31 @@ export async function createScreening(
 		screening: ["create"],
 	});
 
-	const existingPending = await prisma.donorScreening.findFirst({
-		where: { donorId, status: "pending", alertId: alertId ?? null },
-	});
-	if (existingPending) {
-		return existingPending;
+	try {
+		return await prisma.donorScreening.create({
+			data: {
+				donorId,
+				organizationId,
+				staffUserId,
+				alertId,
+				status: "pending",
+				screenedAt: new Date(),
+			},
+		});
+	} catch (err) {
+		if (
+			err instanceof Prisma.PrismaClientKnownRequestError &&
+			err.code === "P2002"
+		) {
+			const existingPending = await prisma.donorScreening.findFirst({
+				where: { donorId, status: "pending", alertId: alertId ?? null },
+			});
+			if (existingPending) {
+				return existingPending;
+			}
+		}
+		throw err;
 	}
-
-	return prisma.donorScreening.create({
-		data: {
-			donorId,
-			organizationId,
-			staffUserId,
-			alertId,
-			status: "pending",
-			screenedAt: new Date(),
-		},
-	});
 }
 
 export async function resolveScreening(
@@ -142,13 +151,23 @@ export async function resolveScreening(
 	}
 
 	const updated = await prisma.$transaction(async (tx) => {
-		const updatedScreening = await tx.donorScreening.update({
-			where: { id: screeningId },
+		const { count } = await tx.donorScreening.updateMany({
+			where: { id: screeningId, status: "pending" },
 			data: {
 				status,
 				notes: notes || existing.notes,
 				resolvedAt: new Date(),
 			},
+		});
+
+		if (count === 0) {
+			throw new Error(
+				"Screening was already resolved by another action",
+			);
+		}
+
+		const updatedScreening = await tx.donorScreening.findUniqueOrThrow({
+			where: { id: screeningId },
 		});
 
 		if (status === "failed" && consequence) {

@@ -273,6 +273,10 @@ enum ScreeningStatus {
   failed
 }
 
+// DB also enforces at most one `pending` row per (donorId, alertId) via two
+// partial unique indexes applied directly (not representable in Prisma's
+// schema language): donor_screenings_pending_alert_key and
+// donor_screenings_pending_no_alert_key.
 model DonorScreening {
   id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   donorId        String          @db.Uuid
