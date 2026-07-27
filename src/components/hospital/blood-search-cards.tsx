@@ -33,7 +33,9 @@ interface HospitalBank {
 	hospitalName: string;
 	location: string;
 	inventory: Record<string, number>;
-	managedBy: { id: string; name: string; email: string } | null;
+	organization: {
+		members: { user: { id: string; name: string; email: string } }[];
+	} | null;
 }
 
 interface BloodSearchCardsProps {
@@ -165,6 +167,7 @@ export function BloodSearchCards({ banks }: BloodSearchCardsProps) {
 
 function BloodBankCard({ bank }: { bank: HospitalBank }) {
 	const inventory = bank.inventory ?? {};
+	const owner = bank.organization?.members[0]?.user ?? null;
 	const hasCritical = BLOOD_GROUPS.some(
 		(g) =>
 			(inventory[g] ?? 0) > 0 && (inventory[g] ?? 0) < CRITICAL_THRESHOLD,
@@ -233,13 +236,11 @@ function BloodBankCard({ bank }: { bank: HospitalBank }) {
 					})}
 				</div>
 
-				{bank.managedBy && (
+				{owner && (
 					<div className="mt-4 space-y-1 text-xs text-muted-foreground">
 						<p className="inline-flex items-center gap-1">
 							<Mail className="h-3 w-3 shrink-0" />
-							<span className="truncate">
-								{bank.managedBy.email}
-							</span>
+							<span className="truncate">{owner.email}</span>
 						</p>
 					</div>
 				)}
@@ -250,7 +251,7 @@ function BloodBankCard({ bank }: { bank: HospitalBank }) {
 						size="sm"
 						className="w-full text-xs"
 						onClick={() => {
-							const contact = bank.managedBy?.email ?? "";
+							const contact = owner?.email ?? "";
 							const subject = encodeURIComponent(
 								`Blood Reserve Request - ${bank.hospitalName}`,
 							);

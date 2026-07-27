@@ -6,6 +6,7 @@ import { EXPANSION_TIMEOUT_MS } from "@/lib/radius-expansion";
 import { RadiusExpansionCard } from "@/components/hospital/radius-expansion-card";
 import { EmergencyRequestForm } from "@/components/hospital/emergency-request-form";
 import { LiveStatusPanel } from "@/components/hospital/live-status-panel";
+import { PendingDonationConfirmations } from "@/components/hospital/pending-donation-confirmations";
 import {
 	usePendingEmergencyRequests,
 	useExpandSearchRadius,
@@ -16,17 +17,20 @@ import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 const EXPANSION_COUNTDOWN_S = Math.floor(EXPANSION_TIMEOUT_MS / 1000);
 
 interface HospitalBroadcastsClientProps {
-	hospitalId: string;
+	organizationId: string;
 }
 
 export function HospitalBroadcastsClient({
-	hospitalId,
+	organizationId,
 }: HospitalBroadcastsClientProps) {
 	const [page, setPage] = useState(1);
-	const { data: pendingRequests } = usePendingEmergencyRequests(hospitalId, {
-		page,
-		pageSize: 10,
-	});
+	const { data: pendingRequests } = usePendingEmergencyRequests(
+		organizationId,
+		{
+			page,
+			pageSize: 10,
+		},
+	);
 	const expandMutation = useExpandSearchRadius();
 
 	const pendingServerReqs = pendingRequests?.requests ?? [];
@@ -114,6 +118,8 @@ export function HospitalBroadcastsClient({
 				subtitle="Dispatch requests and track live donor response"
 			/>
 
+			<PendingDonationConfirmations organizationId={organizationId} />
+
 			{hasPendingServerReq && expandingRequestId && (
 				<RadiusExpansionCard
 					hospitalLocation=""
@@ -169,7 +175,11 @@ export function HospitalBroadcastsClient({
 							Live Status Panel
 						</h4>
 						{pendingServerReqs.map((req) => (
-							<LiveStatusPanel key={req.id} request={req} />
+							<LiveStatusPanel
+								key={req.id}
+								request={req}
+								organizationId={organizationId}
+							/>
 						))}
 						{pendingRequests && pendingRequests.totalPages > 1 && (
 							<PaginationControls

@@ -10,14 +10,17 @@ import { useInventory } from "@/hooks/use-inventory";
 import { useCityLabels } from "@/hooks/use-city-labels";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
-import { ELIGIBILITY_DAYS } from "@/lib/constants";
 import {
 	displayBloodGroup,
 	type EmergencyMatchRequest,
 } from "@/lib/donor-types";
-import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import {
+	useDonorAlerts,
+	useDonorConfirmDonation,
+} from "@/hooks/use-emergency-requests";
 import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
 import { useDonorSettingsForm } from "@/hooks/use-donor-settings-form";
+import { useDonorVerificationStatus } from "@/hooks/use-screening";
 import { toast } from "sonner";
 
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
@@ -30,6 +33,8 @@ import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
 import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { SuccessModal } from "@/components/donor/success-modal";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
+import { VerificationStatusBanner } from "@/components/donor/verification-status-banner";
+import { BlacklistedBanner } from "@/components/donor/blacklisted-banner";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function DonorDashboardClient() {
@@ -41,6 +46,9 @@ export function DonorDashboardClient() {
 		error: userError,
 	} = useDonorDashboard();
 	const { data: banks } = useInventory();
+	const { data: verificationStatus } = useDonorVerificationStatus(
+		session?.user?.id,
+	);
 	const [page, setPage] = useState(1);
 
 	const handleFilter = () => {
@@ -72,8 +80,12 @@ export function DonorDashboardClient() {
 		.map(
 			(a: {
 				id: string;
+				donorConfirmedAt: Date | null;
 				request: {
-					hospital: { name: string; location: string | null };
+					organization: {
+						name: string;
+						hospitalBanks: { location: string }[];
+					} | null;
 					bloodGroup: string;
 					unitsNeeded: number;
 					urgencyLevel: string;
@@ -83,8 +95,9 @@ export function DonorDashboardClient() {
 				status: string;
 			}) => ({
 				id: a.id,
-				hospitalName: a.request.hospital.name,
-				location: a.request.hospital.location ?? "Unknown",
+				hospitalName: a.request.organization?.name ?? "Unknown",
+				location:
+					a.request.organization?.hospitalBanks[0]?.location ?? "Unknown",
 				bloodType: displayBloodGroup(a.request.bloodGroup),
 				requiredPints: a.request.unitsNeeded,
 				contactPhone: "N/A",
@@ -94,6 +107,9 @@ export function DonorDashboardClient() {
 						: ("high" as const),
 				timestamp: new Date(a.request.createdAt).toISOString(),
 				status: a.request.status as "pending" | "matched" | "completed",
+				donorConfirmedAt: a.donorConfirmedAt
+					? new Date(a.donorConfirmedAt).toISOString()
+					: null,
 			}),
 		);
 
@@ -111,14 +127,17 @@ export function DonorDashboardClient() {
 		}
 	}, [alerts]);
 
-	const deferralPercent = Math.min(
-		100,
-		Math.floor(
-			((ELIGIBILITY_DAYS - eligibility.daysRemaining) /
-				ELIGIBILITY_DAYS) *
-				100,
-		),
-	);
+	const deferralPercent =
+		eligibility.windowDays > 0
+			? Math.min(
+					100,
+					Math.floor(
+						((eligibility.windowDays - eligibility.daysRemaining) /
+							eligibility.windowDays) *
+							100,
+					),
+				)
+			: 100;
 
 	const {
 		donorStatus,
@@ -151,6 +170,12 @@ export function DonorDashboardClient() {
 		handleMarkArrived,
 		handleManualComplete,
 	} = useEmergencyMissionTracker(setLastDonationDateInput);
+
+	const donorConfirmDonation = useDonorConfirmDonation();
+	const handleConfirmDonation = (alertId: string) => {
+		if (!session?.user?.id) return;
+		donorConfirmDonation.mutate({ alertId, donorId: session.user.id });
+	};
 
 	const donationRecords = historyData?.records ?? [];
 	const activeRequest = requests.find((r) => r.id === activeTrackingId);
@@ -212,6 +237,12 @@ export function DonorDashboardClient() {
 				/>
 			</motion.div>
 
+			{verificationStatus && verificationStatus !== "verified" && (
+				<motion.div variants={itemVariants}>
+					<VerificationStatusBanner status={verificationStatus} />
+				</motion.div>
+			)}
+
 			{eligibility.eligible && lastDonationDate && (
 				<motion.div variants={itemVariants}>
 					<EligibilityBanner />
@@ -265,19 +296,24 @@ export function DonorDashboardClient() {
 				</div>
 
 				<div className="space-y-8 lg:col-span-2">
-					<EmergencyAlertsFeed
-						requests={requests}
-						bloodType={bloodType}
-						eligibility={eligibility}
-						donorStatus={donorStatus}
-						donorAlertStatuses={donorAlertStatuses}
-						activeTrackingId={activeTrackingId}
-						onRespond={handleRespond}
-						onDecline={handleDecline}
-						onMarkEnRoute={handleMarkEnRoute}
-						onMarkArrived={handleMarkArrived}
-					/>
-					{alerts && alerts.totalPages > 1 && (
+					{alerts?.blacklisted ? (
+						<BlacklistedBanner />
+					) : (
+						<EmergencyAlertsFeed
+							requests={requests}
+							bloodType={bloodType}
+							eligibility={eligibility}
+							donorStatus={donorStatus}
+							donorAlertStatuses={donorAlertStatuses}
+							activeTrackingId={activeTrackingId}
+							onRespond={handleRespond}
+							onDecline={handleDecline}
+							onMarkEnRoute={handleMarkEnRoute}
+							onMarkArrived={handleMarkArrived}
+							onConfirmDonation={handleConfirmDonation}
+						/>
+					)}
+					{alerts && !alerts.blacklisted && alerts.totalPages > 1 && (
 						<PaginationControls
 							page={page}
 							totalPages={alerts.totalPages}

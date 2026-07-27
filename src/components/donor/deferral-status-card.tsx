@@ -9,7 +9,7 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
-import { ELIGIBILITY_DAYS } from "@/lib/eligibility";
+import { ELIGIBILITY_MONTHS } from "@/lib/eligibility";
 import type { EligibilityResult } from "@/lib/eligibility";
 
 interface DeferralStatusCardProps {
@@ -35,7 +35,7 @@ export function DeferralStatusCard({
 					Donation Deferral Status
 				</CardTitle>
 				<CardDescription className="text-xs text-muted-foreground">
-					{ELIGIBILITY_DAYS}-day standard voluntary recovery countdown
+					{ELIGIBILITY_MONTHS}-month standard voluntary recovery countdown
 				</CardDescription>
 			</CardHeader>
 
@@ -105,8 +105,8 @@ export function DeferralStatusCard({
 											const d = new Date(
 												lastDonationDate,
 											);
-											d.setDate(
-												d.getDate() + ELIGIBILITY_DAYS,
+											d.setMonth(
+												d.getMonth() + ELIGIBILITY_MONTHS,
 											);
 											return d
 												.toISOString()

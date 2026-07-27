@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	getAlertsForDonor,
-	getPendingEmergencyRequestsForHospital,
+	getPendingEmergencyRequestsForOrganization,
 	getEmergencyHistory,
 	expandSearchRadius,
 	respondToAlert,
 	updateAlertStatus,
 	confirmDonation,
+	donorConfirmDonation,
+	getAlertsAwaitingConfirmation,
 } from "@/servers/emergency";
 import { toast } from "sonner";
 import { POLL_INTERVAL_MS } from "@/lib/constants";
@@ -67,20 +69,20 @@ export function useUpdateAlertStatus() {
 }
 
 export function usePendingEmergencyRequests(
-	hospitalId?: string,
+	organizationId?: string,
 	filters?: { page?: number; pageSize?: number },
 ) {
 	return useQuery({
-		queryKey: ["pending-emergency-requests", hospitalId, filters],
+		queryKey: ["pending-emergency-requests", organizationId, filters],
 		queryFn: () =>
-			getPendingEmergencyRequestsForHospital(hospitalId!, filters),
-		enabled: !!hospitalId,
+			getPendingEmergencyRequestsForOrganization(organizationId!, filters),
+		enabled: !!organizationId,
 		refetchInterval: POLL_INTERVAL_MS,
 	});
 }
 
 export function useEmergencyHistory(
-	hospitalId?: string,
+	organizationId?: string,
 	filters?: {
 		dateFrom?: string;
 		dateTo?: string;
@@ -91,9 +93,9 @@ export function useEmergencyHistory(
 	},
 ) {
 	return useQuery({
-		queryKey: ["emergency-history", hospitalId, filters],
-		queryFn: () => getEmergencyHistory(hospitalId!, filters),
-		enabled: !!hospitalId,
+		queryKey: ["emergency-history", organizationId, filters],
+		queryFn: () => getEmergencyHistory(organizationId!, filters),
+		enabled: !!organizationId,
 	});
 }
 
@@ -101,14 +103,22 @@ export function useConfirmDonation() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: ({ alertId }: { alertId: string }) =>
-			confirmDonation(alertId),
+		mutationFn: ({
+			alertId,
+			staffUserId,
+		}: {
+			alertId: string;
+			staffUserId: string;
+		}) => confirmDonation(alertId, staffUserId),
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({
 				queryKey: ["pending-emergency-requests"],
 			});
 			queryClient.invalidateQueries({
 				queryKey: ["donor-alerts"],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["alerts-awaiting-confirmation"],
 			});
 			toast.success(
 				`Donation confirmed for ${data.donorName}. ${data.completedCount}/${data.unitsNeeded} units completed.`,
@@ -117,6 +127,38 @@ export function useConfirmDonation() {
 		onError: (err: Error) => {
 			toast.error(err.message);
 		},
+	});
+}
+
+export function useDonorConfirmDonation() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			alertId,
+			donorId,
+		}: {
+			alertId: string;
+			donorId: string;
+		}) => donorConfirmDonation(alertId, donorId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+			queryClient.invalidateQueries({
+				queryKey: ["alerts-awaiting-confirmation"],
+			});
+		},
+		onError: (err: Error) => {
+			toast.error(err.message);
+		},
+	});
+}
+
+export function useAlertsAwaitingConfirmation(organizationId?: string) {
+	return useQuery({
+		queryKey: ["alerts-awaiting-confirmation", organizationId],
+		queryFn: () => getAlertsAwaitingConfirmation(organizationId!),
+		enabled: !!organizationId,
+		refetchInterval: POLL_INTERVAL_MS,
 	});
 }
 

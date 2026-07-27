@@ -14,6 +14,7 @@ import {
 	BarChart,
 	Users,
 	UserPlus,
+	ShieldCheck,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -75,6 +76,11 @@ const NAV_ITEMS: Record<
 			icon: Users,
 		},
 		{
+			title: "Donor Screening",
+			url: "/hospital/screening",
+			icon: ShieldCheck,
+		},
+		{
 			title: "Analytics & Reports",
 			url: "/hospital/analytics",
 			icon: BarChart,
@@ -96,12 +102,14 @@ const SECTION_LABELS: Record<Role, string> = {
 interface SidebarLayoutProps {
 	role: Role;
 	userName?: string;
+	organizationId?: string;
 	children: React.ReactNode;
 }
 
 export function SidebarLayout({
 	role,
 	userName,
+	organizationId,
 	children,
 }: SidebarLayoutProps) {
 	const { data: session } = authClient.useSession();
@@ -109,7 +117,7 @@ export function SidebarLayout({
 		role === "donor" ? session?.user?.id : undefined,
 	);
 	const { data: hospitalBank } = useMyHospitalBank(
-		role === "hospital" ? session?.user?.id : undefined,
+		role === "hospital" ? organizationId : undefined,
 	);
 	const alertCount = (donorAlerts?.alerts ?? []).filter(
 		(a) =>

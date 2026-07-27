@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { getHospitalBankByManagedById } from "@/servers/hospital";
+import { getHospitalBankByOrganizationId } from "@/servers/hospital";
 
-export function useMyHospitalBank(userId?: string) {
+export function useMyHospitalBank(organizationId?: string) {
 	return useQuery({
-		queryKey: ["my-hospital-bank", userId],
-		queryFn: () => getHospitalBankByManagedById(userId as string),
-		enabled: !!userId,
+		queryKey: ["my-hospital-bank", organizationId],
+		queryFn: () =>
+			getHospitalBankByOrganizationId(organizationId as string),
+		enabled: !!organizationId,
 	});
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getQueryClient } from "@/lib/get-query-client";
 import { getServerSession } from "@/lib/get-session";
 import { getHospitalAnalytics } from "@/servers/analytics";
+import { getActiveOrganizationId } from "@/servers/organization";
 import { AnalyticsDashboard } from "@/components/hospital/analytics-dashboard";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 
@@ -13,7 +14,7 @@ export default async function HospitalAnalyticsPage() {
 	}
 
 	const queryClient = getQueryClient();
-	const hospitalId = session.user.id;
+	const organizationId = await getActiveOrganizationId(session.user.id);
 
 	const today = new Date().toISOString().split("T")[0];
 	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -22,8 +23,8 @@ export default async function HospitalAnalyticsPage() {
 	const dateRange = { startDate: thirtyDaysAgo, endDate: today };
 
 	await queryClient.prefetchQuery({
-		queryKey: ["hospital-analytics", hospitalId, dateRange],
-		queryFn: () => getHospitalAnalytics(hospitalId, dateRange),
+		queryKey: ["hospital-analytics", organizationId, dateRange],
+		queryFn: () => getHospitalAnalytics(organizationId, dateRange),
 	});
 
 	return (
@@ -33,7 +34,7 @@ export default async function HospitalAnalyticsPage() {
 				subtitle="Response times, fulfillment rates, and coverage gaps across your emergency requests"
 			/>
 			<HydrationBoundary state={dehydrate(queryClient)}>
-				<AnalyticsDashboard hospitalId={hospitalId} />
+				<AnalyticsDashboard organizationId={organizationId} />
 			</HydrationBoundary>
 		</div>
 	);

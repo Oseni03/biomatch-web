@@ -8,10 +8,10 @@ import { HistoryFilterBar } from "@/components/hospital/history-filter-bar";
 import { RequestFunnelCard } from "@/components/hospital/request-funnel-card";
 
 interface EmergencyHistoryProps {
-	hospitalId: string;
+	organizationId: string;
 }
 
-export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
+export function EmergencyHistory({ organizationId }: EmergencyHistoryProps) {
 	const [page, setPage] = useState(1);
 	const [dateFrom, setDateFrom] = useState("");
 	const [dateTo, setDateTo] = useState("");
@@ -28,7 +28,7 @@ export function EmergencyHistory({ hospitalId }: EmergencyHistoryProps) {
 		pageSize: 10,
 	};
 
-	const { data, isLoading } = useEmergencyHistory(hospitalId, filters);
+	const { data, isLoading } = useEmergencyHistory(organizationId, filters);
 
 	const handleFilter = () => {
 		setPage(1);
