@@ -10,18 +10,19 @@ html {
 @layer base {
   :root {
     /* BioMatch brand primitives — dark-only "classic red + clinical dark" */
-    --red: 350 91% 58%;
-    --red-deep: 349 86% 46%;
-    --red-ink: 348 90% 78%;
-    --red-bg: 350 65% 15%;
-    --emergency: 355 100% 64%;
+    /* --red is #8B0000 */
+    --red: 0 100% 27%;
+    --red-deep: 0 100% 20%;
+    --red-ink: 0 85% 40%;
+    --red-bg: 0 65% 15%;
+    --emergency: 0 100% 64%;
     --cream: 37 28% 88%;
     --paper: 245 24% 7%;
     --ink: 245 35% 4%;
     --slate: 227 12% 68%;
 
-    --status-critical: 355 90% 63%;
-    --status-critical-bg: 355 65% 15%;
+    --status-critical: 0 90% 63%;
+    --status-critical-bg: 0 65% 15%;
     --status-low: 33 88% 63%;
     --status-low-bg: 33 70% 15%;
     --status-ok: 148 58% 50%;
@@ -35,29 +36,29 @@ html {
     --card-foreground: 240 20% 96%;
     --popover: 245 17% 13%;
     --popover-foreground: 240 20% 96%;
-    --primary: 350 91% 58%;
+    --primary: 0 100% 27%;
     --primary-foreground: 0 0% 100%;
     --secondary: 245 14% 16%;
     --secondary-foreground: 240 20% 96%;
     --muted: 245 14% 15%;
     --muted-foreground: 227 12% 63%;
-    --accent: 350 91% 58%;
+    --accent: 0 100% 27%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 355 90% 63%;
+    --destructive: 0 90% 63%;
     --destructive-foreground: 0 0% 100%;
     --border: 245 12% 18%;
     --input: 245 12% 18%;
-    --ring: 350 91% 58%;
+    --ring: 0 100% 27%;
     --radius: 0.625rem;
     --sidebar-background: 245 35% 4%;
     --sidebar-foreground: 240 15% 90%;
-    --sidebar-primary: 350 91% 58%;
+    --sidebar-primary: 0 100% 27%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 245 25% 10%;
     --sidebar-accent-foreground: 240 20% 96%;
     --sidebar-border: 245 25% 12%;
-    --sidebar-ring: 350 91% 58%;
-    --chart-1: 350 91% 58%;
+    --sidebar-ring: 0 100% 27%;
+    --chart-1: 0 100% 27%;
     --chart-2: 190 72% 53%;
     --chart-3: 148 58% 50%;
     --chart-4: 33 88% 63%;
@@ -113,7 +114,7 @@ html {
   .on-red {
     --background: var(--red);
     --foreground: 0 0% 100%;
-    --card: 349 86% 40%;
+    --card: 0 86% 40%;
     --card-foreground: 0 0% 100%;
     --border: 0 0% 100% / 0.16;
     --input: 0 0% 100% / 0.16;

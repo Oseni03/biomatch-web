@@ -9,8 +9,8 @@ interface EmergencyAlertProps extends React.HTMLAttributes<HTMLDivElement> {
 	action?: React.ReactNode;
 }
 
-// Bright emergency-red, one-tap-respond alert. Reserved for genuinely urgent
-// broadcasts — see the red/white surface rule in the BioMatch design system.
+// One-tap-respond alert. Reserved for genuinely urgent broadcasts — see the
+// red/white surface rule in the BioMatch design system.
 export function EmergencyAlert({
 	bloodGroup,
 	hospitalName,
@@ -23,7 +23,7 @@ export function EmergencyAlert({
 	return (
 		<div
 			className={cn(
-				"on-red flex items-center gap-4 rounded-card bg-emergency p-4 text-white shadow-brand",
+				"on-red flex items-center gap-4 rounded-card bg-brand p-4 text-white shadow-brand",
 				className,
 			)}
 			role="alert"

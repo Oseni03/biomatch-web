@@ -85,9 +85,9 @@ export function Navbar() {
 					{session ? (
 						<div className="hidden md:flex items-center gap-3">
 							<Button variant="outline" asChild>
-								<Link href={`/donor`}>
+								<Link href={`/${session.user.role}`}>
 									<LayoutDashboard className="mr-1.5 h-4 w-4" />
-									Console
+									Dashboard
 								</Link>
 							</Button>
 							<button

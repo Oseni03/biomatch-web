@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -11,10 +12,25 @@ import { PhoneMockup } from "@/components/landing/phone-mockup";
 export function Hero() {
 	return (
 		<section className="relative overflow-hidden bg-paper px-4 pb-20 pt-20 md:pb-28 md:pt-28">
+			<div className="absolute inset-0 overflow-hidden" aria-hidden>
+				<Image
+					src="/images/hero-bg.jpg"
+					alt=""
+					fill
+					priority
+					className="scale-[1.8] object-cover object-center opacity-35"
+				/>
+				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_transparent_25%,_hsl(var(--paper))_78%)]" />
+				<div className="absolute inset-0 bg-gradient-to-b from-paper/95 via-transparent to-paper" />
+			</div>
 			<motion.div
 				aria-hidden
 				animate={{ y: [0, -14, 0], rotate: [0, 8, 0] }}
-				transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+				transition={{
+					duration: 8,
+					repeat: Infinity,
+					ease: "easeInOut",
+				}}
 				className="pointer-events-none absolute right-[10%] top-16 hidden text-brand/10 md:block"
 			>
 				<BloodDropIcon className="size-20" />
@@ -22,57 +38,75 @@ export function Hero() {
 			<motion.div
 				aria-hidden
 				animate={{ y: [0, 10, 0] }}
-				transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+				transition={{
+					duration: 6,
+					repeat: Infinity,
+					ease: "easeInOut",
+					delay: 0.4,
+				}}
 				className="pointer-events-none absolute left-[8%] top-40 hidden text-brand/10 md:block"
 			>
 				<BloodDropIcon className="size-12" />
 			</motion.div>
 
 			<div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
-				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-					className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground shadow-card"
-				>
-					<BloodDropIcon className="size-3 text-brand" />
-					BioMatch &times; Nigerian Blood Transfusion Service
-				</motion.div>
-
 				<motion.h1
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.7, ease: EASE_SMOOTH, delay: 0.1 }}
+					transition={{
+						duration: 0.7,
+						ease: EASE_SMOOTH,
+						delay: 0.1,
+					}}
 					className="font-serif text-4xl font-medium leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl"
 				>
-					Meet BioMatch, your
+					Blood banking in your pocket.
 					<br />
-					<span className="italic text-brand">blood donation coordinator.</span>
+					<span className="font-bold text-brand">
+						Real-time matching across Nigeria.
+					</span>
 				</motion.h1>
 
 				<motion.p
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.7, ease: EASE_SMOOTH, delay: 0.2 }}
+					transition={{
+						duration: 0.7,
+						ease: EASE_SMOOTH,
+						delay: 0.2,
+					}}
 					className="mx-auto mt-6 max-w-lg text-base text-muted-foreground md:text-lg"
 				>
-					BioMatch connects verified donors with hospitals across Nigeria
-					in real time. Every second counts when lives are on the line.
+					BioMatch connects verified donors with hospitals the
+					moment blood is needed. Every second counts when lives
+					are on the line.
 				</motion.p>
 
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.7, ease: EASE_SMOOTH, delay: 0.3 }}
-					className="mt-8"
+					transition={{
+						duration: 0.7,
+						ease: EASE_SMOOTH,
+						delay: 0.3,
+					}}
+					className="mt-8 flex flex-wrap items-center justify-center gap-3"
 				>
 					<Button
 						size="lg"
 						className="h-11 rounded-full px-7 text-sm font-semibold"
 						asChild
 					>
-						<Link href="/auth/signup">
-							Get Started
+						<Link href="/auth/signup">Become a Donor</Link>
+					</Button>
+					<Button
+						size="lg"
+						variant="outline"
+						className="h-11 rounded-full px-7 text-sm font-semibold"
+						asChild
+					>
+						<Link href="/auth/login">
+							Find Blood
 							<ArrowRight className="ml-1.5 h-4 w-4" />
 						</Link>
 					</Button>
@@ -81,7 +115,11 @@ export function Hero() {
 				<motion.div
 					initial={{ opacity: 0, y: 50 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.9, ease: EASE_SMOOTH, delay: 0.4 }}
+					transition={{
+						duration: 0.9,
+						ease: EASE_SMOOTH,
+						delay: 0.4,
+					}}
 					className="relative mt-16"
 				>
 					<PhoneMockup />
