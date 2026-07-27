@@ -166,6 +166,7 @@ export async function createEmergencyRequest(data: {
 				donorId: donor.id,
 				status: "alerted",
 			})),
+			skipDuplicates: true,
 		});
 
 		const createdAlerts = await prisma.emergencyAlert.findMany({
@@ -494,6 +495,7 @@ export async function expandSearchRadius(requestId: string) {
 				donorId: donor.id,
 				status: "alerted",
 			})),
+			skipDuplicates: true,
 		});
 	}
 

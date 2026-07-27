@@ -220,6 +220,7 @@ model EmergencyAlert {
   notificationLogs NotificationLog[]
   screenings       DonorScreening[]
 
+  @@unique([requestId, donorId])
   @@index([requestId])
   @@index([donorId])
   @@index([status])
