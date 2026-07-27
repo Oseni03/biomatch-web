@@ -272,9 +272,9 @@ See `contexts/issues/58-*.md` through `contexts/issues/61-*.md` for full details
 | 63 | Prevent Duplicate/Racing Donor Screenings | AFK | — | ✅ |
 | 64 | Derive Hospital Inventory from Transaction Ledger (fix lost-update race) | AFK | — | ✅ |
 | 65 | Harden Delete-Cascade Rules + Add Matching-Query Index | AFK | — | ✅ |
-| 66 | [Needs-triage] Donor Hard-Delete Data-Retention Policy | HITL | — | needs-triage |
+| 66 | Donor Hard-Delete Data-Retention Policy | HITL | — | ✅ |
 
-See `contexts/issues/62-*.md` through `contexts/issues/66-*.md` for full details. Key decisions: issue 66 is filed as `needs-triage`, not `ready-for-agent`, since it requires a human product/legal decision on donor data retention before any schema change; issues 62-65 are schema/server-only fixes with no user-deletion or admin-delete code path currently affected, so they're low-risk despite touching cascade rules.
+See `contexts/issues/62-*.md` through `contexts/issues/66-*.md` for full details. Key decisions: issue 66 required a human product/legal decision on donor data retention before implementation — user confirmed `onDelete: Restrict` (block donor deletion while donation history exists) on 2026-07-27; issues 62-65 are schema/server-only fixes with no user-deletion or admin-delete code path currently affected, so they're low-risk despite touching cascade rules. All five issues also surfaced a pre-existing, unrelated gap in `prisma/migrations/` — several already-shipped schema changes (org migration, screening model, eligibility rework) had no committed migration file and the dev database's migration ledger had drifted out of sync with actual schema; this was reconciled via `prisma migrate resolve --applied` for the affected entries, and `db push` (not `migrate dev`) was used going forward for 62-66 to avoid re-triggering the same drift-detection dead end.
 
 ## Agent skills
 
