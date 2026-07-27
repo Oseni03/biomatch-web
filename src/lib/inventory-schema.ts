@@ -41,3 +41,28 @@ const BLOOD_GROUP_ENUM_MAP = {
 export function toBloodGroupEnum(display: (typeof BLOOD_GROUPS)[number]) {
   return BLOOD_GROUP_ENUM_MAP[display];
 }
+
+const DISPLAY_BLOOD_GROUP_MAP = Object.fromEntries(
+  Object.entries(BLOOD_GROUP_ENUM_MAP).map(([display, enumValue]) => [
+    enumValue,
+    display,
+  ]),
+) as Record<string, (typeof BLOOD_GROUPS)[number]>;
+
+// "A_PLUS" -> "A+", "AB_MINUS" -> "AB-" — inverse of toBloodGroupEnum.
+export function fromBloodGroupEnum(enumValue: string) {
+  return DISPLAY_BLOOD_GROUP_MAP[enumValue];
+}
+
+export function emptyInventory(): Inventory {
+  return {
+    "A+": 0,
+    "A-": 0,
+    "B+": 0,
+    "B-": 0,
+    "AB+": 0,
+    "AB-": 0,
+    "O+": 0,
+    "O-": 0,
+  };
+}

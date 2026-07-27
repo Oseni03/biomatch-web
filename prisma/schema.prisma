@@ -84,7 +84,7 @@ model Location {
   name          String
   type          LocationType
   parentId      String?        @db.Uuid
-  parent        Location?      @relation("LocationHierarchy", fields: [parentId], references: [id])
+  parent        Location?      @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children      Location[]     @relation("LocationHierarchy")
   users         User[]
   hospitalBanks HospitalBank[]
@@ -159,7 +159,7 @@ model Donation {
   donatedAt          DateTime   @default(now()) @db.Timestamptz(6)
   createdAt          DateTime   @default(now()) @db.Timestamptz(6)
 
-  donor            User              @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Cascade)
+  donor            User              @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Restrict)
   hospitalBank     HospitalBank?     @relation(fields: [hospitalBankId], references: [id], onDelete: SetNull)
   emergencyRequest EmergencyRequest? @relation(fields: [emergencyRequestId], references: [id], onDelete: SetNull)
 
@@ -220,6 +220,7 @@ model EmergencyAlert {
   notificationLogs NotificationLog[]
   screenings       DonorScreening[]
 
+  @@unique([requestId, donorId])
   @@index([requestId])
   @@index([donorId])
   @@index([status])
@@ -263,6 +264,7 @@ model User {
   @@index([bloodGroup])
   @@index([locationId])
   @@index([lastDonationDate])
+  @@index([role, isActive, bloodGroup, blacklistedAt])
   @@map("user")
 }
 
@@ -272,6 +274,10 @@ enum ScreeningStatus {
   failed
 }
 
+// DB also enforces at most one `pending` row per (donorId, alertId) via two
+// partial unique indexes applied directly (not representable in Prisma's
+// schema language): donor_screenings_pending_alert_key and
+// donor_screenings_pending_no_alert_key.
 model DonorScreening {
   id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   donorId        String          @db.Uuid
@@ -287,7 +293,7 @@ model DonorScreening {
 
   donor        User            @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
   organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Cascade)
+  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Restrict)
   alert        EmergencyAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
 
   @@index([donorId])
