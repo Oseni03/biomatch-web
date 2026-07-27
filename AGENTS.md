@@ -271,7 +271,7 @@ See `contexts/issues/58-*.md` through `contexts/issues/61-*.md` for full details
 | 62 | Prevent Duplicate EmergencyAlert Rows Under Concurrent Dispatch | AFK | — | ✅ |
 | 63 | Prevent Duplicate/Racing Donor Screenings | AFK | — | ✅ |
 | 64 | Derive Hospital Inventory from Transaction Ledger (fix lost-update race) | AFK | — | ✅ |
-| 65 | Harden Delete-Cascade Rules + Add Matching-Query Index | AFK | — | |
+| 65 | Harden Delete-Cascade Rules + Add Matching-Query Index | AFK | — | ✅ |
 | 66 | [Needs-triage] Donor Hard-Delete Data-Retention Policy | HITL | — | needs-triage |
 
 See `contexts/issues/62-*.md` through `contexts/issues/66-*.md` for full details. Key decisions: issue 66 is filed as `needs-triage`, not `ready-for-agent`, since it requires a human product/legal decision on donor data retention before any schema change; issues 62-65 are schema/server-only fixes with no user-deletion or admin-delete code path currently affected, so they're low-risk despite touching cascade rules.
