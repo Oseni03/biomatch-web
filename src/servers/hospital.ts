@@ -11,6 +11,7 @@ import {
 } from "@/lib/inventory-schema";
 import { BloodGroup } from "@generated/prisma/enums";
 import type { InventoryTransactionReason } from "@generated/prisma/enums";
+import { geocodeAddress } from "@/lib/geocoding";
 
 // Current stock is a read-time projection of the append-only
 // InventoryTransaction ledger, not the HospitalBank.inventory column —
@@ -98,11 +99,19 @@ export async function createHospitalBank(data: {
 	locationId?: string;
 	organizationId?: string;
 }) {
+	const fallbackLocation = data.location?.trim();
+	const geocode = fallbackLocation
+		? await geocodeAddress(fallbackLocation).catch(() => null)
+		: null;
+
 	return prisma.hospitalBank.create({
 		data: {
 			hospitalName: data.hospitalName,
 			location: data.location,
+			address: geocode?.formattedAddress ?? data.location,
 			locationId: data.locationId,
+			latitude: geocode?.latitude ?? null,
+			longitude: geocode?.longitude ?? null,
 			organizationId: data.organizationId,
 			inventory: emptyInventory(),
 		},

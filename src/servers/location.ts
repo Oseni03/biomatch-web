@@ -1,5 +1,6 @@
 "use server";
 
+import { haversineDistanceKm } from "@/lib/geocoding";
 import { prisma } from "@/lib/prisma";
 
 type LocationWithChildren = {
@@ -79,7 +80,29 @@ export async function scoreDonorProximity(
 	donorLocation: string | null,
 	hospitalLocationId: string | null,
 	hospitalLocation: string | null,
+	donorLatitude?: number | null,
+	donorLongitude?: number | null,
+	hospitalLatitude?: number | null,
+	hospitalLongitude?: number | null,
 ): Promise<number> {
+	if (
+		donorLatitude != null &&
+		donorLongitude != null &&
+		hospitalLatitude != null &&
+		hospitalLongitude != null
+	) {
+		const distanceKm = haversineDistanceKm(
+			donorLatitude,
+			donorLongitude,
+			hospitalLatitude,
+			hospitalLongitude,
+		);
+		if (distanceKm <= 10) return 4;
+		if (distanceKm <= 25) return 3;
+		if (distanceKm <= 50) return 2;
+		return 0;
+	}
+
 	if (donorLocationId && hospitalLocationId) {
 		return getCommonAncestorDepth(donorLocationId, hospitalLocationId);
 	}

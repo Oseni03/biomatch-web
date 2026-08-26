@@ -110,7 +110,10 @@ model HospitalBank {
   sequenceNumber Int      @default(autoincrement())
   hospitalName   String
   location       String
+  address        String?
   locationId     String?  @db.Uuid
+  latitude       Float?
+  longitude      Float?
   inventory      Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
   organizationId String?  @db.Uuid
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
@@ -124,6 +127,7 @@ model HospitalBank {
   @@unique([sequenceNumber])
   @@index([locationId])
   @@index([organizationId])
+  @@index([latitude, longitude])
   @@map("hospital_banks")
 }
 
@@ -238,7 +242,10 @@ model User {
   role              Role               @default(donor)
   updatedHealthInfo Json               @default("{}")
   location          String?
+  address           String?
   locationId        String?            @db.Uuid
+  latitude          Float?
+  longitude         Float?
   availability      Availability?
   isActive          Boolean            @default(true)
   lastDonationDate  DateTime?          @db.Timestamptz(6)
@@ -263,6 +270,7 @@ model User {
   @@index([role])
   @@index([bloodGroup])
   @@index([locationId])
+  @@index([latitude, longitude])
   @@index([lastDonationDate])
   @@index([role, isActive, bloodGroup, blacklistedAt])
   @@map("user")

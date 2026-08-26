@@ -5,6 +5,7 @@ import type { Availability, BloodGroup, Role } from "@generated/prisma/enums";
 import type { Prisma } from "@generated/prisma/client";
 import { buildLocationLabel } from "./location";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
+import { geocodeAddress } from "@/lib/geocoding";
 import { getVerifiedDonorIds } from "./screening";
 
 export async function getUserById(id: string) {
@@ -90,9 +91,28 @@ export async function updateUserProfile(
 	const updateData: Record<string, unknown> = { ...data };
 	delete updateData.locationId;
 
+	let resolvedLocation = data.location?.trim();
 	if (data.locationId) {
+		resolvedLocation = await buildLocationLabel(data.locationId);
 		updateData.locationId = data.locationId;
-		updateData.location = await buildLocationLabel(data.locationId);
+		updateData.location = resolvedLocation;
+	}
+
+	if (resolvedLocation) {
+		try {
+			const geocode = await geocodeAddress(resolvedLocation);
+			if (geocode) {
+				updateData.address = geocode.formattedAddress;
+				updateData.latitude = geocode.latitude;
+				updateData.longitude = geocode.longitude;
+			}
+		} catch (error) {
+			console.warn("Geocoding failed while saving donor profile:", {
+				userId: id,
+				location: resolvedLocation,
+				error,
+			});
+		}
 	}
 
 	return prisma.user.update({
