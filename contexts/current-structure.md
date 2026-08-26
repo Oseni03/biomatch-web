@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-07-19 — Issue 30 complete: consolidated duplicate React Query caches on donor dashboard (replaced inline queries with useInventory + new useCityLabels hook).
+> Last updated: 2026-08-26 — Issue 68 completed: donor dashboard now redirects incomplete donors to the health profile flow and the profile form validates required donor/health fields before save.
 
 > Addendum: Issues 67–72 published 2026-08-26 for the approved auth, geolocation, donor profile, dashboard, alert response, and mutual confirmation reformation. The issue files are under `contexts/issues/`.
 

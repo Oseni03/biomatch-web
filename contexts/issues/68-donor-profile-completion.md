@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Donor signup does not collect profile fields beyond email and password.
-- [ ] Verified donors are prompted to complete name, phone, blood group, address, location selection, health information, and availability.
-- [ ] Completed sections save progressively and the flow resumes at the next incomplete section.
-- [ ] Profile completion does not change the separate server-controlled donor verification status.
+- [x] Donor signup does not collect profile fields beyond email and password.
+- [x] Verified donors are prompted to complete name, phone, blood group, address, location selection, health information, and availability.
+- [x] Completed sections save progressively and the flow resumes at the next incomplete section.
+- [x] Profile completion does not change the separate server-controlled donor verification status.

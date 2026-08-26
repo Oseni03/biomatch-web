@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Save, Loader2, CheckCircle2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { getUserById, updateUserProfile } from "@/servers/user";
@@ -37,6 +38,8 @@ interface ProfileFormState {
 export function HealthProfileClient() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
+	const searchParams = useSearchParams();
+	const profileRequired = searchParams.get("required") === "1";
 	const [form, setForm] = useState<ProfileFormState>({
 		full_name: "",
 		blood_group: "",
@@ -119,6 +122,39 @@ export function HealthProfileClient() {
 		e.preventDefault();
 		if (!session?.user?.id) return;
 
+		const selectedLocationId = cascade.locationId || form.locationId;
+		if (!form.full_name.trim()) {
+			toast.error("Add your full name before saving your profile.");
+			return;
+		}
+		if (!form.blood_group) {
+			toast.error("Select your blood group to continue.");
+			return;
+		}
+		if (!selectedLocationId && !form.location.trim()) {
+			toast.error("Choose your location before you can receive match requests.");
+			return;
+		}
+		if (!form.availability) {
+			toast.error("Set your availability so hospitals know when you can respond.");
+			return;
+		}
+		const requiredHealthFields = [
+			"height_cm",
+			"weight_kg",
+			"blood_pressure",
+			"resting_heart_rate",
+		] as const;
+		const missingHealthFields = requiredHealthFields.filter(
+			(field) => !form.health[field]?.toString().trim(),
+		);
+		if (missingHealthFields.length > 0) {
+			toast.error(
+				"Complete your height, weight, blood pressure, and resting heart rate before saving.",
+			);
+			return;
+		}
+
 		setSaving(true);
 		setSaved(false);
 
@@ -132,7 +168,7 @@ export function HealthProfileClient() {
 					: undefined,
 				updatedHealthInfo: form.health,
 				location: form.location || undefined,
-				locationId: cascade.locationId || form.locationId || undefined,
+				locationId: selectedLocationId || undefined,
 				availability: form.availability || undefined,
 				isActive: form.isActive,
 			});
@@ -167,6 +203,11 @@ export function HealthProfileClient() {
 
 	return (
 		<div className="max-w-3xl space-y-8">
+			{profileRequired && (
+				<div className="rounded-2xl border border-brand/20 bg-brand/5 p-4 text-sm text-foreground">
+					Complete your donor profile to unlock emergency match requests. Your progress is saved as you go.
+				</div>
+			)}
 			<DashboardGreeting
 				title="Health Profile"
 				subtitle="Keep this accurate — hospitals rely on it to confirm safe, eligible matches."

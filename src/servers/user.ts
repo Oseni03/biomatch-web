@@ -38,6 +38,41 @@ export async function getUserByEmail(email: string) {
 	});
 }
 
+export function isDonorProfileComplete(
+	user:
+		| (Pick<
+				Prisma.UserGetPayload<{}>,
+				"name" | "bloodGroup" | "location" | "locationId" | "availability" | "updatedHealthInfo"
+		  > & { wallet?: unknown })
+		| null
+		| undefined,
+) {
+	if (!user) return false;
+
+	const health = (user.updatedHealthInfo ?? {}) as Record<string, unknown>;
+	const requiredHealthKeys = [
+		"height_cm",
+		"weight_kg",
+		"blood_pressure",
+		"resting_heart_rate",
+	] as const;
+
+	const hasRequiredHealth = requiredHealthKeys.every((key) => {
+		const value = health[key];
+		return typeof value === "string"
+			? value.trim().length > 0
+			: value != null && String(value).trim().length > 0;
+	});
+
+	return Boolean(
+		user.name?.trim() &&
+			user.bloodGroup &&
+			(user.locationId || user.location?.trim()) &&
+			user.availability &&
+			hasRequiredHealth,
+	);
+}
+
 export async function updateUserProfile(
 	id: string,
 	data: {

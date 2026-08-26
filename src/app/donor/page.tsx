@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 import { getQueryClient } from "@/lib/get-query-client";
 import { getServerSession } from "@/lib/get-session";
-import { getUserById } from "@/servers/user";
+import { getUserById, isDonorProfileComplete } from "@/servers/user";
 import { getAllHospitalBanks } from "@/servers/hospital";
 import { getAlertsForDonor, getDonorHistory } from "@/servers/emergency";
 import { getAllCityLabels } from "@/servers/location";
@@ -13,6 +13,11 @@ export default async function DonorDashboardPage() {
 	const session = await getServerSession();
 	if (!session?.user?.id) {
 		redirect("/auth/login");
+	}
+
+	const user = await getUserById(session.user.id);
+	if (!isDonorProfileComplete(user)) {
+		redirect("/donor/health-profile?required=1");
 	}
 
 	const queryClient = getQueryClient();
