@@ -3,27 +3,28 @@
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { respondToAlert, updateAlertStatus } from "@/servers/emergency";
+import {
+	respondToAlert,
+	updateAlertStatus,
+	withdrawAlert,
+} from "@/servers/emergency";
 
 type TrackingStatus = "accepted" | "en_route" | "arrived";
 
-export function useEmergencyMissionTracker(
-	onDonationCompleted?: (dateISO: string) => void,
-) {
+export function useEmergencyMissionTracker() {
 	const queryClient = useQueryClient();
 	const [activeTrackingId, setActiveTrackingId] = useState<string | null>(
 		null,
 	);
 	const [trackingStatus, setTrackingStatus] =
 		useState<TrackingStatus>("accepted");
-	const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
 	const handleRespond = useCallback(
-		async (reqId: string) => {
+		async (reqId: string, donorId?: string) => {
 			setActiveTrackingId(reqId);
 			setTrackingStatus("accepted");
 			try {
-				await respondToAlert(reqId, "accepted");
+				await respondToAlert(reqId, "accepted", donorId);
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 			} catch {
 				toast.error("Failed to accept alert");
@@ -33,9 +34,9 @@ export function useEmergencyMissionTracker(
 	);
 
 	const handleDecline = useCallback(
-		async (reqId: string) => {
+		async (reqId: string, donorId?: string) => {
 			try {
-				await respondToAlert(reqId, "declined");
+				await respondToAlert(reqId, "declined", donorId);
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 				toast.success("Alert declined");
 			} catch {
@@ -45,10 +46,29 @@ export function useEmergencyMissionTracker(
 		[queryClient],
 	);
 
-	const handleMarkEnRoute = useCallback(
-		async (reqId: string) => {
+	const handleWithdraw = useCallback(
+		async (reqId: string, donorId?: string, reason?: string) => {
+			if (!donorId) {
+				toast.error("You must be signed in to withdraw from this alert");
+				return;
+			}
 			try {
-				await updateAlertStatus(reqId, "en_route");
+				await withdrawAlert(reqId, donorId, reason);
+				setActiveTrackingId(null);
+				setTrackingStatus("accepted");
+				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+				toast.success("Alert withdrawn. Hospital was notified.");
+			} catch {
+				toast.error("Failed to withdraw from this alert");
+			}
+		},
+		[queryClient],
+	);
+
+	const handleMarkEnRoute = useCallback(
+		async (reqId: string, donorId?: string) => {
+			try {
+				await updateAlertStatus(reqId, "en_route", donorId);
 				setTrackingStatus("en_route");
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 				toast.success("Marked as en route");
@@ -60,11 +80,10 @@ export function useEmergencyMissionTracker(
 	);
 
 	const handleMarkArrived = useCallback(
-		async (reqId: string) => {
+		async (reqId: string, donorId?: string) => {
 			try {
-				await updateAlertStatus(reqId, "arrived");
+				await updateAlertStatus(reqId, "arrived", donorId);
 				setTrackingStatus("arrived");
-				setIsSuccessModalOpen(true);
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 			} catch {
 				toast.error("Failed to update status");
@@ -73,34 +92,14 @@ export function useEmergencyMissionTracker(
 		[queryClient],
 	);
 
-	const handleManualComplete = useCallback(async () => {
-		if (activeTrackingId) {
-			try {
-				await updateAlertStatus(activeTrackingId, "completed");
-				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-				queryClient.invalidateQueries({
-					queryKey: ["donor-dashboard"],
-				});
-			} catch {
-				toast.error("Failed to update donation status");
-			}
-		}
-		setActiveTrackingId(null);
-		setIsSuccessModalOpen(false);
-		const today = new Date().toISOString().split("T")[0];
-		onDonationCompleted?.(today);
-		toast.success("Donation recorded. Deferral period reset.");
-	}, [activeTrackingId, queryClient, onDonationCompleted]);
-
 	return {
 		activeTrackingId,
 		trackingStatus,
-		isSuccessModalOpen,
 		setActiveTrackingId,
 		handleRespond,
 		handleDecline,
+		handleWithdraw,
 		handleMarkEnRoute,
 		handleMarkArrived,
-		handleManualComplete,
 	};
 }

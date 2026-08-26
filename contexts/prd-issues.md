@@ -21,8 +21,8 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 | 68 | AFK | Donor Profile Completion | 67 | AFK | ✅ |
 | 69 | AFK | Server-Side Geolocation Matching | 68 | AFK | ✅ |
 | 70 | AFK | Actionable Donor Dashboard | 68, 69 | AFK | ✅ |
-| 71 | AFK | Donor Emergency Alert Response | 70 | AFK | |
-| 72 | AFK | Mutual Donation Confirmation | 71 | AFK | |
+| 71 | AFK | Donor Emergency Alert Response | 70 | AFK | ✅ |
+| 72 | AFK | Mutual Donation Confirmation | 71 | AFK | ✅ |
 
 ## HITL Decisions Required
 

@@ -16,6 +16,7 @@ interface EmergencyAlertsFeedProps {
 	activeTrackingId: string | null;
 	onRespond: (reqId: string) => void;
 	onDecline: (reqId: string) => void;
+	onWithdraw: (reqId: string, reason?: string) => void;
 	onMarkEnRoute: (reqId: string) => void;
 	onMarkArrived: (reqId: string) => void;
 	onConfirmDonation: (reqId: string) => void;
@@ -30,6 +31,7 @@ export function EmergencyAlertsFeed({
 	activeTrackingId,
 	onRespond,
 	onDecline,
+	onWithdraw,
 	onMarkEnRoute,
 	onMarkArrived,
 	onConfirmDonation,
@@ -103,6 +105,7 @@ export function EmergencyAlertsFeed({
 								donorStatus={donorStatus}
 								onRespond={onRespond}
 								onDecline={onDecline}
+								onWithdraw={onWithdraw}
 								onMarkEnRoute={onMarkEnRoute}
 								onMarkArrived={onMarkArrived}
 								onConfirmDonation={onConfirmDonation}

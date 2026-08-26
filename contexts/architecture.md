@@ -53,6 +53,21 @@
 
 Issues 67–72 define the donor dashboard reformation. Registration is email/password-only; profile data is completed afterward. Email verification gates protected routes, while donor eligibility verification remains a separate server-controlled state. Server-side geocoding uses environment variables, keeps coordinates private, logs failures without exposing them in the UI, and supplies approximate distances for matched requests. The donor dashboard presents one state-based primary action, and donation completion requires confirmation from both donor and hospital.
 
+### Current implementation status
+
+The branch currently includes the live implementation for issues 67–72:
+- `src/lib/auth.ts` handles email verification and password reset emails via Resend.
+- `src/proxy.ts` blocks unverified users from protected routes and redirects them to `/auth/login?verify-required=1`.
+- `src/app/auth/login/page.tsx` supports a resend-verification action and recovery messaging.
+- `src/app/donor/page.tsx` and `src/app/donor/donor-dashboard-client.tsx` drive the single-next-action donor dashboard shell.
+- `src/servers/emergency.ts` implements `respondToAlert()`, `withdrawAlert()`, `updateAlertStatus()`, `confirmDonation()`, and `donorConfirmDonation()` with state checks.
+- `finalizeDonation()` only creates the donation record, wallet reward, and cooldown after both confirmations are present.
+
+### Auth and route specifics
+
+- Public auth routes include `/auth/login`, `/auth/signup`, `/auth/forgot-password`, `/auth/reset-password`, and `/auth/accept-invitation`.
+- Protected route gating is performed by `src/proxy.ts`, not a root `middleware.ts`; this is the real Next 16 guard and it checks `session.user.emailVerified` before allowing access to `/donor`, `/hospital`, or `/admin`.
+
 ### Radius Expansion Config (in `lib/radius-expansion.ts`)
 - `INITIAL_RADIUS = 5`, `EXPANSION_INCREMENT = 5`, `MAX_RADIUS = 25`, `EXPANSION_TIMEOUT_MS = 300000`, `MAX_ALERTS_PER_REQUEST = 50`
 - `canExpand()`, `nextRadius()`, `getRadiusTier()` helpers
@@ -74,8 +89,11 @@ Issues 67–72 define the donor dashboard reformation. Registration is email/pas
 | Path | Page | Description |
 |---|---|---|
 | `/` | `app/page.tsx` | Landing page (Hero, Mission, Services, Impact, Join, Footer) |
-| `/auth/login` | `app/auth/login/page.tsx` | Sign-in |
+| `/auth/login` | `app/auth/login/page.tsx` | Sign-in and verification resend states |
 | `/auth/signup` | `app/auth/signup/page.tsx` | Register (donor/hospital toggle) |
+| `/auth/forgot-password` | `app/auth/forgot-password/page.tsx` | Request password reset |
+| `/auth/reset-password` | `app/auth/reset-password/page.tsx` | Set a new password |
+| `/auth/accept-invitation` | `app/auth/accept-invitation/page.tsx` | Accept org staff invite |
 
 ### Protected — Donor (`middleware.ts` guards role=donor)
 | Path | Page | Description |

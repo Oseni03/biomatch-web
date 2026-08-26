@@ -10,6 +10,7 @@ export const statement = {
 	inventory: ["read", "write"],
 	emergency: ["create", "update"],
 	screening: ["create", "resolve"],
+	donation: ["confirm"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -22,6 +23,7 @@ export const requesterRole = ac.newRole({
 	inventory: ["read"],
 	emergency: ["create", "update"],
 	screening: ["create", "resolve"],
+	donation: ["confirm"],
 });
 
 export const adminRole = ac.newRole({
@@ -31,6 +33,7 @@ export const adminRole = ac.newRole({
 	inventory: ["read", "write"],
 	emergency: ["create", "update"],
 	screening: ["create", "resolve"],
+	donation: ["confirm"],
 });
 
 export const ownerRole = ac.newRole({
@@ -39,6 +42,7 @@ export const ownerRole = ac.newRole({
 	inventory: ["read", "write"],
 	emergency: ["create", "update"],
 	screening: ["create", "resolve"],
+	donation: ["confirm"],
 });
 
 export const orgRoles = {

@@ -35,10 +35,12 @@ export function useRespondToAlert() {
 		mutationFn: ({
 			alertId,
 			status,
+			donorId,
 		}: {
 			alertId: string;
 			status: "accepted" | "declined";
-		}) => respondToAlert(alertId, status),
+			donorId?: string;
+		}) => respondToAlert(alertId, status, donorId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 		},
@@ -55,10 +57,12 @@ export function useUpdateAlertStatus() {
 		mutationFn: ({
 			alertId,
 			status,
+			donorId,
 		}: {
 			alertId: string;
-			status: "en_route" | "arrived" | "completed";
-		}) => updateAlertStatus(alertId, status),
+			status: "en_route" | "arrived";
+			donorId?: string;
+		}) => updateAlertStatus(alertId, status, donorId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 		},
@@ -121,7 +125,9 @@ export function useConfirmDonation() {
 				queryKey: ["alerts-awaiting-confirmation"],
 			});
 			toast.success(
-				`Donation confirmed for ${data.donorName}. ${data.completedCount}/${data.unitsNeeded} units completed.`,
+				data.completed
+					? `Donation confirmed for ${data.donorName}. ${data.completedCount}/${data.unitsNeeded} units completed.`
+					: "Hospital confirmation recorded. Waiting for the donor to confirm.",
 			);
 		},
 		onError: (err: Error) => {
@@ -141,11 +147,18 @@ export function useDonorConfirmDonation() {
 			alertId: string;
 			donorId: string;
 		}) => donorConfirmDonation(alertId, donorId),
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 			queryClient.invalidateQueries({
 				queryKey: ["alerts-awaiting-confirmation"],
 			});
+			if (data.completed) {
+				queryClient.invalidateQueries({ queryKey: ["donor-dashboard"] });
+				queryClient.invalidateQueries({ queryKey: ["donor-history"] });
+				toast.success("Donation confirmed. Your cooldown and reward are now active.");
+			} else {
+				toast.success("Your confirmation was recorded. Waiting for hospital confirmation.");
+			}
 		},
 		onError: (err: Error) => {
 			toast.error(err.message);

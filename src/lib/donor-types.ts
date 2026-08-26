@@ -43,6 +43,7 @@ export interface DonorAlertWithRequest {
 		id: string;
 		status: string;
 		donorConfirmedAt: Date | null;
+		hospitalConfirmedAt: Date | null;
 		request: {
 			bloodGroup: string;
 			unitsNeeded: number;
