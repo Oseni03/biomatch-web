@@ -40,6 +40,13 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(new URL("/auth/login", request.url));
 		}
 
+		if (session.user.emailVerified === false) {
+			const loginUrl = new URL("/auth/login", request.url);
+			loginUrl.searchParams.set("email", session.user.email ?? "");
+			loginUrl.searchParams.set("verify-required", "1");
+			return NextResponse.redirect(loginUrl);
+		}
+
 		if (pathname.startsWith("/admin") && userRole !== "admin") {
 			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
 		}

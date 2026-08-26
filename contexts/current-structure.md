@@ -10,8 +10,11 @@ biomatch/
 │   ├── api/
 │   │   └── auth/[...all]/route.ts  # BetterAuth API catch-all
 │   ├── auth/
-│   │   ├── login/page.tsx          # Sign-in form
-│   │   └── signup/page.tsx         # Registration form (donor/hospital toggle)
+│   │   ├── forgot-password/page.tsx # Request password reset + Resend flow
+│   │   ├── login/page.tsx          # Sign-in form with verification/reset states
+│   │   ├── reset-password/page.tsx # Set a new password from a reset token
+│   │   ├── signup/page.tsx         # Registration form (donor/hospital toggle)
+│   │   └── verify-email/route.ts   # BetterAuth verification route (auto)
 │   ├── donor/                      # Donor section (role=donor)
 │   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="donor"
 │   │   ├── page.tsx                #   Dashboard — orchestrates 8 extracted components: ActiveMissionTracker, DeferralStatusCard, HmoInsuranceCard, LocationSettingsCard (locations loaded from DB via getAllCityLabels), EmergencyAlertsFeed, BloodSupplyChart (all 8 blood groups), DonationHistoryCard, SuccessModal. React Query + local state. donorStatus + lastDonationDate persisted to backend via updateUserProfile
@@ -94,7 +97,9 @@ biomatch/
 
 │
 ├── emails/                         # React Email templates
-│   └── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
+│   ├── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
+│   ├── reset-password-email.tsx    #   Password reset email template
+│   └── verification-email.tsx      #   Email verification template
 │
 ├── contexts/                       # AI context & plans directory
 │   ├── agents/                     # Engineering skill configuration

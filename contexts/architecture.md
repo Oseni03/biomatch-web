@@ -105,9 +105,10 @@ Issues 67–72 define the donor dashboard reformation. Registration is email/pas
 
 ## Auth Flow
 
-1. **Signup** → `servers/auth.ts:signUpWithProfile()` calls `better-auth` API, creates Wallet for donors
-2. **Login** → `app/auth/login/page.tsx` calls `authClient.signIn.email()` directly, redirects client-side to role dashboard
-3. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
+1. **Signup** → `servers/auth.ts:signUpWithProfile()` calls `better-auth` email/password API, creates Wallet for donors, and lets BetterAuth trigger a verification email automatically
+2. **Verification** → `lib/auth.ts` configures `emailVerification.sendVerificationEmail` and `emailAndPassword.sendResetPassword` with Resend templates, and `proxy.ts` redirects any session without `emailVerified` away from protected routes to `/auth/login?verify-required=1`
+3. **Login** → `app/auth/login/page.tsx` authenticates, blocks unverified users from redirecting to a role dashboard, and offers resend/reset recovery flows
+4. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
 
 ## Design System (BioMatch)
 

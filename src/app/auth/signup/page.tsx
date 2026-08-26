@@ -79,8 +79,8 @@ export default function SignupPage() {
 			return;
 		}
 
-		toast.success("Registration successful! You can now sign in.");
-		router.push(`/${role}`);
+		toast.success("Registration successful! Check your inbox to verify your email.");
+		router.push(`/auth/login?email=${encodeURIComponent(email)}`);
 	};
 
 	return (

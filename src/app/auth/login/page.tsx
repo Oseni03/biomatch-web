@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,15 +24,26 @@ const STATS = [
 
 export default function LoginPage() {
 	const router = useRouter();
-	const [email, setEmail] = useState("");
+	const searchParams = useSearchParams();
+	const [email, setEmail] = useState(searchParams.get("email") ?? "");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const [error, setError] = useState("");
+	const [error, setError] = useState(
+		searchParams.get("verify-required") === "1"
+			? "Please verify your email before accessing BioMatch."
+			: "",
+	);
+	const [success, setSuccess] = useState(
+		searchParams.get("verified") === "1"
+			? "Your email has been verified. You can now sign in."
+			: "",
+	);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
+		setSuccess("");
 		setIsLoading(true);
 
 		const { data, error: authError } = await authClient.signIn.email({
@@ -41,18 +52,60 @@ export default function LoginPage() {
 		});
 
 		if (authError) {
-			setError(typeof authError === "string" ? authError : (authError as any)?.message ?? "Invalid credentials");
+			setError(
+				typeof authError === "string"
+					? authError
+					: (authError as any)?.message ?? "Invalid credentials",
+			);
 			setIsLoading(false);
 			return;
 		}
 
-		const userRole = (data?.user as { role?: string } | undefined)?.role;
+		const user = data?.user as { role?: string; emailVerified?: boolean } | undefined;
+		if (user?.emailVerified === false) {
+			setError("Your email is not verified yet. Check your inbox for the verification link or resend it below.");
+			setIsLoading(false);
+			return;
+		}
+
+		const userRole = user?.role;
 		if (userRole) {
 			router.push(`/${userRole}`);
 		} else {
 			setError("Login succeeded but unable to determine your role.");
 			setIsLoading(false);
 		}
+	};
+
+	const handleResendVerification = async () => {
+		if (!email.trim()) {
+			setError("Enter your email address before requesting a new verification link.");
+			return;
+		}
+
+		setIsLoading(true);
+		setError("");
+
+		const response = await fetch("/api/auth/send-verification-email", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				email: email.trim(),
+				callbackURL:
+					typeof window !== "undefined"
+						? `${window.location.origin}/auth/login?verified=1`
+						: undefined,
+			}),
+		});
+
+		if (!response.ok) {
+			setError("We couldn't send a fresh verification link right now. Please try again in a moment.");
+			setIsLoading(false);
+			return;
+		}
+
+		setSuccess("A fresh verification email has been sent. Check your inbox.");
+		setIsLoading(false);
 	};
 
 	return (
@@ -87,6 +140,11 @@ export default function LoginPage() {
 							{error}
 						</div>
 					)}
+					{success && (
+						<div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
+							{success}
+						</div>
+					)}
 
 					<form onSubmit={handleSubmit} className="space-y-6">
 						<div>
@@ -113,9 +171,12 @@ export default function LoginPage() {
 								<label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground">
 									Password
 								</label>
-								<span className="cursor-pointer text-xs text-brand hover:text-brand-hover">
+								<Link
+									href="/auth/forgot-password"
+									className="cursor-pointer text-xs text-brand hover:text-brand-hover"
+								>
 									Forgot password?
-								</span>
+								</Link>
 							</div>
 							<div className="relative">
 								<span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
@@ -149,6 +210,16 @@ export default function LoginPage() {
 							className="w-full rounded-2xl py-6 text-sm font-medium"
 						>
 							{isLoading ? "Authenticating..." : "Sign in"}
+						</Button>
+
+						<Button
+							type="button"
+							variant="outline"
+							disabled={isLoading}
+							onClick={handleResendVerification}
+							className="w-full rounded-2xl py-6 text-sm font-medium"
+						>
+							Resend verification email
 						</Button>
 					</form>
 

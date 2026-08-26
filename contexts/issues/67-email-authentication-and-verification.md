@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Registration accepts only email and password and preserves the selected account role.
-- [ ] Resend delivers verification and password-reset emails through server-side configuration.
-- [ ] Unverified users cannot access protected routes and can resend verification without revealing account details.
-- [ ] Existing accounts remain accessible during the transition.
+- [x] Registration accepts only email and password and preserves the selected account role.
+- [x] Resend delivers verification and password-reset emails through server-side configuration.
+- [x] Unverified users cannot access protected routes and can resend verification without revealing account details.
+- [x] Existing accounts remain accessible during the transition.
