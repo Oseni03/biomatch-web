@@ -49,6 +49,10 @@
 - `ELIGIBILITY_DAYS = 56`, `POINTS_PER_DONATION = 100`, `CRITICAL_THRESHOLD = 5`
 - Single source of truth — imported by all consumers
 
+### Approved Prototype Reformation
+
+Issues 67–72 define the donor dashboard reformation. Registration is email/password-only; profile data is completed afterward. Email verification gates protected routes, while donor eligibility verification remains a separate server-controlled state. Server-side geocoding uses environment variables, keeps coordinates private, logs failures without exposing them in the UI, and supplies approximate distances for matched requests. The donor dashboard presents one state-based primary action, and donation completion requires confirmation from both donor and hospital.
+
 ### Radius Expansion Config (in `lib/radius-expansion.ts`)
 - `INITIAL_RADIUS = 5`, `EXPANSION_INCREMENT = 5`, `MAX_RADIUS = 25`, `EXPANSION_TIMEOUT_MS = 300000`, `MAX_ALERTS_PER_REQUEST = 50`
 - `canExpand()`, `nextRadius()`, `getRadiusTier()` helpers

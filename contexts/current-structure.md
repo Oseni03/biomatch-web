@@ -2,6 +2,8 @@
 
 > Last updated: 2026-07-19 — Issue 30 complete: consolidated duplicate React Query caches on donor dashboard (replaced inline queries with useInventory + new useCityLabels hook).
 
+> Addendum: Issues 67–72 published 2026-08-26 for the approved auth, geolocation, donor profile, dashboard, alert response, and mutual confirmation reformation. The issue files are under `contexts/issues/`.
+
 ```
 biomatch/
 ├── app/                            # Next.js App Router
