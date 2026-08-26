@@ -1,8 +1,8 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-08-26 — Issues 68-70 completed: incomplete donors are redirected to the health profile flow, server-side geocoding supports private distance matching, and the donor dashboard now presents a single state-based next action while keeping eligibility, availability, alerts, history, and rewards data visible.
+> Last updated: 2026-08-26 — Issue reformation 67–72 is implemented in the branch: email/password auth and verification are live, donor profile completion is gated and resumable, geocoding is server-side and private, the donor dashboard is state-driven, emergency alert accept/decline/withdraw actions are authorized, and mutual donation confirmation completes only after both donor and hospital confirm.
 
-> Addendum: Issues 67–72 published 2026-08-26 for the approved auth, geolocation, donor profile, dashboard, alert response, and mutual confirmation reformation. The issue files are under `contexts/issues/`.
+> Tracker note: issue rows 71 and 72 were completed in the current branch and their status in `contexts/prd-issues.md` has been updated to reflect the live code.
 
 ```
 biomatch/

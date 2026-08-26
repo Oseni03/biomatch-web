@@ -39,8 +39,8 @@ export function PendingDonationConfirmations({
 					Awaiting Hospital Confirmation
 				</CardTitle>
 				<CardDescription className="text-xs text-muted-foreground">
-					Donors who confirmed they donated — staff still need to
-					confirm the donation
+					Confirmations that still need the other participant
+					to confirm
 				</CardDescription>
 			</CardHeader>
 
@@ -63,19 +63,20 @@ export function PendingDonationConfirmations({
 								</span>
 								<span className="text-xs text-muted-foreground mt-0.5 block">
 									{displayBloodGroup(alert.request.bloodGroup)}{" "}
-									&bull; confirmed{" "}
-									{new Date(
-										alert.donorConfirmedAt!,
-									).toLocaleTimeString([], {
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
+										&bull;{" "}
+										{alert.donorConfirmedAt
+											? "Donor confirmed"
+											: "Hospital confirmed"}
 								</span>
 							</div>
 						</div>
 						<Button
 							size="sm"
-							disabled={confirmDonation.isPending || !staffUserId}
+							disabled={
+								confirmDonation.isPending ||
+								!staffUserId ||
+								!!alert.hospitalConfirmedAt
+							}
 							onClick={() =>
 								staffUserId &&
 								confirmDonation.mutate({
@@ -85,7 +86,9 @@ export function PendingDonationConfirmations({
 							}
 							className="bg-status-ok text-white hover:bg-status-ok hover:opacity-90 hover:scale-100"
 						>
-							Confirm Donation
+							{alert.hospitalConfirmedAt
+								? "Waiting for Donor"
+								: "Confirm Donation"}
 						</Button>
 					</div>
 				))}

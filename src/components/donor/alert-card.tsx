@@ -24,6 +24,7 @@ interface AlertCardProps {
 	donorStatus: DonorStatus;
 	onRespond: (reqId: string) => void;
 	onDecline: (reqId: string) => void;
+	onWithdraw: (reqId: string, reason?: string) => void;
 	onMarkEnRoute: (reqId: string) => void;
 	onMarkArrived: (reqId: string) => void;
 	onConfirmDonation: (reqId: string) => void;
@@ -53,6 +54,7 @@ export function AlertCard({
 	donorStatus,
 	onRespond,
 	onDecline,
+	onWithdraw,
 	onMarkEnRoute,
 	onMarkArrived,
 	onConfirmDonation,
@@ -212,6 +214,17 @@ export function AlertCard({
 										I Confirm I Donated
 									</Button>
 								))}
+							{["accepted", "en_route", "arrived"].includes(
+								alertStatus ?? "",
+							) && (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => onWithdraw(request.id)}
+								>
+									Withdraw
+								</Button>
+							)}
 						</>
 					) : (
 						<>

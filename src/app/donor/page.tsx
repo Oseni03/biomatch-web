@@ -16,7 +16,7 @@ export default async function DonorDashboardPage() {
 	}
 
 	const user = await getUserById(session.user.id);
-	if (!isDonorProfileComplete(user)) {
+	if (!(await isDonorProfileComplete(user))) {
 		redirect("/donor/health-profile?required=1");
 	}
 

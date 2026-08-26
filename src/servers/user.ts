@@ -39,7 +39,7 @@ export async function getUserByEmail(email: string) {
 	});
 }
 
-export function isDonorProfileComplete(
+export async function isDonorProfileComplete(
 	user:
 		| (Pick<
 				Prisma.UserGetPayload<{}>,

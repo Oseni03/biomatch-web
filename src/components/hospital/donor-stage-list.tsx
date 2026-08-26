@@ -26,6 +26,8 @@ interface StageAlert {
 	id: string;
 	status: string;
 	updatedAt: Date;
+	donorConfirmedAt: Date | null;
+	hospitalConfirmedAt: Date | null;
 	donor: {
 		id: string;
 		name: string | null;
@@ -122,6 +124,7 @@ export function DonorStageList({
 										donorId={alert.donor.id}
 										donorName={alert.donor.name}
 										organizationId={organizationId}
+										hospitalConfirmedAt={alert.hospitalConfirmedAt}
 									/>
 								)}
 							</div>
@@ -138,11 +141,13 @@ function ArrivedStageAction({
 	donorId,
 	donorName,
 	organizationId,
+	hospitalConfirmedAt,
 }: {
 	alertId: string;
 	donorId: string;
 	donorName: string | null;
 	organizationId: string;
+	hospitalConfirmedAt: Date | null;
 }) {
 	const { data: session } = authClient.useSession();
 	const staffUserId = session?.user?.id;
@@ -206,6 +211,14 @@ function ArrivedStageAction({
 					Mark Failed
 				</Button>
 			</div>
+		);
+	}
+
+	if (hospitalConfirmedAt) {
+		return (
+			<span className="text-xs text-status-info">
+				Waiting for donor confirmation
+			</span>
 		);
 	}
 

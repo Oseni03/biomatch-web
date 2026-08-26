@@ -31,7 +31,6 @@ import { LocationSettingsCard } from "@/components/donor/location-settings-card"
 import { EmergencyAlertsFeed } from "@/components/donor/emergency-alerts-feed";
 import { BloodSupplyChart } from "@/components/donor/blood-supply-chart";
 import { DonationHistoryCard } from "@/components/donor/donation-history-card";
-import { SuccessModal } from "@/components/donor/success-modal";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
 import { VerificationStatusBanner } from "@/components/donor/verification-status-banner";
 import { BlacklistedBanner } from "@/components/donor/blacklisted-banner";
@@ -161,14 +160,13 @@ export function DonorDashboardClient() {
 	const {
 		activeTrackingId,
 		trackingStatus,
-		isSuccessModalOpen,
 		setActiveTrackingId,
 		handleRespond,
 		handleDecline,
+		handleWithdraw,
 		handleMarkEnRoute,
 		handleMarkArrived,
-		handleManualComplete,
-	} = useEmergencyMissionTracker(setLastDonationDateInput);
+	} = useEmergencyMissionTracker();
 
 	const donorConfirmDonation = useDonorConfirmDonation();
 	const handleConfirmDonation = (alertId: string) => {
@@ -411,6 +409,9 @@ export function DonorDashboardClient() {
 							activeTrackingId={activeTrackingId}
 							onRespond={handleRespond}
 							onDecline={handleDecline}
+							onWithdraw={(reqId, reason) =>
+								handleWithdraw(reqId, session?.user?.id, reason)
+							}
 							onMarkEnRoute={handleMarkEnRoute}
 							onMarkArrived={handleMarkArrived}
 							onConfirmDonation={handleConfirmDonation}
@@ -431,11 +432,6 @@ export function DonorDashboardClient() {
 				</div>
 			</motion.div>
 
-			<SuccessModal
-				isOpen={isSuccessModalOpen}
-				completedCount={completedCount}
-				onUpdateRecords={handleManualComplete}
-			/>
 		</motion.div>
 	);
 }
