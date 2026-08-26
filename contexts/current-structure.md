@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-08-26 — Issues 68 and 69 completed: incomplete donors are redirected to the health profile flow, and server-side geocoding with private coordinates now supports approximate distance-based matching without exposing provider secrets.
+> Last updated: 2026-08-26 — Issues 68-70 completed: incomplete donors are redirected to the health profile flow, server-side geocoding supports private distance matching, and the donor dashboard now presents a single state-based next action while keeping eligibility, availability, alerts, history, and rewards data visible.
 
 > Addendum: Issues 67–72 published 2026-08-26 for the approved auth, geolocation, donor profile, dashboard, alert response, and mutual confirmation reformation. The issue files are under `contexts/issues/`.
 
