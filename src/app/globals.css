@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+@layer base {
+  :root {
+    /* BioMatch brand primitives — dark-only "classic red + clinical dark" */
+    /* --red is #8B0000 */
+    --red: 0 100% 27%;
+    --red-deep: 0 100% 20%;
+    --red-ink: 0 85% 40%;
+    --red-bg: 0 65% 15%;
+    --emergency: 0 100% 64%;
+    --cream: 37 28% 88%;
+    --paper: 245 24% 7%;
+    --ink: 245 35% 4%;
+    --slate: 227 12% 68%;
+
+    --status-critical: 0 90% 63%;
+    --status-critical-bg: 0 65% 15%;
+    --status-low: 33 88% 63%;
+    --status-low-bg: 33 70% 15%;
+    --status-ok: 148 58% 50%;
+    --status-ok-bg: 148 50% 14%;
+    --status-info: 190 72% 53%;
+    --status-info-bg: 190 55% 14%;
+
+    --background: 245 24% 7%;
+    --foreground: 240 20% 96%;
+    --card: 245 18% 11%;
+    --card-foreground: 240 20% 96%;
+    --popover: 245 17% 13%;
+    --popover-foreground: 240 20% 96%;
+    --primary: 0 100% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 245 14% 16%;
+    --secondary-foreground: 240 20% 96%;
+    --muted: 245 14% 15%;
+    --muted-foreground: 227 12% 63%;
+    --accent: 0 100% 27%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 90% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 245 12% 18%;
+    --input: 245 12% 18%;
+    --ring: 0 100% 27%;
+    --radius: 0.625rem;
+    --sidebar-background: 245 35% 4%;
+    --sidebar-foreground: 240 15% 90%;
+    --sidebar-primary: 0 100% 27%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 245 25% 10%;
+    --sidebar-accent-foreground: 240 20% 96%;
+    --sidebar-border: 245 25% 12%;
+    --sidebar-ring: 0 100% 27%;
+    --chart-1: 0 100% 27%;
+    --chart-2: 190 72% 53%;
+    --chart-3: 148 58% 50%;
+    --chart-4: 33 88% 63%;
+    --chart-5: 227 12% 68%;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+::selection {
+  background-color: hsl(var(--red) / 0.35);
+  color: hsl(var(--foreground));
+}
+
+* {
+  scrollbar-color: hsl(var(--border)) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 9999px;
+  border: 2px solid hsl(var(--background));
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.4);
+}
+
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Recolors text, borders, and muted content for use on a hsl(var(--red)) surface. */
+  .on-red {
+    --background: var(--red);
+    --foreground: 0 0% 100%;
+    --card: 0 86% 40%;
+    --card-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.16;
+    --input: 0 0% 100% / 0.16;
+    --muted-foreground: 0 0% 100% / 0.72;
+    color: hsl(var(--foreground));
+  }
+
+  /* Recolors text, borders, and muted content for use on a hsl(var(--ink)) surface. */
+  .on-ink {
+    --background: var(--ink);
+    --foreground: 0 0% 100%;
+    --secondary: 245 25% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.12;
+    --input: 0 0% 100% / 0.12;
+    --muted-foreground: 0 0% 100% / 0.65;
+    color: hsl(var(--foreground));
+  }
+}
