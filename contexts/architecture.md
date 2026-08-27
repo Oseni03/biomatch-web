@@ -11,103 +11,62 @@
 | Icons | lucide-react |
 | ORM | Prisma 7 + `@prisma/adapter-pg` |
 | Database | PostgreSQL |
-| Auth | better-auth (email/password) |
-| Charts | recharts + @tremor/react (installed, not yet used) |
-| Data Fetching | Server actions (`servers/`) + `@tanstack/react-query` (in use across all pages) |
+| Auth | better-auth (email/password) + organization plugin |
+| Charts | recharts + @tremor/react (installed, minimal use) |
+| Data Fetching | Server actions (`servers/`) + `@tanstack/react-query` |
 | Toast | sonner |
-| Theme | next-themes |
+| Theme | next-themes (dark-only) |
 
 ## Data Model (Prisma)
 
 ### Enums
 - `Role`: `donor | hospital | admin`
 - `BloodGroup`: `A_PLUS | A_MINUS | B_PLUS | B_MINUS | AB_PLUS | AB_MINUS | O_PLUS | O_MINUS`
-- `LocationType`: `region | state | city` — for Location hierarchy
 - `UrgencyLevel`: `standard | critical` — for EmergencyRequest
 - `RequestStatus`: `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
-- `AlertStatus`: `alerted | accepted | declined | withdrawn | en_route | arrived | completed | screening_failed` — for EmergencyAlert
-- `NotificationChannel`: `email` — for NotificationLog
-- `NotificationStatus`: `sent | delivered | opened | failed` — for NotificationLog
+- `AlertStatus`: `alerted | accepted | declined | withdrawn | en_route | arrived | completed` — for EmergencyAlert
 - `Availability`: `weekdays | weekends | mornings | afternoons | evenings | anytime` — for User availability
-- `InventoryTransactionReason`: `donation | dispatch | manual_adjustment | expiry` — for InventoryTransaction
-- `ScreeningStatus`: `pending | passed | failed` — for DonorScreening
 
 ### Current Models
 
-**User** — Core identity. Stores `name`, `email`, `emailVerified`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON — health profile data only), `location`, `address`, `locationId` (FK to Location), `latitude`, `longitude`, `availability`, `isActive`, `lastDonationDate`, `deferredUntil`, `blacklistedAt`, `createdAt`, `updatedAt`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), Location, EmergencyAlert (DonorAlerts), Donation (DonorDonations), DonorScreening (as donor and staff), Member, Invitation.
+**User** — Core identity. `name`, `email`, `emailVerified`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location` (string), `address`, `latitude`, `longitude`, `availability`, `isActive`, `lastDonationDate`, `deferredUntil`, `blacklistedAt`, `createdAt`, `updatedAt`. Relations: Session, Account, Wallet, EmergencyAlert (DonorAlerts), Donation, Member, Invitation.
 
-**HospitalBank** — Blood bank record. `hospitalName`, `sequenceNumber` (auto-increment), `location` (string), `address`, `locationId` (FK to Location), `latitude`, `longitude`, `inventory` (JSON blob of `Record<string, number>`), `organizationId` (FK to Organization), `createdAt`, `updatedAt`. Relations to: Organization, Location, Donation, InventoryTransaction.
+**Organization** — BetterAuth org model. `name`, `slug` (unique), `logo`, `metadata`, `createdAt`, `updatedAt`. Relations: Member, Invitation, HospitalBank, EmergencyRequest.
 
-**Organization** — BetterAuth org model for hospital-as-organization. `name`, `slug` (unique), `logo`, `metadata`, `createdAt`, `updatedAt`. Relations to: Member, Invitation, HospitalBank, EmergencyRequest, DonorScreening.
+**Member** — Organization membership. `organizationId`, `userId`, `role`, `createdAt`. Unique constraint on (organizationId, userId).
 
-**Member** — Organization membership. `organizationId`, `userId`, `role` (default "member"), `createdAt`. Relations to: Organization, User. Unique constraint on (organizationId, userId).
+**Invitation** — Org staff invitations. `organizationId`, `email`, `role`, `status`, `expiresAt`, `createdAt`, `inviterId`.
 
-**Invitation** — Org staff invitations. `organizationId`, `email`, `role`, `status` (default "pending"), `expiresAt`, `createdAt`, `inviterId`. Relations to: Organization, User (inviter).
+**HospitalBank** — Blood bank record. `hospitalName`, `location`, `address`, `latitude`, `longitude`, `inventory` (JSON `Record<string, number>`), `organizationId`, `createdAt`, `updatedAt`. Relations: Organization, Donation.
 
-**Location** — Nigerian location hierarchy. `name`, `type` (region/state/city), `parentId` (self-referential FK). Relations to: User, HospitalBank. Seed data in `prisma/seed.ts` covers 6 regions, 37 states, ~120 cities. Helpers in `servers/location.ts`.
+**Wallet** — One per donor. `points`, `lifetimeDonations`, `createdAt`, `updatedAt`.
 
-**Wallet** — One per donor. `points` (int), `lifetimeDonations` (int), `createdAt`, `updatedAt`. Relations to: User.
+**EmergencyRequest** — Blood request from hospital. `organizationId`, `bloodGroup`, `unitsNeeded`, `urgencyLevel`, `status`, `searchRadius`, `createdAt`, `updatedAt`. Relations: Organization, EmergencyAlert, Donation.
 
-**EmergencyRequest** — Blood request from hospital. `organizationId` (FK to Organization), `bloodGroup`, `unitsNeeded`, `urgencyLevel`, `status`, `searchRadius`, `createdAt`, `updatedAt`. Relations to: Organization, EmergencyAlert, Donation.
+**EmergencyAlert** — Donor alert for a request. `requestId`, `donorId`, `status`, `openedAt`, `respondedAt`, `donorConfirmedAt`, `hospitalConfirmedAt`, `responseReason`, `createdAt`, `updatedAt`.
 
-**EmergencyAlert** — Donor alert for a request. `requestId`, `donorId`, `status`, `openedAt`, `respondedAt`, `donorConfirmedAt`, `hospitalConfirmedAt`, `responseReason`, `createdAt`, `updatedAt`. Relations to: EmergencyRequest, User (Donor), NotificationLog, DonorScreening.
-
-**NotificationLog** — Delivery tracking per alert. `alertId`, `channel`, `status`, `providerMessageId`, `sentAt`, `deliveredAt`, `openedAt`, `errorMessage`. Relations to: EmergencyAlert.
-
-**Donation** — Completed donation record. `donorId`, `hospitalBankId`, `emergencyRequestId`, `bloodGroup`, `donatedAt`, `createdAt`. Relations to: User (Donor), HospitalBank, EmergencyRequest.
-
-**InventoryTransaction** — Blood inventory change ledger. `hospitalBankId`, `bloodGroup`, `delta` (positive or negative), `reason`, `createdAt`. Relations to: HospitalBank. Derives current inventory levels via aggregation.
-
-**DonorScreening** — Per-visit donor screening. `donorId`, `organizationId`, `staffUserId`, `alertId` (nullable), `status`, `screenedAt`, `resolvedAt`, `notes`, `createdAt`, `updatedAt`. Relations to: User (Donor), Organization, User (Staff), EmergencyAlert. DB enforces at most one pending row per (donorId, alertId) via partial unique indexes.
+**Donation** — Completed donation record. `donorId`, `hospitalBankId`, `emergencyRequestId`, `bloodGroup`, `donatedAt`, `createdAt`.
 
 **Session, Account, Verification** — BetterAuth internal models.
 
-### Shared Domain Constants (in `lib/constants.ts`)
+### Removed Models (simplified out)
+- `Location` — Nigerian location hierarchy (replaced with lat/long + free text)
+- `DonorScreening` — per-visit screening (not in prototype spec)
+- `InventoryTransaction` — inventory ledger (replaced with simple JSON column)
+- `NotificationLog` — delivery tracking (not in prototype spec)
+
+### Shared Domain Constants (`lib/constants.ts`)
 - `ELIGIBILITY_DAYS = 56`, `POINTS_PER_DONATION = 100`, `CRITICAL_THRESHOLD = 5`
-- Single source of truth — imported by all consumers
-
-### Approved Prototype Reformation
-
-Issues 67–72 define the donor dashboard reformation. Registration is email/password-only; profile data is completed afterward. Email verification gates protected routes, while donor eligibility verification remains a separate server-controlled state. Server-side geocoding uses environment variables, keeps coordinates private, logs failures without exposing them in the UI, and supplies approximate distances for matched requests. The donor dashboard presents one state-based primary action, and donation completion requires confirmation from both donor and hospital.
-
-### Current implementation status
-
-The branch currently includes the live implementation for issues 67–72:
-- `src/lib/auth.ts` handles email verification and password reset emails via Resend.
-- `src/proxy.ts` blocks unverified users from protected routes and redirects them to `/auth/login?verify-required=1`.
-- `src/app/auth/login/page.tsx` supports a resend-verification action and recovery messaging.
-- `src/app/donor/page.tsx` and `src/app/donor/donor-dashboard-client.tsx` drive the single-next-action donor dashboard shell.
-- `src/servers/emergency.ts` implements `respondToAlert()`, `withdrawAlert()`, `updateAlertStatus()`, `confirmDonation()`, and `donorConfirmDonation()` with state checks.
-- `finalizeDonation()` only creates the donation record, wallet reward, and cooldown after both confirmations are present.
-
-### Auth and route specifics
-
-- Public auth routes include `/auth/login`, `/auth/signup`, `/auth/forgot-password`, `/auth/reset-password`, and `/auth/accept-invitation`.
-- Protected route gating is performed by `src/proxy.ts`, not a root `middleware.ts`; this is the real Next 16 guard and it checks `session.user.emailVerified` before allowing access to `/donor`, `/hospital`, or `/admin`.
-
-### Radius Expansion Config (in `lib/radius-expansion.ts`)
-- `INITIAL_RADIUS = 5`, `EXPANSION_INCREMENT = 5`, `MAX_RADIUS = 25`, `EXPANSION_TIMEOUT_MS = 300000`, `MAX_ALERTS_PER_REQUEST = 50`
-- `canExpand()`, `nextRadius()`, `getRadiusTier()` helpers
-
-### Emergency Models (in Schema)
-
-- **EmergencyRequest** — id, organizationId (FK to Organization), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt. Server actions: createEmergencyRequest(), getEmergencyRequestStatus(), getEmergencyHistory(), getPendingEmergencyRequestsForHospital(), expandSearchRadius()
-- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, openedAt, respondedAt, donorConfirmedAt, hospitalConfirmedAt, responseReason, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus(), markAlertOpened(), confirmDonation(), donorConfirmDonation()
-- **NotificationLog** — id, alertId (FK to EmergencyAlert), channel (email), status (sent/failed/delivered/opened), providerMessageId, sentAt, deliveredAt, openedAt, errorMessage. Server actions: sendEmergencyAlertEmail() in servers/notification.ts
-
-### Planned Models (from PRD Issues)
-- **HmoEnrollment** — id, userId, tier, providerEnrollmentId, enrolledAt, upgradedAt
-- **PartnerOrganization** — id, name, contactEmail, contactPhone, logo, status, memberCount, createdAt, updatedAt
-- **PartnerMember** — id, organizationId (FK to PartnerOrganization), userId (FK to User), invitedAt, joinedAt, isActive
 
 ## Routing Structure
 
 ### Public Routes
 | Path | Page | Description |
 |---|---|---|
-| `/` | `app/page.tsx` | Landing page (Hero, Mission, Services, Impact, Join, Footer) |
-| `/auth/login` | `app/auth/login/page.tsx` | Sign-in and verification resend states |
+| `/` | `app/page.tsx` | Landing page |
+| `/auth/login` | `app/auth/login/page.tsx` | Sign-in |
 | `/auth/signup` | `app/auth/signup/page.tsx` | Register (donor/hospital toggle) |
+| `/auth/onboarding` | `app/auth/onboarding/page.tsx` | Post-signup profile setup |
 | `/auth/forgot-password` | `app/auth/forgot-password/page.tsx` | Request password reset |
 | `/auth/reset-password` | `app/auth/reset-password/page.tsx` | Set a new password |
 | `/auth/accept-invitation` | `app/auth/accept-invitation/page.tsx` | Accept org staff invite |
@@ -115,85 +74,50 @@ The branch currently includes the live implementation for issues 67–72:
 ### Protected — Donor (`proxy.ts` guards role=donor)
 | Path | Page | Description |
 |---|---|---|
-| `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, stats, critical needs |
-| `/donor/health-profile` | `app/donor/health-profile/page.tsx` | Full health/medical form |
-| `/donor/wallet` | `app/donor/wallet/page.tsx` | Rewards & perk redemption |
+| `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, alerts, critical needs |
+| `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
 
 ### Protected — Hospital
 | Path | Page | Description |
 |---|---|---|
-| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard overview |
-| `/hospital/analytics` | `app/hospital/(dashboard)/analytics/page.tsx` | Analytics + CSV export |
-| `/hospital/directory` | `app/hospital/(dashboard)/directory/page.tsx` | Donor directory / finder |
-| `/hospital/history` | `app/hospital/(dashboard)/history/page.tsx` | Emergency request history |
-| `/hospital/screening` | `app/hospital/(dashboard)/screening/page.tsx` | Donor screening management |
-| `/hospital/staff` | `app/hospital/(dashboard)/staff/page.tsx` | Staff account management |
-| `/hospital/inventory` | `app/hospital/inventory/page.tsx` | Blood search — bento cards + eligible donors |
-| `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Emergency request creation |
-
-### Protected — Admin
-| Path | Page | Description |
-|---|---|---|
-| `/admin` | `app/admin/page.tsx` | **STUB** — system overview |
-| `/admin/verification` | `app/admin/verification/page.tsx` | **STUB** — verification queue |
-| `/admin/contracts` | `app/admin/contracts/page.tsx` | **STUB** — partner contracts |
+| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — create & manage emergency requests |
+| `/hospital/history` | `app/hospital/history/page.tsx` | Emergency request history |
 
 ### API
 | Path | File | Description |
 |---|---|---|
 | `/api/auth/[...all]` | `app/api/auth/[...all]/route.ts` | BetterAuth catch-all |
 
+## Core Loop (Prototype Spec)
+
+1. **Hospital creates emergency request** → `createEmergencyRequest()` in `servers/emergency.ts`
+2. **System matches eligible donors** → `matchDonors()` uses blood compatibility + eligibility + proximity scoring
+3. **Donors alerted** → EmergencyAlert rows created with status `alerted`
+4. **Donor responds** → `respondToAlert()` updates status to `accepted`
+5. **Donor confirms donation** → `donorConfirmDonation()` sets `donorConfirmedAt`
+6. **Hospital confirms** → `confirmDonation()` sets `hospitalConfirmedAt`
+7. **Donation recorded** → `finalizeDonation()` creates Donation row + awards points + sets cooldown
+
 ## Auth Flow
 
-1. **Signup** → `servers/auth.ts:signUpWithProfile()` calls `better-auth` email/password API, creates Wallet for donors, and lets BetterAuth trigger a verification email automatically
-2. **Verification** → `lib/auth.ts` configures `emailVerification.sendVerificationEmail` and `emailAndPassword.sendResetPassword` with Resend templates, and `proxy.ts` redirects any session without `emailVerified` away from protected routes to `/auth/login?verify-required=1`
-3. **Login** → `app/auth/login/page.tsx` authenticates, blocks unverified users from redirecting to a role dashboard, and offers resend/reset recovery flows
-4. **Client** → `authClient.useSession()` from `@/lib/auth-client` provides session to client components
+1. **Signup** → `signUpWithProfile()` creates user via BetterAuth, creates Wallet for donors, creates Organization for hospitals
+2. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name
+3. **Login** → `loginWithRole()` authenticates and redirects to role dashboard
+4. **Client** → `authClient.useSession()` provides session to client components
 
-## Design System (BioMatch)
+## Location & Proximity
 
-The app uses a custom design system built on shadcn/ui CSS variables with the brand color `#C1121F` (`hsl(356, 83%, 41%)`).
-
-### Color System
-- **Brand**: `#C1121F` (--color-brand) for CTAs, accent, icons
-- **Background**: `#FAFAF8` (warm white) page bg, `#FFFFFF` card bg
-- **Text**: `#111110` primary, `#555550` secondary, `#888882` muted
-- **Dark Section**: `#0F0F0E` bg, `#1C1C1A` surface, `#2A2A28` border
-- CSS variables use HSL format in `:root` / `.dark` blocks in `globals.css`
-
-### Typography
-- Font: Geist (via next/font/google, configured in `app/layout.tsx`)
-- Monospace: Geist Mono (via next/font/google, `--font-mono`)
-- Custom sizes in tailwind config: `display-xl` (3.25rem), `display-lg` (2.5rem), `stat` (2.75rem)
-- Eyebrow labels: 11px bold uppercase, `tracking-widest`, brand color
-
-### Component Architecture
-- **shadcn/ui primitives** (`components/ui/`) — Button, Card, etc. with custom variants
-- **Landing sections** (`components/landing/`) — all use brand tokens
-
-### Spacing
-- 8px base grid. Common: 16px (standard), 24px (card), 64px (section mobile), 80px+ (section desktop)
-
-### Shadows
-- `shadow-card`: `0 2px 8px rgba(0,0,0,0.07)`
-- `shadow-card-hover`: `0 8px 32px rgba(0,0,0,0.12)`
-- `shadow-brand`: `0 4px 20px rgba(193,18,31,0.25)`
-
-### Border Radius
-- `rounded-[10px]` buttons/inputs, `rounded-2xl` (14px) cards, `rounded-3xl` (20px) feature cards, `rounded-full` badges
+- Simplified to lat/long coordinates + free text location string
+- `scoreDonorProximity()` in `servers/location.ts` uses haversine distance
+- Score tiers: ≤10km = 4, ≤25km = 3, ≤50km = 2, >50km = 0
+- `proximityPassesThreshold()` applies radius-tiered threshold
 
 ## Key Patterns
 
-- **Layout**: Each role section (`/donor`, `/hospital`, `/admin`) has a `layout.tsx` that wraps children in `<SidebarLayout role="...">`
-- **Server Actions**: All DB logic in `servers/*.ts` with `"use server"` directive. Pages import and call directly.
-- **Data Fetching**: React Query hooks in `hooks/` wrap server actions. Pages use `useQuery`/`useMutation` directly. `QueryClientProvider` in root layout with SSR-safe `makeQueryClient()`.
-- **Styling**: Tailwind utility classes throughout. Custom design system (brand color `#C1121F`) drives all color, typography, spacing.
-- **Sidebar**: `components/layout/sidebar.tsx` uses shadcn `SidebarProvider` + `Sidebar` + `SidebarInset` with `variant="inset"`. Nav items per role with pathname-based active highlighting. Uses `NavMain` (collapsible groups) and `NavUser` (avatar dropdown with `authClient.signOut()`). Extracted into `components/nav-main.tsx` and `components/nav-user.tsx`.
-- **Location Scoring**: Nigerian location hierarchy via `Location` model self-referential FK. Signup/health profile use cascading dropdowns (Region → State → City). Emergency scoring uses `getCommonAncestorDepth()` — same city = 3, state = 2, region = 1. Fallback string matching for users without `locationId`.
-- **Email**: Resend SDK via `lib/email.ts` — sends React Email templates. Set `RESEND_API_KEY` env var for production; logs warning + returns mock ID when absent.
-- **Toast**: Sonner `<Toaster>` in root layout. `toast.error()` / `toast.success()` in page try/catch blocks.
-- **Component Architecture**: Pages own data fetching, state, and callbacks; delegate rendering to extracted presentational components via props.
-- **Hospital Dashboard**: `components/hospital/hospital-dashboard.tsx` owns tab state and radius expansion countdown; delegates to LiveStatusPanel, EmergencyHistory, DonorDirectory (wired to listDonors), AnalyticsDashboard (wired to getHospitalAnalytics), and StaffAccounts (wired to CRUD server actions). No localStorage — all state in React Query cache.
-- **Live Status Panel**: `components/hospital/live-status-panel.tsx` shows funnel metrics (alerted/accepted/declined/en_route/arrived/completed) with expandable donor lists per status; uses `useEmergencyRequestStatus` hook polling every 5s.
-- **Request History**: `components/hospital/emergency-history.tsx` shows past requests with date range, blood type, and status filters; expandable rows show full funnel breakdown with shortfall indicators; paginated via `useEmergencyHistory` hook.
-- **Reusable Components**: `components/dashboard/` for shared UI patterns, `components/donor/` for donor-specific components.
+- **Layout**: Each role section wraps children in `<SidebarLayout role="...">`
+- **Server Actions**: All DB logic in `servers/*.ts` with `"use server"`
+- **Data Fetching**: React Query hooks in `hooks/` wrap server actions
+- **Styling**: Tailwind utility classes with brand color `#C1121F`
+- **Sidebar**: `components/layout/sidebar.tsx` with role-based nav
+- **Email**: Resend SDK via `lib/email.ts` for emergency alert emails
+- **Toast**: Sonner `<Toaster>` in root layout

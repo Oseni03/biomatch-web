@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Calendar } from "lucide-react";
+import { Loader2, Calendar, MapPin, Activity, Heart } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import {
@@ -10,10 +10,7 @@ import {
 } from "@/hooks/use-donor-history";
 import { getEligibility } from "@/lib/eligibility";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
-import { EligibilityBanner } from "@/components/donor/eligibility-banner";
-import { DonationStatsGrid } from "@/components/donor/donation-stats-grid";
-import { LocalDemandCard } from "@/components/donor/local-demand-card";
-import { DonationHistoryTable } from "@/components/donor/donation-history-table";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function DonorHistoryClient() {
 	const { data: session, isPending: sessionLoading } =
@@ -59,8 +56,6 @@ export function DonorHistoryClient() {
 				subtitle="Track your life-saving contributions and local demand"
 			/>
 
-			{eligibility.eligible && lastDonationDate && <EligibilityBanner />}
-
 			{!eligibility.eligible && lastDonationDate && (
 				<div className="bg-status-low-bg border border-status-low/20 rounded-2xl p-4 flex items-center gap-3">
 					<Calendar className="h-5 w-5 text-status-low shrink-0" />
@@ -78,30 +73,72 @@ export function DonorHistoryClient() {
 				</div>
 			)}
 
-			<DonationStatsGrid
-				completedCount={completedCount}
-				points={points}
-				livesImpacted={livesImpacted}
-				emergenciesThisMonth={demandStats?.totalThisMonth ?? 0}
-				demandLoading={demandLoading}
-			/>
+			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+				<div className="rounded-xl border border-border bg-card p-4">
+					<div className="flex items-center gap-2 text-muted-foreground mb-2">
+						<Activity className="h-4 w-4" />
+						<span className="text-xs font-mono uppercase tracking-wider">Donations</span>
+					</div>
+					<p className="text-2xl font-bold">{completedCount}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-card p-4">
+					<div className="flex items-center gap-2 text-muted-foreground mb-2">
+						<Heart className="h-4 w-4" />
+						<span className="text-xs font-mono uppercase tracking-wider">Lives Saved</span>
+					</div>
+					<p className="text-2xl font-bold">{livesImpacted}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-card p-4">
+					<div className="flex items-center gap-2 text-muted-foreground mb-2">
+						<MapPin className="h-4 w-4" />
+						<span className="text-xs font-mono uppercase tracking-wider">Local Requests</span>
+					</div>
+					<p className="text-2xl font-bold">{demandStats?.totalThisMonth ?? 0}</p>
+				</div>
+				<div className="rounded-xl border border-border bg-card p-4">
+					<div className="flex items-center gap-2 text-muted-foreground mb-2">
+						<Activity className="h-4 w-4" />
+						<span className="text-xs font-mono uppercase tracking-wider">Points</span>
+					</div>
+					<p className="text-2xl font-bold">{points}</p>
+				</div>
+			</div>
 
-			{demandStats && demandStats.totalThisMonth > 0 && (
-				<LocalDemandCard
-					location={demandStats.location}
-					totalThisMonth={demandStats.totalThisMonth}
-					criticalThisMonth={demandStats.criticalThisMonth}
-					completedCount={completedCount}
+			<div className="rounded-xl border border-border bg-card overflow-hidden">
+				<div className="p-4 border-b border-border">
+					<h3 className="font-semibold">Donation Records</h3>
+				</div>
+				<div className="divide-y divide-border">
+					{(historyData?.records ?? []).length === 0 ? (
+						<p className="p-8 text-center text-sm text-muted-foreground">
+							No donations yet. Your completed donations will appear here.
+						</p>
+					) : (
+						(historyData?.records ?? []).map((record) => (
+							<div key={record.id} className="p-4 flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium">{record.hospitalName}</p>
+									<p className="text-xs text-muted-foreground">
+										{record.date} &middot; {record.bloodGroup}
+									</p>
+								</div>
+								<span className="text-xs font-mono text-muted-foreground">
+									{record.unitsNeeded} unit{record.unitsNeeded !== 1 ? "s" : ""}
+								</span>
+							</div>
+						))
+					)}
+				</div>
+			</div>
+
+			{historyData && historyData.totalPages > 1 && (
+				<PaginationControls
+					page={page}
+					totalPages={historyData.totalPages}
+					onPageChange={setPage}
+					variant="numbered"
 				/>
 			)}
-
-			<DonationHistoryTable
-				records={historyData?.records ?? []}
-				total={historyData?.total ?? 0}
-				page={historyData?.page ?? page}
-				totalPages={historyData?.totalPages ?? 1}
-				onPageChange={setPage}
-			/>
 		</div>
 	);
 }

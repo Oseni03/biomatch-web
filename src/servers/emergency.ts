@@ -10,7 +10,6 @@ import {
 	ACTIVE_ALERT_STATUSES,
 	POINTS_PER_DONATION,
 } from "@/lib/constants";
-import { getScreenedDonorIds } from "./screening";
 import {
 	INITIAL_RADIUS,
 	MAX_ALERTS_PER_REQUEST,
@@ -75,13 +74,13 @@ async function matchDonors(
 	donors: {
 		id: string;
 		location: string | null;
-		locationId: string | null;
 		name: string;
 		score: number;
 	}[];
 	hospitalLocation: {
 		location: string | null;
-		locationId: string | null;
+		latitude: number | null;
+		longitude: number | null;
 		name: string | null;
 	} | null;
 }> {
@@ -89,7 +88,6 @@ async function matchDonors(
 	const now = new Date();
 	const cutoffDate = getEligibilityCutoffDate(now);
 
-	const screenedDonorIds = await getScreenedDonorIds();
 	const ownerUserId = await getOrganizationOwnerUserId(organizationId);
 
 	const [matchedDonors, requestLocation] = await Promise.all([
@@ -98,7 +96,6 @@ async function matchDonors(
 				role: "donor",
 				isActive: true,
 				bloodGroup: { in: compatibleGroups as any },
-				id: { in: screenedDonorIds },
 				blacklistedAt: null,
 				AND: [
 					{
@@ -115,21 +112,21 @@ async function matchDonors(
 					},
 				],
 			},
-			select: { id: true, location: true, locationId: true, name: true },
+			select: { id: true, location: true, latitude: true, longitude: true, name: true },
 		}),
 		prisma.user.findUnique({
 			where: { id: ownerUserId },
-			select: { location: true, locationId: true, name: true },
+			select: { location: true, latitude: true, longitude: true, name: true },
 		}),
 	]);
 
 	const scored = await Promise.all(
 		matchedDonors.map(async (donor) => {
 			const score = await scoreDonorProximity(
-				donor.locationId,
-				donor.location,
-				requestLocation?.locationId ?? null,
-				requestLocation?.location ?? null,
+				donor.latitude,
+				donor.longitude,
+				requestLocation?.latitude ?? null,
+				requestLocation?.longitude ?? null,
 			);
 			return { ...donor, score };
 		}),
@@ -952,16 +949,6 @@ export async function confirmDonation(alertId: string, staffUserId: string) {
 		donation: ["confirm"],
 	});
 
-	const passedScreening = await prisma.donorScreening.findFirst({
-		where: { alertId, status: "passed" },
-	});
-
-	if (!passedScreening) {
-		throw new Error(
-			"Cannot confirm donation: this donor must pass an on-site screening for this visit first.",
-		);
-	}
-
 	return prisma.$transaction(async (tx) => {
 		const updated = await tx.emergencyAlert.updateMany({
 			where: {
@@ -1096,7 +1083,7 @@ export async function getDonorHistory(userId: string, page = 1, pageSize = 10) {
 export async function getLocalDemandStats(userId: string) {
 	const user = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { location: true, locationId: true },
+		select: { location: true },
 	});
 
 	const startOfMonth = new Date();
@@ -1107,23 +1094,7 @@ export async function getLocalDemandStats(userId: string) {
 		createdAt: { gte: startOfMonth },
 	};
 
-	if (user?.locationId) {
-		const state = await prisma.location.findUnique({
-			where: { id: user.locationId },
-			select: { parentId: true },
-		});
-		const stateId = state?.parentId;
-
-		baseWhere.organization = {
-			hospitalBanks: {
-				some: {
-					locationRel: stateId
-						? { parentId: stateId }
-						: { id: user.locationId },
-				},
-			},
-		};
-	} else if (user?.location) {
+	if (user?.location) {
 		baseWhere.organization = {
 			hospitalBanks: {
 				some: {

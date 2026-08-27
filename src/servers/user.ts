@@ -3,10 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import type { Availability, BloodGroup, Role } from "@generated/prisma/enums";
 import type { Prisma } from "@generated/prisma/client";
-import { buildLocationLabel } from "./location";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
 import { geocodeAddress } from "@/lib/geocoding";
-import { getVerifiedDonorIds } from "./screening";
 
 export async function getUserById(id: string) {
 	return prisma.user.findUnique({
@@ -43,7 +41,7 @@ export async function isDonorProfileComplete(
 	user:
 		| (Pick<
 				Prisma.UserGetPayload<{}>,
-				"name" | "bloodGroup" | "location" | "locationId" | "availability" | "updatedHealthInfo"
+				"name" | "bloodGroup" | "location" | "availability" | "updatedHealthInfo"
 		  > & { wallet?: unknown })
 		| null
 		| undefined,
@@ -68,7 +66,7 @@ export async function isDonorProfileComplete(
 	return Boolean(
 		user.name?.trim() &&
 			user.bloodGroup &&
-			(user.locationId || user.location?.trim()) &&
+			user.location?.trim() &&
 			user.availability &&
 			hasRequiredHealth,
 	);
@@ -83,24 +81,15 @@ export async function updateUserProfile(
 		updatedHealthInfo?: any;
 		lastDonationDate?: Date;
 		location?: string;
-		locationId?: string;
 		availability?: Availability;
 		isActive?: boolean;
 	},
 ) {
 	const updateData: Record<string, unknown> = { ...data };
-	delete updateData.locationId;
 
-	let resolvedLocation = data.location?.trim();
-	if (data.locationId) {
-		resolvedLocation = await buildLocationLabel(data.locationId);
-		updateData.locationId = data.locationId;
-		updateData.location = resolvedLocation;
-	}
-
-	if (resolvedLocation) {
+	if (data.location?.trim()) {
 		try {
-			const geocode = await geocodeAddress(resolvedLocation);
+			const geocode = await geocodeAddress(data.location);
 			if (geocode) {
 				updateData.address = geocode.formattedAddress;
 				updateData.latitude = geocode.latitude;
@@ -109,7 +98,7 @@ export async function updateUserProfile(
 		} catch (error) {
 			console.warn("Geocoding failed while saving donor profile:", {
 				userId: id,
-				location: resolvedLocation,
+				location: data.location,
 				error,
 			});
 		}
@@ -168,7 +157,6 @@ export async function listDonors(filters?: ListDonorsFilters) {
 			{ lastDonationDate: null },
 			{ lastDonationDate: { lt: cutoff } },
 		];
-		where.id = { in: await getVerifiedDonorIds() };
 	}
 
 	if (filters?.search) {
@@ -186,7 +174,6 @@ export async function listDonors(filters?: ListDonorsFilters) {
 				genotype: true,
 				lastDonationDate: true,
 				location: true,
-				locationId: true,
 				deferredUntil: true,
 				blacklistedAt: true,
 			},

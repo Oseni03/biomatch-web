@@ -62,8 +62,8 @@ export default function SignupPage() {
 			return;
 		}
 
-		toast.success("Registration successful! Check your inbox to verify your email.");
-		router.push(`/auth/login?email=${encodeURIComponent(email)}`);
+		toast.success("Registration successful! Complete your profile to continue.");
+		router.push("/auth/onboarding");
 	};
 
 	return (

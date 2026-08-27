@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import {
 	Bell,
 	Users,
-	BarChart,
-	UserPlus,
 	History,
 	Activity,
 	CheckCircle2,
@@ -17,22 +15,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 
 const TABS = [
 	{ href: "/hospital", label: "Active Match Broadcasts", icon: Bell },
-	{
-		href: "/hospital/directory",
-		label: "Proactive Donor Directory",
-		icon: Users,
-	},
-	{
-		href: "/hospital/analytics",
-		label: "Analytics & Reports",
-		icon: BarChart,
-	},
 	{ href: "/hospital/history", label: "Request History", icon: History },
-	{
-		href: "/hospital/staff",
-		label: "Hospital Staff Accounts",
-		icon: UserPlus,
-	},
 ];
 
 interface HospitalDashboardShellProps {

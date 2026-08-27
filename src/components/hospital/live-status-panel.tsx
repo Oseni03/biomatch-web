@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { displayBloodGroup } from "@/lib/donor-types";
 import type { getPendingEmergencyRequestsForOrganization } from "@/servers/emergency";
-import { DonorStageList } from "@/components/hospital/donor-stage-list";
 
 type PendingRequest = Awaited<
 	ReturnType<typeof getPendingEmergencyRequestsForOrganization>
@@ -149,13 +148,26 @@ export function LiveStatusPanel({
 			</div>
 
 			{expandedStatus && (
-				<DonorStageList
-					statusKey={expandedStatus}
-					config={STATUS_CONFIG.find((s) => s.key === expandedStatus)}
-					alerts={request.alerts}
-					organizationId={organizationId}
-					onClose={() => setExpandedStatus(null)}
-				/>
+				<div className="border-t border-border pt-4">
+					<p className="text-xs font-mono uppercase text-muted-foreground mb-2">
+						{STATUS_CONFIG.find((s) => s.key === expandedStatus)?.label} Donors
+					</p>
+					<div className="space-y-2">
+						{request.alerts
+							.filter((a) => a.status === expandedStatus)
+							.map((a) => (
+								<div key={a.id} className="flex items-center justify-between text-sm">
+									<span>{a.donor.name}</span>
+									<span className="text-xs text-muted-foreground">
+										{displayBloodGroup(a.donor.bloodGroup)}
+									</span>
+								</div>
+							))}
+						{request.alerts.filter((a) => a.status === expandedStatus).length === 0 && (
+							<p className="text-xs text-muted-foreground">No donors in this stage</p>
+						)}
+					</div>
+				</div>
 			)}
 
 			<div className="flex items-center gap-2 text-xs text-muted-foreground border-t border-border pt-4">

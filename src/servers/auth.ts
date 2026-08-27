@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { buildLocationLabel } from "./location";
 import { createHospitalBank } from "./hospital";
 import type { Availability } from "@generated/prisma/enums";
 
@@ -32,7 +31,7 @@ export async function signUpWithProfile(formData: {
 	password: string;
 	fullName: string;
 	role: "donor" | "hospital" | "admin";
-	locationId?: string;
+	location?: string;
 	availability?: Availability;
 	isActive?: boolean;
 }) {
@@ -41,7 +40,7 @@ export async function signUpWithProfile(formData: {
 		password,
 		fullName,
 		role,
-		locationId,
+		location,
 		availability,
 		isActive,
 	} = formData;
@@ -68,11 +67,7 @@ export async function signUpWithProfile(formData: {
 
 			const updateData: Record<string, unknown> = {};
 
-			if (locationId) {
-				updateData.locationId = locationId;
-				updateData.location = await buildLocationLabel(locationId);
-			}
-
+			if (location) updateData.location = location;
 			if (availability !== undefined)
 				updateData.availability = availability;
 			if (isActive !== undefined) updateData.isActive = isActive;

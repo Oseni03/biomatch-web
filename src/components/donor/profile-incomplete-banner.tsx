@@ -1,6 +1,4 @@
 import { AlertCircle } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export function ProfileIncompleteBanner() {
 	return (
@@ -15,9 +13,6 @@ export function ProfileIncompleteBanner() {
 					emergency donation requests.
 				</p>
 			</div>
-			<Button asChild size="sm">
-				<Link href="/donor/health-profile">Complete Profile</Link>
-			</Button>
 		</div>
 	);
 }
