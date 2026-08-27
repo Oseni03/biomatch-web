@@ -26,6 +26,12 @@ export const auth = betterAuth({
 	},
 	advanced: {
 		database: { generateId: () => crypto.randomUUID() },
+		trustedOrigins: [
+			baseUrl,
+			"https://www.biomatchlimited.org",
+			"https://biomatchlimited.org",
+			...(process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",").map((o) => o.trim()) ?? []),
+		],
 	},
 	user: {
 		additionalFields: {
