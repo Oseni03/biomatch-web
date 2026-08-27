@@ -46,7 +46,7 @@ export function EmergencyAlertsFeed({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex justify-between items-center bg-card border-border rounded-xl p-6 shadow-sm transition-shadow hover:shadow-card-hover">
+			<div className="flex justify-between items-center bg-card border-border rounded-2xl p-6 shadow-sm transition-shadow hover:shadow-card-hover">
 				<div>
 					<h3 className="font-bold flex items-center gap-2 text-brand">
 						<Bell className="h-5 w-5" />
@@ -67,7 +67,7 @@ export function EmergencyAlertsFeed({
 
 			<div className="space-y-4">
 				{requests.length === 0 ? (
-					<div className="bg-card border-border rounded-xl p-10 text-center text-muted-foreground">
+					<div className="bg-card border-border rounded-2xl p-10 text-center text-muted-foreground">
 						No active emergency alerts currently matching your
 						criteria. Thank you for your availability!
 					</div>

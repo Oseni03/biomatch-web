@@ -5,21 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-} from "@/components/ui/card";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
-
-const STATS = [
-	{ value: "2.3x", label: "Faster response" },
-	{ value: "94%", label: "Donor activation" },
-	{ value: "99.2%", label: "Match accuracy" },
-];
+import { AuthCard } from "@/components/auth/auth-card";
+import { AuthFormField } from "@/components/auth/auth-form-field";
+import { AUTH_STATS } from "@/components/auth/auth-constants";
 
 export default function ResetPasswordPage() {
 	const router = useRouter();
@@ -94,105 +83,69 @@ export default function ResetPasswordPage() {
 				</>
 			}
 			description="Create a secure password for your BioMatch account."
-			stats={STATS}
+			stats={AUTH_STATS}
 		>
-			<Card className="rounded-3xl p-2">
-				<CardHeader className="relative pb-2 pt-6 text-center">
-					<div className="mx-auto mb-4 flex h-10 w-10 scale-100 items-center justify-center rounded-2xl bg-brand transition-transform duration-300 hover:scale-105">
-						<BloodDropIcon className="h-5 w-5 text-white" />
+			<AuthCard
+				icon={<Lock className="h-5 w-5 text-white" />}
+				title="Reset password"
+				description="Set a new password for your account."
+			>
+				{message && (
+					<div
+						className={`mb-6 rounded-2xl border p-4 text-sm ${
+							status === "success"
+								? "border-emerald-500/20 bg-emerald-500/5 text-emerald-700"
+								: "border-brand/20 bg-brand-light text-brand"
+						}`}
+					>
+						{message}
 					</div>
-					<CardTitle className="text-3xl font-semibold tracking-tighter">
-						Reset password
-					</CardTitle>
-					<CardDescription className="mt-2 text-sm text-muted-foreground">
-						Set a new password for your account.
-					</CardDescription>
-				</CardHeader>
+				)}
 
-				<CardContent className="p-6 pt-0">
-					{message && (
-						<div
-							className={`mb-6 rounded-2xl border p-4 text-sm ${
-								status === "success"
-									? "border-emerald-500/20 bg-emerald-500/5 text-emerald-700"
-									: "border-brand/20 bg-brand-light text-brand"
-							}`}
-						>
-							{message}
-						</div>
-					)}
-
-					{!isReady ? (
-						<div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-							This reset page needs a valid token from the email we sent you.
-						</div>
-					) : (
-						<form onSubmit={handleSubmit} className="space-y-6">
-							<div>
-								<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-									New Password
-								</label>
-								<div className="relative">
-									<span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-										<Lock className="h-4 w-4" />
-									</span>
-									<input
-										type={showPassword ? "text" : "password"}
-										value={newPassword}
-										onChange={(event) => setNewPassword(event.target.value)}
-										placeholder="At least 8 characters"
-										className="w-full rounded-2xl border-border bg-muted py-4 pl-11 pr-12 text-sm transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-										required
-									/>
-									<button
-										type="button"
-										onClick={() => setShowPassword(!showPassword)}
-										className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-foreground"
-									>
-										{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-									</button>
-								</div>
-							</div>
-
-							<div>
-								<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-									Confirm Password
-								</label>
-								<div className="relative">
-									<span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-										<Lock className="h-4 w-4" />
-									</span>
-									<input
-										type={showPassword ? "text" : "password"}
-										value={confirmPassword}
-										onChange={(event) => setConfirmPassword(event.target.value)}
-										placeholder="Repeat your new password"
-										className="w-full rounded-2xl border-border bg-muted py-4 pl-11 pr-4 text-sm transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-										required
-									/>
-								</div>
-							</div>
-
-							<Button
-								type="submit"
-								disabled={isLoading}
-								className="w-full rounded-2xl py-6 text-sm font-medium"
-							>
-								{isLoading ? "Updating password..." : "Update password"}
-							</Button>
-						</form>
-					)}
-
-					<div className="mt-8 border-t border-border pt-6 text-center">
-						<Link
-							href="/auth/login"
-							className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-						>
-							Back to login
-						</Link>
+				{!isReady ? (
+					<div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+						This reset page needs a valid token from the email we sent you.
 					</div>
-				</CardContent>
-			</Card>
+				) : (
+					<form onSubmit={handleSubmit} className="space-y-5">
+						<AuthFormField
+							label="New Password"
+							icon="lock"
+							type="password"
+							value={newPassword}
+							onChange={setNewPassword}
+							placeholder="At least 8 characters"
+							required
+						/>
+						<AuthFormField
+							label="Confirm Password"
+							icon="lock"
+							type="password"
+							value={confirmPassword}
+							onChange={setConfirmPassword}
+							placeholder="Repeat your new password"
+							required
+						/>
+
+						<Button
+							type="submit"
+							disabled={isLoading}
+							className="w-full rounded-2xl py-6 text-sm font-medium"
+						>
+							{isLoading ? "Updating password..." : "Update password"}
+						</Button>
+					</form>
+				)}
+
+				<div className="mt-8 border-t border-border pt-6 text-center">
+					<Link
+						href="/auth/login"
+						className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+					>
+						Back to login
+					</Link>
+				</div>
+			</AuthCard>
 		</AuthShell>
 	);
 }

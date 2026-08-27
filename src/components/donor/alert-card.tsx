@@ -62,7 +62,7 @@ export function AlertCard({
 }: AlertCardProps) {
 	return (
 		<div
-			className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 relative overflow-hidden hover:shadow-card-hover ${
+			className={`bg-card border border-border rounded-2xl p-6 transition-all duration-300 relative overflow-hidden hover:shadow-card-hover ${
 				isApproved ? "border-status-ok/40" : ""
 			} ${isDeclined ? "opacity-50" : ""}`}
 		>

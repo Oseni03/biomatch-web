@@ -10,7 +10,7 @@ interface DeclinedAlertRowProps {
 
 export function DeclinedAlertRow({ request, onToggle }: DeclinedAlertRowProps) {
 	return (
-		<div className="bg-muted border-border rounded-xl p-4">
+		<div className="bg-muted border-border rounded-2xl p-4">
 			<button
 				onClick={onToggle}
 				className="w-full flex items-center justify-between text-left"

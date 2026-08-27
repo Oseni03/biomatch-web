@@ -83,7 +83,7 @@ export function LiveStatusPanel({
 	const totalDonors = request.alerts.length;
 
 	return (
-		<div className="bg-card border-border rounded-xl p-6 shadow-sm space-y-6 transition-shadow hover:shadow-card-hover">
+		<div className="bg-card border-border rounded-2xl p-6 shadow-sm space-y-6 transition-shadow hover:shadow-card-hover">
 			<div className="flex items-center justify-between flex-wrap gap-2">
 				<div>
 					<h3 className="font-bold text-lg text-foreground">

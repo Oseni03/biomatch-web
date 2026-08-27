@@ -1,9 +1,18 @@
+"use client";
+
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { displayBloodGroup, BLOOD_GROUP_MAP } from "@/lib/donor-types";
 
 const BLOOD_GROUPS = Object.keys(BLOOD_GROUP_MAP);
-const STATUS_OPTIONS = ["fulfilled", "expired", "cancelled"];
+const STATUS_OPTIONS = ["fulfilled", "expired", "cancelled"] as const;
 
 const STATUS_LABELS: Record<string, string> = {
 	fulfilled: "Fulfilled",
@@ -35,7 +44,7 @@ export function HistoryFilterBar({
 	onApply,
 }: HistoryFilterBarProps) {
 	return (
-		<div className="bg-card border-border rounded-xl p-5 shadow-sm transition-shadow hover:shadow-card-hover">
+		<div className="bg-card border-border rounded-2xl p-5 shadow-sm transition-shadow hover:shadow-card-hover">
 			<div className="flex items-center gap-2 mb-4">
 				<Filter className="h-4 w-4 text-muted-foreground" />
 				<span className="text-sm font-semibold text-foreground">
@@ -69,35 +78,37 @@ export function HistoryFilterBar({
 					<label className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block mb-1">
 						Blood Type
 					</label>
-					<select
-						value={bloodFilter}
-						onChange={(e) => onBloodFilterChange(e.target.value)}
-						className="w-full rounded-xl border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-					>
-						<option value="">All Types</option>
-						{BLOOD_GROUPS.map((bg) => (
-							<option key={bg} value={bg}>
-								{displayBloodGroup(bg)}
-							</option>
-						))}
-					</select>
+					<Select value={bloodFilter} onValueChange={onBloodFilterChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="All Types" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">All Types</SelectItem>
+							{BLOOD_GROUPS.map((bg) => (
+								<SelectItem key={bg} value={bg}>
+									{displayBloodGroup(bg)}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 				<div>
 					<label className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block mb-1">
 						Status
 					</label>
-					<select
-						value={statusFilter}
-						onChange={(e) => onStatusFilterChange(e.target.value)}
-						className="w-full rounded-xl border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-					>
-						<option value="">All Statuses</option>
-						{STATUS_OPTIONS.map((s) => (
-							<option key={s} value={s}>
-								{STATUS_LABELS[s] ?? s}
-							</option>
-						))}
-					</select>
+					<Select value={statusFilter} onValueChange={onStatusFilterChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="All Statuses" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">All Statuses</SelectItem>
+							{STATUS_OPTIONS.map((s) => (
+								<SelectItem key={s} value={s}>
+									{STATUS_LABELS[s] ?? s}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 				<div className="flex items-end">
 					<Button onClick={onApply} className="w-full">

@@ -3,24 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-} from "@/components/ui/card";
-import { authClient } from "@/lib/auth-client";
-import { AuthShell } from "@/components/auth/auth-shell";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
-
-const STATS = [
-	{ value: "2.3x", label: "Faster response" },
-	{ value: "94%", label: "Donor activation" },
-	{ value: "99.2%", label: "Match accuracy" },
-];
+import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthCard } from "@/components/auth/auth-card";
+import { AuthFormField } from "@/components/auth/auth-form-field";
+import { AUTH_STATS } from "@/components/auth/auth-constants";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -119,123 +109,85 @@ export default function LoginPage() {
 				</>
 			}
 			description="Every donor and hospital on BioMatch is verified in real time — pick up right where you left off."
-			stats={STATS}
+			stats={AUTH_STATS}
 		>
-			<Card className="rounded-3xl p-2">
-				<CardHeader className="relative pb-2 pt-6 text-center">
-					<div className="mx-auto mb-4 flex h-10 w-10 scale-100 items-center justify-center rounded-2xl bg-brand transition-transform duration-300 hover:scale-105">
-						<BloodDropIcon className="h-5 w-5 text-white" />
+			<AuthCard
+				icon={<BloodDropIcon className="h-5 w-5 text-white" />}
+				title="Welcome back"
+				description="Sign in to access your dashboard"
+			>
+				{error && (
+					<div className="mb-6 rounded-2xl border border-brand/20 bg-brand-light p-4 text-sm text-brand">
+						{error}
 					</div>
-					<CardTitle className="text-3xl font-semibold tracking-tighter">
-						Welcome back
-					</CardTitle>
-					<CardDescription className="mt-2 text-sm text-muted-foreground">
-						Sign in to access your dashboard
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent className="p-6 pt-0">
-					{error && (
-						<div className="mb-6 rounded-2xl border border-brand/20 bg-brand-light p-4 text-sm text-brand">
-							{error}
-						</div>
-					)}
-					{success && (
-						<div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
-							{success}
-						</div>
-					)}
-
-					<form onSubmit={handleSubmit} className="space-y-6">
-						<div>
-							<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-								Email Address
-							</label>
-							<div className="relative">
-								<span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-									<Mail className="h-4 w-4" />
-								</span>
-								<input
-									type="email"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									placeholder="example@biomatch.org"
-									className="w-full rounded-2xl border-border bg-muted py-4 pl-11 pr-4 text-sm transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-									required
-								/>
-							</div>
-						</div>
-
-						<div>
-							<div className="mb-2 flex items-center justify-between">
-								<label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-									Password
-								</label>
-								<Link
-									href="/auth/forgot-password"
-									className="cursor-pointer text-xs text-brand hover:text-brand-hover"
-								>
-									Forgot password?
-								</Link>
-							</div>
-							<div className="relative">
-								<span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-									<Lock className="h-4 w-4" />
-								</span>
-								<input
-									type={showPassword ? "text" : "password"}
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									placeholder="••••••••"
-									className="w-full rounded-2xl border-border bg-muted py-4 pl-11 pr-12 text-sm transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-									required
-								/>
-								<button
-									type="button"
-									onClick={() => setShowPassword(!showPassword)}
-									className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-foreground"
-								>
-									{showPassword ? (
-										<EyeOff className="h-4 w-4" />
-									) : (
-										<Eye className="h-4 w-4" />
-									)}
-								</button>
-							</div>
-						</div>
-
-						<Button
-							type="submit"
-							disabled={isLoading}
-							className="w-full rounded-2xl py-6 text-sm font-medium"
-						>
-							{isLoading ? "Authenticating..." : "Sign in"}
-						</Button>
-
-						<Button
-							type="button"
-							variant="outline"
-							disabled={isLoading}
-							onClick={handleResendVerification}
-							className="w-full rounded-2xl py-6 text-sm font-medium"
-						>
-							Resend verification email
-						</Button>
-					</form>
-
-					<div className="mt-8 border-t border-border pt-6 text-center">
-						<p className="text-sm text-muted-foreground">
-							Don&apos;t have an account?{" "}
-							<Link
-								href="/auth/signup"
-								className="font-medium text-brand hover:text-brand-hover"
-							>
-								Register here
-							</Link>
-						</p>
+				)}
+				{success && (
+					<div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
+						{success}
 					</div>
-				</CardContent>
-			</Card>
+				)}
+
+				<form onSubmit={handleSubmit} className="space-y-5">
+					<AuthFormField
+						label="Email Address"
+						icon="mail"
+						type="email"
+						value={email}
+						onChange={setEmail}
+						placeholder="example@biomatch.org"
+						required
+					/>
+					<AuthFormField
+						label="Password"
+						icon="lock"
+						type="password"
+						value={password}
+						onChange={setPassword}
+						placeholder="••••••••"
+						required
+					/>
+
+					<div className="flex items-center justify-between">
+						<span />
+						<Link
+							href="/auth/forgot-password"
+							className="text-xs text-brand hover:text-brand-hover transition-colors"
+						>
+							Forgot password?
+						</Link>
+					</div>
+
+					<Button
+						type="submit"
+						disabled={isLoading}
+						className="w-full rounded-2xl py-6 text-sm font-medium"
+					>
+						{isLoading ? "Authenticating..." : "Sign in"}
+					</Button>
+
+					<Button
+						type="button"
+						variant="outline"
+						disabled={isLoading}
+						onClick={handleResendVerification}
+						className="w-full rounded-2xl py-6 text-sm font-medium"
+					>
+						Resend verification email
+					</Button>
+				</form>
+
+				<div className="mt-8 border-t border-border pt-6 text-center">
+					<p className="text-sm text-muted-foreground">
+						Don&apos;t have an account?{" "}
+						<Link
+							href="/auth/signup"
+							className="font-medium text-brand hover:text-brand-hover transition-colors"
+						>
+							Register here
+						</Link>
+					</p>
+				</div>
+			</AuthCard>
 		</AuthShell>
 	);
 }

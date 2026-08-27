@@ -10,6 +10,7 @@ import {
 } from "@/hooks/use-donor-history";
 import { getEligibility } from "@/lib/eligibility";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function DonorHistoryClient() {
@@ -74,34 +75,26 @@ export function DonorHistoryClient() {
 			)}
 
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-				<div className="rounded-xl border border-border bg-card p-4">
-					<div className="flex items-center gap-2 text-muted-foreground mb-2">
-						<Activity className="h-4 w-4" />
-						<span className="text-xs font-mono uppercase tracking-wider">Donations</span>
-					</div>
-					<p className="text-2xl font-bold">{completedCount}</p>
-				</div>
-				<div className="rounded-xl border border-border bg-card p-4">
-					<div className="flex items-center gap-2 text-muted-foreground mb-2">
-						<Heart className="h-4 w-4" />
-						<span className="text-xs font-mono uppercase tracking-wider">Lives Saved</span>
-					</div>
-					<p className="text-2xl font-bold">{livesImpacted}</p>
-				</div>
-				<div className="rounded-xl border border-border bg-card p-4">
-					<div className="flex items-center gap-2 text-muted-foreground mb-2">
-						<MapPin className="h-4 w-4" />
-						<span className="text-xs font-mono uppercase tracking-wider">Local Requests</span>
-					</div>
-					<p className="text-2xl font-bold">{demandStats?.totalThisMonth ?? 0}</p>
-				</div>
-				<div className="rounded-xl border border-border bg-card p-4">
-					<div className="flex items-center gap-2 text-muted-foreground mb-2">
-						<Activity className="h-4 w-4" />
-						<span className="text-xs font-mono uppercase tracking-wider">Points</span>
-					</div>
-					<p className="text-2xl font-bold">{points}</p>
-				</div>
+				<StatCard
+					icon={Activity}
+					label="Donations"
+					value={String(completedCount)}
+				/>
+				<StatCard
+					icon={Heart}
+					label="Lives Saved"
+					value={String(livesImpacted)}
+				/>
+				<StatCard
+					icon={MapPin}
+					label="Local Requests"
+					value={String(demandStats?.totalThisMonth ?? 0)}
+				/>
+				<StatCard
+					icon={Activity}
+					label="Points"
+					value={String(points)}
+				/>
 			</div>
 
 			<div className="rounded-xl border border-border bg-card overflow-hidden">

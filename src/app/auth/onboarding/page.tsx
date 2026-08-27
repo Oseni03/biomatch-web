@@ -3,20 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-	CardDescription,
-} from "@/components/ui/card";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthCard } from "@/components/auth/auth-card";
+import { AuthFormField } from "@/components/auth/auth-form-field";
+import { AUTH_STATS } from "@/components/auth/auth-constants";
 import { authClient } from "@/lib/auth-client";
 import { updateUserProfile } from "@/servers/user";
 import { toast } from "sonner";
-import { AuthShell } from "@/components/auth/auth-shell";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 
-const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 
 const BG_ENUM: Record<string, string> = {
 	"A+": "A_PLUS",
@@ -28,12 +24,6 @@ const BG_ENUM: Record<string, string> = {
 	"O+": "O_PLUS",
 	"O-": "O_MINUS",
 };
-
-const STATS = [
-	{ value: "2.3x", label: "Faster response" },
-	{ value: "94%", label: "Donor activation" },
-	{ value: "99.2%", label: "Match accuracy" },
-];
 
 export default function OnboardingPage() {
 	const router = useRouter();
@@ -112,90 +102,72 @@ export default function OnboardingPage() {
 					? "Tell us your blood group so we can match you with emergencies."
 					: "Confirm your organization name to start creating emergency requests."
 			}
-			stats={STATS}
+			stats={AUTH_STATS}
 		>
-			<Card className="rounded-3xl p-2">
-				<CardHeader className="relative pb-2 pt-6 text-center">
-					<div className="mx-auto mb-4 flex h-10 w-10 scale-100 items-center justify-center rounded-2xl bg-brand transition-transform duration-300 hover:scale-105">
-						<BloodDropIcon className="h-5 w-5 text-white" />
-					</div>
-					<CardTitle className="text-3xl font-semibold tracking-tighter">
-						{role === "donor" ? "Donor Profile" : "Hospital Setup"}
-					</CardTitle>
-					<CardDescription className="mt-2 text-sm text-muted-foreground">
-						{role === "donor"
-							? "This information helps us match you with the right emergencies."
-							: "Your organization is ready. Confirm the name to continue."}
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent className="p-6 pt-0">
-					<form onSubmit={handleSubmit} className="space-y-6">
-						{role === "donor" && (
-							<>
-								<div>
-									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-										Blood Group *
-									</label>
-									<div className="grid grid-cols-4 gap-2">
-										{BLOOD_GROUPS.map((bg) => (
-											<button
-												key={bg}
-												type="button"
-												onClick={() => setBloodGroup(bg)}
-												className={`cursor-pointer rounded-xl border px-3 py-2 text-sm font-medium transition-all ${
-													bloodGroup === bg
-														? "border-brand bg-brand-light text-brand"
-														: "border-border bg-muted text-muted-foreground hover:border-brand/50"
-												}`}
-											>
-												{bg}
-											</button>
-										))}
-									</div>
-								</div>
-
-								<div>
-									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-										Phone Number (optional)
-									</label>
-									<input
-										type="tel"
-										value={phone}
-										onChange={(e) => setPhone(e.target.value)}
-										placeholder="08012345678"
-										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-									/>
-								</div>
-							</>
-						)}
-
-						{role === "hospital" && (
+			<AuthCard
+				icon={<BloodDropIcon className="h-5 w-5 text-white" />}
+				title={role === "donor" ? "Donor Profile" : "Hospital Setup"}
+				description={
+					role === "donor"
+						? "This information helps us match you with the right emergencies."
+						: "Your organization is ready. Confirm the name to continue."
+				}
+			>
+				<form onSubmit={handleSubmit} className="space-y-5">
+					{role === "donor" && (
+						<>
 							<div>
-								<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-									Organization Name *
+								<label className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+									Blood Group <span className="text-brand">*</span>
 								</label>
-								<input
-									type="text"
-									value={orgName}
-									onChange={(e) => setOrgName(e.target.value)}
-									placeholder="e.g. Red Cross Hospital"
-									className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-									required
-								/>
+								<div className="grid grid-cols-4 gap-2">
+									{BLOOD_GROUPS.map((bg) => (
+										<button
+											key={bg}
+											type="button"
+											onClick={() => setBloodGroup(bg)}
+											className={`cursor-pointer rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
+												bloodGroup === bg
+													? "border-brand bg-brand-light text-brand"
+													: "border-border bg-muted text-muted-foreground hover:border-brand/50"
+											}`}
+										>
+											{bg}
+										</button>
+									))}
+								</div>
 							</div>
-						)}
 
-						<Button
-							type="submit"
-							disabled={isLoading}
-							className="w-full rounded-2xl py-6 text-sm font-medium"
-						>
-							{isLoading ? "Saving..." : "Complete Setup"}
-						</Button>
-					</form>
-				</CardContent>
-			</Card>
+							<AuthFormField
+								label="Phone Number (optional)"
+								icon="phone"
+								type="tel"
+								value={phone}
+								onChange={setPhone}
+								placeholder="08012345678"
+							/>
+						</>
+					)}
+
+					{role === "hospital" && (
+						<AuthFormField
+							label="Organization Name"
+							value={orgName}
+							onChange={setOrgName}
+							placeholder="e.g. Red Cross Hospital"
+							required
+						/>
+					)}
+
+					<Button
+						type="submit"
+						disabled={isLoading}
+						className="w-full rounded-2xl py-6 text-sm font-medium"
+					>
+						{isLoading ? "Saving..." : "Complete Setup"}
+					</Button>
+				</form>
+			</AuthCard>
 		</AuthShell>
 	);
 }

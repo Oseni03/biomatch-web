@@ -1,6 +1,11 @@
 import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export function ProfileIncompleteBanner() {
+interface ProfileIncompleteBannerProps {
+	onClick?: () => void;
+}
+
+export function ProfileIncompleteBanner({ onClick }: ProfileIncompleteBannerProps) {
 	return (
 		<div className="bg-status-low-bg border border-status-low/20 rounded-2xl p-4 flex items-center gap-3">
 			<AlertCircle className="h-5 w-5 text-status-low shrink-0" />
@@ -13,6 +18,9 @@ export function ProfileIncompleteBanner() {
 					emergency donation requests.
 				</p>
 			</div>
+			<Button size="sm" onClick={onClick}>
+				Complete Profile
+			</Button>
 		</div>
 	);
 }

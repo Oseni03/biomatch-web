@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-	Bell,
 	LayoutDashboard,
 	AlertTriangle,
 	History,
@@ -15,7 +14,6 @@ import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
 	SidebarContent,
@@ -31,7 +29,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
-import { cn } from "@/lib/utils";
 
 type Role = "donor" | "hospital";
 
@@ -103,13 +100,12 @@ export function SidebarLayout({
 							{SECTION_LABELS[role]}
 						</h1>
 						</div>
-						<div className="ml-auto flex items-center gap-1.5">
-							<TopBarActions role={role} alertCount={alertCount} />
-							<Separator
-								orientation="vertical"
-								className="mx-1 h-5"
-							/>
-							<NavUser
+					<div className="ml-auto flex items-center gap-1.5">
+						<Separator
+							orientation="vertical"
+							className="mx-1 h-5"
+						/>
+						<NavUser
 								user={{
 									name: userName ?? "BioMatch User",
 									email: role,
@@ -122,84 +118,6 @@ export function SidebarLayout({
 				</div>
 			</SidebarInset>
 		</SidebarProvider>
-	);
-}
-
-function BadgeCount({
-	count,
-	className,
-}: {
-	count: number;
-	className?: string;
-}) {
-	if (count <= 0) return null;
-	return (
-		<span
-			className={cn(
-				"absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white leading-none",
-				className,
-			)}
-		>
-			{count > 9 ? "9+" : count}
-		</span>
-	);
-}
-
-function TopBarActions({
-	role,
-	alertCount,
-}: {
-	role: Role;
-	alertCount: number;
-}) {
-	return (
-		<>
-			{/* {role === "hospital" && (
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					className={cn(
-						"relative text-destructive hover:text-destructive hover:bg-destructive/10",
-						alertCount > 0 && "animate-pulse",
-					)}
-					asChild
-				>
-					<Link href="/hospital/emergency">
-						<AlertTriangle className="size-4" />
-						<span className="sr-only">Emergency Request</span>
-					</Link>
-				</Button>
-			)}
-			{role === "donor" && (
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					className={cn(
-						"relative text-destructive hover:text-destructive hover:bg-destructive/10",
-						alertCount > 0 && "animate-pulse",
-					)}
-					asChild
-				>
-					<Link href="/donor">
-						<AlertTriangle className="size-4" />
-						<BadgeCount
-							count={alertCount}
-							className="bg-destructive"
-						/>
-						<span className="sr-only">Active Alerts</span>
-					</Link>
-				</Button>
-			)}
-			<Button
-				variant="ghost"
-				size="icon-sm"
-				className="relative text-muted-foreground hover:text-foreground"
-			>
-				<Bell className="size-4" />
-				<BadgeCount count={alertCount} className="bg-brand" />
-				<span className="sr-only">Notifications</span>
-			</Button> */}
-		</>
 	);
 }
 
