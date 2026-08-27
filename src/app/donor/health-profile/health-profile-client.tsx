@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Save, Loader2, CheckCircle2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { getUserById, updateUserProfile } from "@/servers/user";
@@ -38,8 +37,6 @@ interface ProfileFormState {
 export function HealthProfileClient() {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
-	const searchParams = useSearchParams();
-	const profileRequired = searchParams.get("required") === "1";
 	const [form, setForm] = useState<ProfileFormState>({
 		full_name: "",
 		blood_group: "",
@@ -203,11 +200,6 @@ export function HealthProfileClient() {
 
 	return (
 		<div className="max-w-3xl space-y-8">
-			{profileRequired && (
-				<div className="rounded-2xl border border-brand/20 bg-brand/5 p-4 text-sm text-foreground">
-					Complete your donor profile to unlock emergency match requests. Your progress is saved as you go.
-				</div>
-			)}
 			<DashboardGreeting
 				title="Health Profile"
 				subtitle="Keep this accurate — hospitals rely on it to confirm safe, eligible matches."

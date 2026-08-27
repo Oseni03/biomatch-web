@@ -5,7 +5,7 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 ## Issue Map
 
 | # | Type | Title | Blocked By | HITL/AFK | Status |
-|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|
 | 01 | AFK | Emergency Request + Matching Engine | — | AFK | ✅ |
 | 02 | AFK | Donor Alert & Response (In-App) | 01 | AFK | ✅ |
 | 03 | AFK | Radius Expansion | 02 | AFK | ✅ |

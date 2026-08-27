@@ -72,19 +72,6 @@ export default function VerificationEmail({
 						alerts.
 					</Text>
 
-					<Section
-						style={{
-							backgroundColor: "#f3f4f6",
-							borderRadius: 8,
-							padding: 16,
-							marginBottom: 24,
-						}}
-					>
-						<Text style={{ margin: 0, color: "#374151" }}>
-							This link will verify your account and unlock protected routes.
-						</Text>
-					</Section>
-
 					<Button
 						href={verifyUrl}
 						style={{

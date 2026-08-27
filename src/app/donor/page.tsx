@@ -16,9 +16,7 @@ export default async function DonorDashboardPage() {
 	}
 
 	const user = await getUserById(session.user.id);
-	if (!(await isDonorProfileComplete(user))) {
-		redirect("/donor/health-profile?required=1");
-	}
+	const profileComplete = await isDonorProfileComplete(user);
 
 	const queryClient = getQueryClient();
 	const userId = session.user.id;
@@ -52,7 +50,7 @@ export default async function DonorDashboardPage() {
 
 	return (
 		<HydrationBoundary state={dehydrate(queryClient)}>
-			<DonorDashboardClient />
+			<DonorDashboardClient profileComplete={profileComplete} />
 		</HydrationBoundary>
 	);
 }

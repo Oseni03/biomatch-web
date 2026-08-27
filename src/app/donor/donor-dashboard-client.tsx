@@ -34,9 +34,14 @@ import { DonationHistoryCard } from "@/components/donor/donation-history-card";
 import { EligibilityBanner } from "@/components/donor/eligibility-banner";
 import { VerificationStatusBanner } from "@/components/donor/verification-status-banner";
 import { BlacklistedBanner } from "@/components/donor/blacklisted-banner";
+import { ProfileIncompleteBanner } from "@/components/donor/profile-incomplete-banner";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
-export function DonorDashboardClient() {
+export function DonorDashboardClient({
+	profileComplete,
+}: {
+	profileComplete: boolean;
+}) {
 	const { data: session, isPending: sessionLoading } =
 		authClient.useSession();
 	const {
@@ -338,13 +343,19 @@ export function DonorDashboardClient() {
 				</div>
 			</motion.div>
 
-			{verificationStatus && verificationStatus !== "verified" && (
-				<motion.div variants={itemVariants}>
-					<VerificationStatusBanner status={verificationStatus} />
-				</motion.div>
-			)}
+		{!profileComplete && (
+			<motion.div variants={itemVariants}>
+				<ProfileIncompleteBanner />
+			</motion.div>
+		)}
 
-			{eligibility.eligible && lastDonationDate && (
+		{verificationStatus && verificationStatus !== "verified" && (
+			<motion.div variants={itemVariants}>
+				<VerificationStatusBanner status={verificationStatus} />
+			</motion.div>
+		)}
+
+		{eligibility.eligible && lastDonationDate && (
 				<motion.div variants={itemVariants}>
 					<EligibilityBanner />
 				</motion.div>

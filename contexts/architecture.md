@@ -25,23 +25,40 @@
 - `LocationType`: `region | state | city` — for Location hierarchy
 - `UrgencyLevel`: `standard | critical` — for EmergencyRequest
 - `RequestStatus`: `pending | matched | expired | cancelled | fulfilled` — for EmergencyRequest
-- `AlertStatus`: `alerted | accepted | declined | en_route | arrived | completed` — for EmergencyAlert
-- `EmergencyMatchRequest.status` (UI type in `lib/donor-types.ts`): `pending | matched | completed`
-- `HmoTier` (planned): `none | basic | upgraded` — for User
+- `AlertStatus`: `alerted | accepted | declined | withdrawn | en_route | arrived | completed | screening_failed` — for EmergencyAlert
 - `NotificationChannel`: `email` — for NotificationLog
 - `NotificationStatus`: `sent | delivered | opened | failed` — for NotificationLog
-- `PartnerOrgStatus` (planned): `pending | active | suspended` — for PartnerOrganization
-- `HospitalStaffRole` (planned): `admin | requester | viewer` — for User.hospitalStaffRole
+- `Availability`: `weekdays | weekends | mornings | afternoons | evenings | anytime` — for User availability
+- `InventoryTransactionReason`: `donation | dispatch | manual_adjustment | expiry` — for InventoryTransaction
+- `ScreeningStatus`: `pending | passed | failed` — for DonorScreening
 
 ### Current Models
 
-**User** — Core identity. Stores `name`, `email`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON — health profile data only), `location` (display string), `locationId` (FK to Location), `availability`, `isActive`, `hospitalStaffRole` (typed enum: admin/requester/viewer), `lastDonationDate`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), Location. *Planned additions: `hmoTier`, `hospitalId`.*
+**User** — Core identity. Stores `name`, `email`, `emailVerified`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON — health profile data only), `location`, `address`, `locationId` (FK to Location), `latitude`, `longitude`, `availability`, `isActive`, `lastDonationDate`, `deferredUntil`, `blacklistedAt`, `createdAt`, `updatedAt`. Relations to: Session, Account, Wallet, HospitalBank (managedBanks), Location, EmergencyAlert (DonorAlerts), Donation (DonorDonations), DonorScreening (as donor and staff), Member, Invitation.
 
-**HospitalBank** — Blood bank record. `hospitalName`, `location` (string), `locationId` (FK to Location), `inventory` (JSON blob of `Record<string, number>`), `managedBy` (optional User FK).
+**HospitalBank** — Blood bank record. `hospitalName`, `sequenceNumber` (auto-increment), `location` (string), `address`, `locationId` (FK to Location), `latitude`, `longitude`, `inventory` (JSON blob of `Record<string, number>`), `organizationId` (FK to Organization), `createdAt`, `updatedAt`. Relations to: Organization, Location, Donation, InventoryTransaction.
 
-**Location** — Nigerian location hierarchy. `name`, `type` (region/state/city/area), `parentId` (self-referential FK). Relations to: User (users), HospitalBank (hospitalBanks). Seed data in `prisma/seed.ts` covers 6 regions, 37 states, ~120 cities. Helpers in `servers/location.ts`.
+**Organization** — BetterAuth org model for hospital-as-organization. `name`, `slug` (unique), `logo`, `metadata`, `createdAt`, `updatedAt`. Relations to: Member, Invitation, HospitalBank, EmergencyRequest, DonorScreening.
 
-**Wallet** — One per donor. `points` (int), `lifetimeDonations` (int).
+**Member** — Organization membership. `organizationId`, `userId`, `role` (default "member"), `createdAt`. Relations to: Organization, User. Unique constraint on (organizationId, userId).
+
+**Invitation** — Org staff invitations. `organizationId`, `email`, `role`, `status` (default "pending"), `expiresAt`, `createdAt`, `inviterId`. Relations to: Organization, User (inviter).
+
+**Location** — Nigerian location hierarchy. `name`, `type` (region/state/city), `parentId` (self-referential FK). Relations to: User, HospitalBank. Seed data in `prisma/seed.ts` covers 6 regions, 37 states, ~120 cities. Helpers in `servers/location.ts`.
+
+**Wallet** — One per donor. `points` (int), `lifetimeDonations` (int), `createdAt`, `updatedAt`. Relations to: User.
+
+**EmergencyRequest** — Blood request from hospital. `organizationId` (FK to Organization), `bloodGroup`, `unitsNeeded`, `urgencyLevel`, `status`, `searchRadius`, `createdAt`, `updatedAt`. Relations to: Organization, EmergencyAlert, Donation.
+
+**EmergencyAlert** — Donor alert for a request. `requestId`, `donorId`, `status`, `openedAt`, `respondedAt`, `donorConfirmedAt`, `hospitalConfirmedAt`, `responseReason`, `createdAt`, `updatedAt`. Relations to: EmergencyRequest, User (Donor), NotificationLog, DonorScreening.
+
+**NotificationLog** — Delivery tracking per alert. `alertId`, `channel`, `status`, `providerMessageId`, `sentAt`, `deliveredAt`, `openedAt`, `errorMessage`. Relations to: EmergencyAlert.
+
+**Donation** — Completed donation record. `donorId`, `hospitalBankId`, `emergencyRequestId`, `bloodGroup`, `donatedAt`, `createdAt`. Relations to: User (Donor), HospitalBank, EmergencyRequest.
+
+**InventoryTransaction** — Blood inventory change ledger. `hospitalBankId`, `bloodGroup`, `delta` (positive or negative), `reason`, `createdAt`. Relations to: HospitalBank. Derives current inventory levels via aggregation.
+
+**DonorScreening** — Per-visit donor screening. `donorId`, `organizationId`, `staffUserId`, `alertId` (nullable), `status`, `screenedAt`, `resolvedAt`, `notes`, `createdAt`, `updatedAt`. Relations to: User (Donor), Organization, User (Staff), EmergencyAlert. DB enforces at most one pending row per (donorId, alertId) via partial unique indexes.
 
 **Session, Account, Verification** — BetterAuth internal models.
 
@@ -74,8 +91,8 @@ The branch currently includes the live implementation for issues 67–72:
 
 ### Emergency Models (in Schema)
 
-- **EmergencyRequest** — id, hospitalId (FK to User), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt. Server actions: createEmergencyRequest(), getEmergencyRequestStatus(), getEmergencyHistory(), getPendingEmergencyRequestsForHospital(), expandSearchRadius()
-- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, openedAt, respondedAt, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus(), markAlertOpened()
+- **EmergencyRequest** — id, organizationId (FK to Organization), bloodGroup, unitsNeeded, urgencyLevel, status, searchRadius, createdAt, updatedAt. Server actions: createEmergencyRequest(), getEmergencyRequestStatus(), getEmergencyHistory(), getPendingEmergencyRequestsForHospital(), expandSearchRadius()
+- **EmergencyAlert** — id, requestId (FK to EmergencyRequest), donorId (FK to User), status, openedAt, respondedAt, donorConfirmedAt, hospitalConfirmedAt, responseReason, createdAt, updatedAt. Server actions: getAlertsForDonor(), respondToAlert(), updateAlertStatus(), markAlertOpened(), confirmDonation(), donorConfirmDonation()
 - **NotificationLog** — id, alertId (FK to EmergencyAlert), channel (email), status (sent/failed/delivered/opened), providerMessageId, sentAt, deliveredAt, openedAt, errorMessage. Server actions: sendEmergencyAlertEmail() in servers/notification.ts
 
 ### Planned Models (from PRD Issues)
@@ -95,7 +112,7 @@ The branch currently includes the live implementation for issues 67–72:
 | `/auth/reset-password` | `app/auth/reset-password/page.tsx` | Set a new password |
 | `/auth/accept-invitation` | `app/auth/accept-invitation/page.tsx` | Accept org staff invite |
 
-### Protected — Donor (`middleware.ts` guards role=donor)
+### Protected — Donor (`proxy.ts` guards role=donor)
 | Path | Page | Description |
 |---|---|---|
 | `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, stats, critical needs |
@@ -105,8 +122,13 @@ The branch currently includes the live implementation for issues 67–72:
 ### Protected — Hospital
 | Path | Page | Description |
 |---|---|---|
-| `/hospital/inventory` | `app/hospital/inventory/page.tsx` | Live inventory grid + eligible donors |
-| `/hospital/donor-finder` | `app/hospital/donor-finder/page.tsx` | **STUB** — donor search |
+| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard overview |
+| `/hospital/analytics` | `app/hospital/(dashboard)/analytics/page.tsx` | Analytics + CSV export |
+| `/hospital/directory` | `app/hospital/(dashboard)/directory/page.tsx` | Donor directory / finder |
+| `/hospital/history` | `app/hospital/(dashboard)/history/page.tsx` | Emergency request history |
+| `/hospital/screening` | `app/hospital/(dashboard)/screening/page.tsx` | Donor screening management |
+| `/hospital/staff` | `app/hospital/(dashboard)/staff/page.tsx` | Staff account management |
+| `/hospital/inventory` | `app/hospital/inventory/page.tsx` | Blood search — bento cards + eligible donors |
 | `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Emergency request creation |
 
 ### Protected — Admin

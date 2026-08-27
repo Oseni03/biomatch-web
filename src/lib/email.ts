@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY ?? "");
 
-const FROM = process.env.EMAIL_FROM ?? "noreply@biomatch.com";
+const FROM = process.env.EMAIL_FROM ?? "noreply@biomatchlimited.org";
 
 export async function sendEmail({
 	to,
@@ -18,16 +18,17 @@ export async function sendEmail({
 		return { id: "mock" };
 	}
 
-	const response = await resend.emails.send({
+	const { data, error } = await resend.emails.send({
 		from: FROM,
 		to,
 		subject,
 		react,
 	});
 
-	if (response.error) {
-		throw new Error(response.error.message);
+	if (error) {
+		console.error("Failed to send email to", to, error.message);
+		return { id: "failed" };
 	}
 
-	return { id: response.data.id };
+	return { id: data.id };
 }

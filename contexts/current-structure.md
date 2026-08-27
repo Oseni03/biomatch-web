@@ -1,172 +1,250 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-08-26 — Issue reformation 67–72 is implemented in the branch: email/password auth and verification are live, donor profile completion is gated and resumable, geocoding is server-side and private, the donor dashboard is state-driven, emergency alert accept/decline/withdraw actions are authorized, and mutual donation confirmation completes only after both donor and hospital confirm.
-
-> Tracker note: issue rows 71 and 72 were completed in the current branch and their status in `contexts/prd-issues.md` has been updated to reflect the live code.
+> Last updated: 2026-08-27 — File tree rebuilt to match actual `src/` layout. Issues 67–72 are live on branch `refactor/prd-prototype`.
 
 ```
-biomatch/
+src/
 ├── app/                            # Next.js App Router
 │   ├── api/
 │   │   └── auth/[...all]/route.ts  # BetterAuth API catch-all
 │   ├── auth/
-│   │   ├── forgot-password/page.tsx # Request password reset + Resend flow
-│   │   ├── login/page.tsx          # Sign-in form with verification/reset states
-│   │   ├── reset-password/page.tsx # Set a new password from a reset token
-│   │   ├── signup/page.tsx         # Registration form (donor/hospital toggle)
-│   │   └── verify-email/route.ts   # BetterAuth verification route (auto)
-│   ├── donor/                      # Donor section (role=donor)
-│   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="donor"
-│   │   ├── page.tsx                #   Dashboard — orchestrates 8 extracted components: ActiveMissionTracker, DeferralStatusCard, HmoInsuranceCard, LocationSettingsCard (locations loaded from DB via getAllCityLabels), EmergencyAlertsFeed, BloodSupplyChart (all 8 blood groups), DonationHistoryCard, SuccessModal. React Query + local state. donorStatus + lastDonationDate persisted to backend via updateUserProfile
-│   │   ├── health-profile/page.tsx #   Health/medical form — Tailwind classes, React Query initial load
-│   │   ├── wallet/page.tsx         #   Rewards wallet — React Query, sonner toasts
-│   │   └── history/page.tsx        #   Donation history & impact — paginated history table, personal impact stats (donations/points/lives), local monthly demand, eligibility banner
-│   ├── hospital/                   # Hospital section (role=hospital)
-│   │   ├── layout.tsx              #   Wraps children in SidebarLayout role="hospital"
-│   │   ├── page.tsx                #   Dashboard — HospitalDashboard orchestrator, localStorage persistence for broadcast requests, session guard
-│   │   ├── inventory/page.tsx      #   Blood Search — bento cards per hospital bank, search/filter bar, eligible donor cards
-│   │   ├── emergency/page.tsx      #   Emergency request creation form — blood group, units, urgency, radius; shows matched donor count
-│   │   ├── donor-finder/page.tsx   #   Donor Finder — search/filter with blood group, location, name, eligibility toggle, pagination
-
-│   ├── favicon.ico
-│   ├── globals.css                 # Tailwind directives + theme variables
-│   ├── layout.tsx                  # Root layout: Inter font, ThemeProvider, QueryClientProvider, Toaster
-│   └── page.tsx                    # Landing page (navbar, hero, stats, mission, services, impact, join, footer)
+│   │   ├── accept-invitation/page.tsx # Accept org staff invite
+│   │   ├── forgot-password/page.tsx   # Request password reset
+│   │   ├── login/page.tsx             # Sign-in + verification/resend states
+│   │   ├── reset-password/page.tsx    # Set new password from reset token
+│   │   └── signup/page.tsx            # Registration (donor/hospital toggle)
+│   ├── donor/                          # Donor section (role=donor)
+│   │   ├── layout.tsx                  #   Wraps children in SidebarLayout role="donor"
+│   │   ├── page.tsx                    #   Dashboard — server data loader, delegates to client
+│   │   ├── donor-dashboard-client.tsx  #   Client orchestrator — state-driven primary action
+│   │   ├── loading.tsx                 #   Route-level skeleton
+│   │   ├── error.tsx                   #   Route-level error boundary
+│   │   ├── health-profile/
+│   │   │   ├── page.tsx                #   Health/medical form page
+│   │   │   ├── health-profile-client.tsx # Client form with sections
+│   │   │   ├── loading.tsx
+│   │   │   └── error.tsx
+│   │   ├── history/
+│   │   │   ├── page.tsx                #   Donation history & impact
+│   │   │   ├── donor-history-client.tsx
+│   │   │   ├── loading.tsx
+│   │   │   └── error.tsx
+│   │   └── wallet/
+│   │       ├── page.tsx                #   Rewards wallet
+│   │       ├── donor-wallet-client.tsx
+│   │       ├── loading.tsx
+│   │       └── error.tsx
+│   ├── hospital/                       # Hospital section (role=hospital)
+│   │   ├── layout.tsx                  #   Wraps children in SidebarLayout role="hospital"
+│   │   ├── (dashboard)/                #   Route group — hospital dashboard tabs
+│   │   │   ├── layout.tsx              #     Dashboard layout with tab nav
+│   │   │   ├── page.tsx                #     Dashboard overview
+│   │   │   ├── dashboard-shell.tsx     #     Tab shell + composition
+│   │   │   ├── hospital-broadcasts-client.tsx
+│   │   │   ├── loading.tsx
+│   │   │   ├── error.tsx
+│   │   │   ├── analytics/
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── error.tsx
+│   │   │   ├── directory/
+│   │   │   │   ├── page.tsx            #     Donor directory / finder
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── error.tsx
+│   │   │   ├── history/
+│   │   │   │   ├── page.tsx            #     Emergency request history
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── error.tsx
+│   │   │   ├── screening/
+│   │   │   │   ├── page.tsx            #     Donor screening management
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── error.tsx
+│   │   │   └── staff/
+│   │   │       ├── page.tsx            #     Staff account management
+│   │   │       ├── loading.tsx
+│   │   │       └── error.tsx
+│   │   ├── emergency/
+│   │   │   ├── page.tsx                #   Emergency request creation form
+│   │   │   ├── emergency-request-client.tsx
+│   │   │   ├── loading.tsx
+│   │   │   └── error.tsx
+│   │   └── inventory/
+│   │       ├── page.tsx                #   Blood search — bento cards + eligible donors
+│   │       ├── inventory-client.tsx
+│   │       ├── loading.tsx
+│   │       └── error.tsx
+│   ├── globals.css                     # Tailwind directives + theme variables
+│   ├── layout.tsx                      # Root layout: Geist font, ThemeProvider, QueryClientProvider, Toaster
+│   └── page.tsx                        # Landing page (navbar, hero, stats, how-it-works, testimonials, services, impact, join, footer)
 │
 ├── components/
-│   ├── dashboard/                  # Shared dashboard components (Phase 1)
-│   │   ├── stat-card.tsx           #   StatCard — icon, label, value, optional warning tone
-│   │   └── section-card.tsx        #   SectionCard — collapsible card with icon header
-│   ├── hospital/                   # Hospital dashboard components (extracted from hospital-dashboard.tsx)
-│   │   ├── hospital-dashboard.tsx  #   Orchestrator — tab nav, funnel state, radius expansion, history tab, composition
-│   │   ├── radius-expansion-card.tsx #   Auto-expanding alert radius widget with countdown + radar animation
-│   │   ├── emergency-request-form.tsx #   Toggle form for creating emergency match requests
-│   │   ├── broadcast-stream-card.tsx #   Active dispatch stream — funnel metrics, donor en-route card, confirm arrival
-│   │   ├── live-status-panel.tsx   #   Live funnel detail per active request — per-status donor lists with name, blood group, status badge, timestamps; "Confirm Donation" button on arrived rows with window.confirm + toast; auto-refreshes 5s polling
-│   │   ├── emergency-history.tsx   #   Past requests list with filtering (date range, blood type, status), expandable rows showing full funnel breakdown, pagination
-│   │   ├── donor-directory.tsx     #   Proactive donor registry search/filter with inline call actions
-│   │   ├── analytics-dashboard.tsx #   Stats cards + bar chart timeline with CSV export
-│   │   ├── staff-accounts.tsx      #   Authorized staff list + "add practitioner" form
-│   │   ├── blood-search-cards.tsx  #   Search/filter bar + bento card grid for hospital blood inventory
-│   │   ├── donor-cards.tsx         #   Card-style eligible donor list (replaces table)
-│   │   └── animations.ts           #   Shared framer-motion animation variants
-│   ├── donor/                      # Donor dashboard components (extracted from page.tsx)
-│   │   ├── active-mission-tracker.tsx #   Red tracking card during active emergency response
-│   │   ├── blood-supply-chart.tsx  #   Hospital blood supply bar chart — all 8 blood groups from bank inventory
-│   │   ├── deferral-status-card.tsx #   Circular eligibility countdown + date input (persisted to backend on save)
-│   │   ├── donation-history-card.tsx #   Donation history table (legacy — used in dashboard, real data from getDonorHistory)
-│   │   ├── emergency-alerts-feed.tsx #   Live emergency request cards with accept/decline
-│   │   ├── location-settings-card.tsx #   Availability, location (loaded from DB via getAllCityLabels), radius, SMS settings form
-│   │   ├── success-modal.tsx       #   Mission completion modal overlay
-│   │   └── eligible-donors-list.tsx #   Donor table — blood group, genotype, location, eligibility badge; reusable by inventory + donor-finder
-│   ├── landing/                    # Landing page sections (8 files)
-│   │   ├── navbar.tsx
+│   ├── auth/
+│   │   ├── accept-invitation-client.tsx # Accept org staff invitation form
+│   │   └── auth-shell.tsx              # Shared auth page shell (card + branding)
+│   ├── brand/                          # Brand design-system components
+│   │   ├── blood-drop-icon.tsx         #   SVG blood-drop icon
+│   │   ├── blood-type-badge.tsx        #   Blood group badge (colored per type)
+│   │   ├── dashboard-greeting.tsx      #   "Good morning, Name" greeting
+│   │   ├── emergency-alert.tsx         #   Emergency alert brand component
+│   │   ├── inventory-gauge.tsx         #   Circular inventory level gauge
+│   │   ├── status-tag.tsx              #   Status tag (eligible/deferred/blacklisted)
+│   │   └── wordmark.tsx                #   BioMatch wordmark logo
+│   ├── dashboard/                      # Shared dashboard components
+│   │   ├── stat-card.tsx               #   StatCard — icon, label, value, optional warning tone
+│   │   └── section-card.tsx            #   SectionCard — collapsible card with icon header
+│   ├── donor/                          # Donor dashboard components
+│   │   ├── active-mission-tracker.tsx  #   Red tracking card during active emergency response
+│   │   ├── alert-card.tsx              #   Single emergency alert card
+│   │   ├── blacklisted-banner.tsx      #   Blacklisted donor warning banner
+│   │   ├── blood-supply-chart.tsx      #   Hospital blood supply bar chart — all 8 blood groups
+│   │   ├── declined-alert-row.tsx      #   Collapsed declined alert row
+│   │   ├── deferral-status-card.tsx    #   Circular eligibility countdown + date input
+│   │   ├── donation-history-card.tsx   #   Donation history table (dashboard)
+│   │   ├── donation-history-table.tsx  #   Reusable donation history table
+│   │   ├── donation-stats-grid.tsx     #   Donation impact stats grid
+│   │   ├── eligibility-banner.tsx      #   Re-eligibility notification banner
+│   │   ├── eligible-donors-list.tsx    #   Donor table — blood group, genotype, location, eligibility
+│   │   ├── emergency-alerts-feed.tsx   #   Live emergency request cards with accept/decline
+│   │   ├── health-profile/
+│   │   │   ├── eligibility-screening-section.tsx
+│   │   │   ├── emergency-preferences-section.tsx
+│   │   │   ├── form-fields.tsx
+│   │   │   ├── identity-section.tsx
+│   │   │   ├── last-screening-section.tsx
+│   │   │   ├── medical-history-section.tsx
+│   │   │   ├── types.ts
+│   │   │   └── vitals-section.tsx
+│   │   ├── local-demand-card.tsx       #   Monthly local demand stats
+│   │   ├── location-settings-card.tsx  #   Availability, location, radius, SMS settings
+│   │   ├── success-modal.tsx           #   Mission completion modal overlay
+│   │   └── verification-status-banner.tsx # Email verification status banner
+│   ├── hospital/                       # Hospital dashboard components
+│   │   ├── analytics-dashboard.tsx     #   Stats cards + bar chart timeline with CSV export
+│   │   ├── blood-search-cards.tsx      #   Search/filter bar + bento card grid for blood inventory
+│   │   ├── blood-usage-chart.tsx       #   Blood usage trend chart
+│   │   ├── broadcast-stream-card.tsx   #   Active dispatch stream — funnel metrics
+│   │   ├── coverage-gaps-card.tsx      #   Coverage gaps visualization
+│   │   ├── date-range-picker.tsx       #   Date range picker for analytics/history
+│   │   ├── deferral-badge.tsx          #   Deferral status badge
+│   │   ├── donor-cards.tsx             #   Card-style eligible donor list
+│   │   ├── donor-directory.tsx         #   Proactive donor registry search/filter
+│   │   ├── donor-screening-panel.tsx   #   Donor screening management panel
+│   │   ├── donor-stage-list.tsx        #   Donor stage progression list
+│   │   ├── emergency-history.tsx       #   Past requests list with filtering
+│   │   ├── emergency-request-form.tsx  #   Toggle form for creating emergency match requests
+│   │   ├── history-filter-bar.tsx      #   History filter controls
+│   │   ├── invite-staff-form.tsx       #   Staff invitation form
+│   │   ├── live-status-panel.tsx       #   Live funnel detail per active request
+│   │   ├── pending-donation-confirmations.tsx # Pending mutual confirmations
+│   │   ├── radius-expansion-card.tsx   #   Auto-expanding alert radius widget
+│   │   ├── request-funnel-card.tsx     #   Request funnel visualization
+│   │   ├── request-volume-chart.tsx    #   Request volume chart
+│   │   ├── screening-failure-prompt.tsx # Screening failure action prompt
+│   │   ├── staff-accounts.tsx          #   Authorized staff list + add form
+│   │   └── staff-list.tsx             #   Staff list component
+│   ├── landing/                        # Landing page sections
+│   │   ├── cta-band.tsx                #   Call-to-action band
+│   │   ├── feature-rows.tsx            #   Feature rows section
+│   │   ├── footer.tsx
 │   │   ├── hero.tsx
-│   │   ├── stats.tsx
-│   │   ├── mission.tsx
-│   │   ├── services.tsx
 │   │   ├── impact.tsx
-│   │   ├── join.tsx
-│   │   └── footer.tsx
+│   │   ├── navbar.tsx
+│   │   ├── partners.tsx               #   Partners section
+│   │   ├── phone-mockup.tsx           #   Phone mockup component
+│   │   └── testimonial.tsx            #   Testimonials section
 │   ├── layout/
-│   │   └── sidebar.tsx             # shadcn SidebarProvider + Sidebar + SidebarInset, role-based nav
-│   ├── nav-main.tsx                # Collapsible nav groups with expandable sub-items (shadcn pattern)
-│   ├── nav-user.tsx                # Avatar dropdown with sign out via authClient
-│   ├── ui/                         # shadcn/ui primitives (17 files)
-│   │   ├── avatar.tsx
-│   │   ├── badge.tsx
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── checkbox.tsx
-│   │   ├── collapsible.tsx
-│   │   ├── dropdown-menu.tsx
-│   │   ├── field.tsx
-│   │   ├── input.tsx
-│   │   ├── label.tsx
-│   │   ├── menubar.tsx
-│   │   ├── select.tsx
-│   │   ├── separator.tsx
-│   │   ├── sidebar.tsx             # shadcn sidebar primitives (SidebarProvider, Sidebar, SidebarInset, etc.)
-│   │   ├── sheet.tsx
-│   │   ├── skeleton.tsx
-│   │   ├── sonner.tsx
-│   │   ├── switch.tsx
-│   │   ├── textarea.tsx
-│   │   └── tooltip.tsx
-│   ├── theme-provider.tsx          # next-themes ThemeProvider wrapper
-
+│   │   ├── route-error.tsx            #   Shared route error boundary
+│   │   ├── route-loading.tsx          #   Shared route loading skeleton
+│   │   └── sidebar.tsx                #   shadcn SidebarProvider + Sidebar + SidebarInset, role-based nav
+│   ├── nav-main.tsx                   # Collapsible nav groups with expandable sub-items
+│   ├── nav-user.tsx                   # Avatar dropdown with sign out via authClient
+│   ├── providers.tsx                  # Client-side providers (QueryClient, Theme, etc.)
+│   └── ui/                            # shadcn/ui primitives (18 files)
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── checkbox.tsx
+│       ├── collapsible.tsx
+│       ├── dropdown-menu.tsx
+│       ├── field.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── menubar.tsx
+│       ├── pagination-controls.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── sidebar.tsx
+│       ├── skeleton.tsx
+│       ├── sonner.tsx
+│       ├── switch.tsx
+│       ├── textarea.tsx
+│       └── tooltip.tsx
 │
-├── emails/                         # React Email templates
-│   ├── emergency-alert.tsx         #   Emergency alert email — blood type, hospital, distance, accept button
-│   ├── reset-password-email.tsx    #   Password reset email template
-│   └── verification-email.tsx      #   Email verification template
+├── emails/                             # React Email templates
+│   ├── emergency-alert.tsx             #   Emergency alert email
+│   ├── reset-password-email.tsx        #   Password reset email
+│   ├── screening-result.tsx            #   Screening result notification
+│   ├── staff-invitation.tsx            #   Staff invitation email
+│   └── verification-email.tsx          #   Email verification template
 │
-├── contexts/                       # AI context & plans directory
-│   ├── agents/                     # Engineering skill configuration
-│   │   ├── domain.md
-│   │   ├── issue-tracker.md
-│   │   └── triage-labels.md
-│   ├── architecture.md             # Tech stack, data model, routing, patterns
-│   ├── current-structure.md        # This file — full file tree
-│   ├── improvement-plan.md         # Summary of all 3 phases
-│   ├── phase-1-foundation.md       # React Query, shared components, cleanup ✅
-│   ├── phase-2-directory.md        # Donor Finder implementation
-│   ├── phase-3-realtime.md         # SSE inventory updates
-│   ├── prd-issues.md               # PRD issue tracker (dependency map, HITL registry, coverage)
-│   └── issues/                     # PRD-driven vertical-slice issues (11 files)
-│       ├── 01-emergency-request-matching.md
-│       ├── 02-donor-alert-response.md
-│       ├── 03-radius-expansion.md
-│       ├── 04-hospital-live-status-panel.md
-│       ├── 05-notification-delivery.md
-│       ├── 06-donation-confirmation.md
-│       ├── 07-hmo-incentive-integration.md
-│       ├── 08-donor-registration-enhancements.md
-│               ├── 09-donor-history-impact.md
-│               ├── 10-hospital-admin-features.md
-│               ├── 11-institutional-partner-management.md
-│               ├── 12-design-foundation.md
-│               ├── 13-landing-hero-navbar.md
-│               ├── 14-landing-stats-how-it-works-testimonials.md
-│               ├── 15-landing-services-impact-footer.md
-│               ├── 16-dashboard-sidebar-topbar.md
-│               ├── 17-dashboard-bento-widgets.md
-│               └── 18-hospital-blood-search-cards.md
+├── hooks/                              # React Query hooks
+│   ├── use-analytics.ts               #   useHospitalAnalytics()
+│   ├── use-blood-group-usage.ts       #   Blood group usage stats
+│   ├── use-city-labels.ts             #   City labels from location hierarchy
+│   ├── use-donations.ts              #   Donation records
+│   ├── use-donor-dashboard.ts        #   getUserById (incl. wallet)
+│   ├── use-donor-history.ts          #   useDonorHistory(), useLocalDemandStats()
+│   ├── use-donor-settings-form.ts    #   Donor settings form state
+│   ├── use-eligible-donors.ts        #   listDonors() with filters + pagination
+│   ├── use-emergency-mission-tracker.ts # Active emergency mission state
+│   ├── use-emergency-requests.ts     #   Emergency request CRUD + alerts
+│   ├── use-hospital-bank.ts          #   Hospital bank data
+│   ├── use-inventory.ts              #   getAllHospitalBanks, auto-refetch 10s
+│   ├── use-location-cascade.ts       #   Cascading region/state/city dropdown
+│   ├── use-mobile.ts                 #   Mobile viewport detection
+│   ├── use-screening.ts             #   Donor screening CRUD
+│   ├── use-staff.ts                  #   Staff member CRUD
+│   └── use-wallet.ts                 #   getWalletByUserId
 │
-├── hooks/
-│   ├── use-analytics.ts            # React Query: useHospitalAnalytics() — wraps getHospitalAnalytics
-
-│   ├── use-donor-dashboard.ts      # React Query: wraps getUserById (incl. wallet)
-│   ├── use-donor-history.ts        # React Query: useDonorHistory(), useLocalDemandStats() (imports from servers/emergency)
-│   ├── use-wallet.ts               # React Query: wraps getWalletByUserId (from servers/user)
-│   ├── use-inventory.ts            # React Query: wraps getAllHospitalBanks, auto-refetch 10s
-│   ├── use-eligible-donors.ts      # React Query: wraps listDonors() with optional filters (bloodGroup, location, search, eligibleOnly, page)
-│   └── use-emergency-requests.ts   # React Query: useActiveEmergencyRequests(), useDonorAlerts(), useRespondToAlert(), useUpdateAlertStatus(), usePendingEmergencyRequests(), useExpandSearchRadius(), useEmergencyRequestStatus(), useEmergencyHistory(), useConfirmDonation() — auto-refetch 15s (5s for status panel)
+├── lib/                                # Shared utilities and configuration
+│   ├── animations.ts                  #   Framer-motion animation variants
+│   ├── auth.ts                        #   BetterAuth server config (email/password, prisma adapter)
+│   ├── auth-client.ts                 #   createAuthClient() for browser
+│   ├── availability.ts                #   Availability type helpers
+│   ├── blood-compatibility.ts         #   Blood group compatibility matrix
+│   ├── constants.ts                   #   ELIGIBILITY_DAYS, POINTS_PER_DONATION, CRITICAL_THRESHOLD
+│   ├── donor-types.ts                 #   UI types + helpers: EmergencyMatchRequest, BLOOD_GROUP_MAP
+│   ├── eligibility.ts                 #   getEligibility()
+│   ├── email.ts                       #   Resend client + sendEmail() wrapper
+│   ├── geocoding.ts                   #   Server-side geocoding (env-keyed, private)
+│   ├── get-query-client.ts            #   SSR-safe QueryClient factory
+│   ├── get-session.ts                 #   Server-side session getter
+│   ├── hospital-code.ts               #   Sequential hospital code generator (BIOMATCH-NNN)
+│   ├── inventory-schema.ts            #   Zod validation for inventory writes
+│   ├── organization-access.ts         #   Organization role/access helpers
+│   ├── prisma.ts                      #   Singleton PrismaClient
+│   ├── radius-expansion.ts            #   INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, etc.
+│   └── utils.ts                       #   cn() clsx+tailwind-merge helper
 │
-├── lib/
-│   ├── auth.ts                     # BetterAuth server config (email/password, prisma adapter)
-│   ├── auth-client.ts              # createAuthClient() for browser
-│   ├── blood-compatibility.ts      # Blood group compatibility matrix (universal donor/recipient)
-│   ├── constants.ts                # Shared domain constants: ELIGIBILITY_DAYS, POINTS_PER_DONATION, CRITICAL_THRESHOLD
-│   ├── donor-types.ts             # UI types + helpers: EmergencyMatchRequest, DonationRecord, DonorStatus, DonorAlertWithRequest, BLOOD_GROUP_MAP, displayBloodGroup()
-│   ├── eligibility.ts              # getEligibility() (imports ELIGIBILITY_DAYS from constants.ts)
-│   ├── email.ts                    # Resend client + sendEmail() wrapper — sends React Email templates; mock mode when no RESEND_API_KEY
-│   ├── prisma.ts                   # Singleton PrismaClient
-│   ├── radius-expansion.ts         # Radius expansion config: INITIAL_RADIUS, EXPANSION_INCREMENT, MAX_RADIUS, EXPANSION_TIMEOUT_MS, MAX_ALERTS_PER_REQUEST, canExpand(), nextRadius(), getRadiusTier()
-│   └── utils.ts                    # cn() clsx+tailwind-merge helper
+├── proxy.ts                            # Next.js 16 route guard — session + RBAC + email verification
 │
-├── servers/                        # Server Actions ("use server")
-│   ├── analytics.ts                # getHospitalAnalytics() — response time, response rate, coverage gaps; exportDonationRecords() — CSV generation
-│   ├── auth.ts                     # signUpWithProfile() (incl. locationId, availability, isActive), loginWithRole()
-│   ├── emergency.ts                # Deep module. scoreProximity, computeAlertAggregates, applyDonationRewards (private helpers). createEmergencyRequest(), expandSearchRadius(), getEmergencyRequestStatus(), getEmergencyHistory(), respondToAlert(), updateAlertStatus(), confirmDonation(). Also exports getDonorHistory(), getLocalDemandStats() (moved from user.ts)
-│   ├── hospital.ts                 # getAllHospitalBanks(), getHospitalBankById(), createHospitalBank() (incl. locationId), updateHospitalBankInventory()
-│   ├── location.ts                 # getLocations(), getAncestors(), getCommonAncestorDepth(), buildLocationLabel(), getAllCityLabels(), getLocationTree(), scoreDonorProximity(), proximityPassesThreshold()
-│   ├── notification.ts             # sendEmergencyAlertEmail() — sends emergency alert via Resend, logs to NotificationLog
-│   ├── staff.ts                    # getStaffMembers(), inviteStaffMember(), updateStaffRole(), removeStaffMember() — hospital staff CRUD
-│   └── user.ts                     # getUserById(), getUserBasicById(), getUserByEmail(), updateUserProfile() (incl. locationId), updateUserRole(), getWalletByUserId() (moved from wallet.ts), listDonors() (paginated, location filter, imports ELIGIBILITY_DAYS from constants)
+├── servers/                            # Server Actions ("use server")
+│   ├── analytics.ts                   #   getHospitalAnalytics(), exportDonationRecords()
+│   ├── auth.ts                        #   signUpWithProfile(), loginWithRole()
+│   ├── donation.ts                    #   Donation confirmation, mutual confirm, finalize
+│   ├── emergency.ts                   #   Deep module — create, expand, respond, confirm, history
+│   ├── hospital.ts                    #   HospitalBank CRUD
+│   ├── location.ts                    #   Location hierarchy, scoring, proximity
+│   ├── notification.ts               #   sendEmergencyAlertEmail() via Resend
+│   ├── organization.ts               #   Organization CRUD, member/invitation management
+│   ├── screening.ts                   #   Donor screening CRUD + eligibility checks
+│   ├── staff.ts                       #   getStaffMembers(), inviteStaffMember(), etc.
+│   └── user.ts                        #   User CRUD, listDonors(), wallet query
 │
 ├── generated/
-│   └── prisma/                     # Prisma 7 client output
+│   └── prisma/                        # Prisma 7 client output
 │       ├── client.ts
 │       ├── enums.ts
 │       ├── models.ts
@@ -175,23 +253,23 @@ biomatch/
 │       └── internal/
 │
 ├── prisma/
-│   ├── schema.prisma               # Data model (User w/ locationId, HospitalBank w/ locationId, Location hierarchy, EmergencyRequest, EmergencyAlert, NotificationLog, Wallet, Session, Account, Verification)
-│   ├── seed.ts                     # Seeds Nigerian location hierarchy (6 regions, 37 states, ~120 cities)
-│   └── migrations/                 # 5 migration folders
+│   ├── schema.prisma                  # Full data model
+│   ├── seed.ts                        # Seeds Nigerian location hierarchy
+│   └── migrations/                    # 23 migration folders
 │
-├── middleware.ts                   # Next.js middleware — session check via auth.api.getSession, RBAC guard
-├── package.json                    # Dependencies & scripts
+├── components.json                    # shadcn/ui config
+├── next.config.mjs
+├── package.json
+├── postcss.config.mjs
+├── prisma.config.ts
 ├── tailwind.config.ts
 ├── tsconfig.json
-├── next.config.mjs
-├── postcss.config.mjs
-├── components.json                 # shadcn/ui config
-└── prisma.config.ts
+└── vercel.json
 ```
 
 ## Current Data Fetching Pattern
 
-All dashboard pages now use React Query hooks instead of manual useState/useEffect/useCallback:
+All dashboard pages use React Query hooks instead of manual useState/useEffect/useCallback:
 
 ```typescript
 // 1. Session
@@ -286,7 +364,7 @@ Shared patterns:
 | No access control on staff management | High | ✅ requireAdminRole() check in inviteStaffMember/updateStaffRole/removeStaffMember; StaffAccounts hides admin UI for non-admin roles |
 | CSV export had no hospital name (just UUID) | Low | ✅ Export now includes hospital name with proper CSV quoting |
 | Export didn't respect date range | Medium | ✅ exportDonationRecords now accepts optional dateRange parameter |
-| `proxy.ts` not wired as middleware (wrong filename) | High | ✅ Renamed to `middleware.ts`, export renamed to `middleware` — Next.js now runs RBAC on every request |
+| `proxy.ts` not wired as middleware (wrong filename) | High | ✅ Renamed export to `middleware` — Next.js runs RBAC on every request via `src/proxy.ts` |
 
 ## Resolved in Issue 04
 

@@ -13,9 +13,6 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { signUpWithProfile } from "@/servers/auth";
-import { AVAILABILITY_OPTIONS } from "@/lib/availability";
-import type { Availability } from "@generated/prisma/enums";
-import { useLocationCascade } from "@/hooks/use-location-cascade";
 import { toast } from "sonner";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
@@ -33,11 +30,6 @@ export default function SignupPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const cascade = useLocationCascade();
-	const { regionId, stateId, cityId, regions, states, cities, locationId } =
-		cascade;
-	const [availability, setAvailability] = useState<Availability | "">("");
-	const [receiveAlerts, setReceiveAlerts] = useState(true);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -47,11 +39,6 @@ export default function SignupPage() {
 
 		if (!name || !email || !password) {
 			setError("Please complete all required fields");
-			return;
-		}
-
-		if (role === "donor" && !locationId) {
-			setError("Location is required for donors");
 			return;
 		}
 
@@ -67,10 +54,6 @@ export default function SignupPage() {
 			password,
 			fullName: name,
 			role,
-			locationId: role === "donor" ? locationId || undefined : undefined,
-			availability:
-				role === "donor" ? availability || undefined : undefined,
-			isActive: role === "donor" ? receiveAlerts : undefined,
 		});
 
 		if (result?.error) {
@@ -93,7 +76,7 @@ export default function SignupPage() {
 					with <span className="italic text-brand">one signup.</span>
 				</>
 			}
-			description="Register as a donor to answer emergency calls near you, or as a hospital to reach verified donors in minutes."
+			description="Create your account with email and password. Donors complete their profile and availability details after signup, while hospitals can start creating requests once their org is set up."
 			stats={STATS}
 		>
 			<Card className="rounded-3xl p-2">
@@ -105,7 +88,7 @@ export default function SignupPage() {
 						Join the Network
 					</CardTitle>
 					<CardDescription className="mt-2 text-sm text-muted-foreground">
-						Register and start saving lives or requesting matches
+						Create your account and finish the rest of onboarding after verification.
 					</CardDescription>
 				</CardHeader>
 
@@ -206,107 +189,6 @@ export default function SignupPage() {
 								</button>
 							</div>
 						</div>
-
-						{role === "donor" && (
-							<>
-								<div>
-									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-										Region *
-									</label>
-									<select
-										value={regionId}
-										onChange={(e) =>
-											cascade.selectRegion(e.target.value)
-										}
-										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-										required
-									>
-										<option value="">Select region</option>
-										{regions.map((r) => (
-											<option key={r.id} value={r.id}>
-												{r.name}
-											</option>
-										))}
-									</select>
-								</div>
-								<div>
-									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-										State *
-									</label>
-									<select
-										value={stateId}
-										onChange={(e) =>
-											cascade.selectState(e.target.value)
-										}
-										disabled={!regionId}
-										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-										required
-									>
-										<option value="">Select state</option>
-										{states.map((s) => (
-											<option key={s.id} value={s.id}>
-												{s.name}
-											</option>
-										))}
-									</select>
-								</div>
-								<div>
-									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-										City / Area *
-									</label>
-									<select
-										value={cityId}
-										onChange={(e) =>
-											cascade.selectCity(e.target.value)
-										}
-										disabled={!stateId}
-										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-										required
-									>
-										<option value="">Select city</option>
-										{cities.map((c) => (
-											<option key={c.id} value={c.id}>
-												{c.name}
-											</option>
-										))}
-									</select>
-								</div>
-								<div>
-									<label className="mb-2 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-										Availability (optional)
-									</label>
-									<select
-										value={availability}
-										onChange={(e) =>
-											setAvailability(
-												e.target.value as Availability | "",
-											)
-										}
-										className="w-full rounded-xl border-border bg-muted px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-									>
-										<option value="">Select availability</option>
-										{AVAILABILITY_OPTIONS.map((opt) => (
-											<option key={opt.value} value={opt.value}>
-												{opt.label}
-											</option>
-										))}
-									</select>
-								</div>
-								<label className="flex cursor-pointer items-center gap-3">
-									<input
-										type="checkbox"
-										checked={receiveAlerts}
-										onChange={(e) =>
-											setReceiveAlerts(e.target.checked)
-										}
-										className="h-4 w-4 rounded border-input text-brand focus:ring-ring"
-									/>
-									<span className="text-sm text-foreground">
-										Receive emergency alerts
-									</span>
-								</label>
-							</>
-						)}
 
 						<Button
 							type="submit"
