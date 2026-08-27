@@ -95,7 +95,6 @@ export function DonorDashboardClient() {
 	} = useDonorDashboard();
 	const [page, setPage] = useState(1);
 	const [profileModalOpen, setProfileModalOpen] = useState(false);
-	const hasShownProfileModal = useRef(false);
 
 	const { data: alerts } = useDonorAlerts(session?.user?.id, {
 		page,
@@ -155,13 +154,6 @@ export function DonorDashboardClient() {
 		[user],
 	);
 
-	useEffect(() => {
-		if (isProfileIncomplete && !isLoading && !hasShownProfileModal.current) {
-			setProfileModalOpen(true);
-			hasShownProfileModal.current = true;
-		}
-	}, [isProfileIncomplete, isLoading]);
-
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
@@ -200,7 +192,7 @@ export function DonorDashboardClient() {
 				/>
 
 				{isProfileIncomplete && (
-					<ProfileIncompleteBanner onClick={() => setProfileModalOpen(false)} />
+					<ProfileIncompleteBanner onClick={() => setProfileModalOpen(true)} />
 				)}
 
 				{activeTrackingId && activeRequest && (
