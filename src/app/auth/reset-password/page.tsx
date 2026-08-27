@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
@@ -10,7 +10,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { AuthFormField } from "@/components/auth/auth-form-field";
 import { AUTH_STATS } from "@/components/auth/auth-constants";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const token = searchParams.get("token") ?? "";
@@ -147,5 +147,13 @@ export default function ResetPasswordPage() {
 				</div>
 			</AuthCard>
 		</AuthShell>
+	);
+}
+
+export default function ResetPasswordPage() {
+	return (
+		<Suspense fallback={null}>
+			<ResetPasswordContent />
+		</Suspense>
 	);
 }
