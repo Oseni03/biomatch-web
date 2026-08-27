@@ -15,7 +15,7 @@ export function StatCard({
 	tone = "default",
 }: StatCardProps) {
 	return (
-		<div className="rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-card-hover">
+		<div className="rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-card-hover">
 			<div className="flex items-center gap-2 text-muted-foreground">
 				<Icon className="h-4 w-4" />
 				<span className="text-xs font-medium">{label}</span>
@@ -31,7 +31,7 @@ export function StatCard({
 
 export function StatCardSkeleton() {
 	return (
-		<div className="rounded-xl border border-border bg-card p-5">
+		<div className="rounded-2xl border border-border bg-card p-6">
 			<div className="flex items-center gap-2">
 				<Skeleton className="h-4 w-4 rounded" />
 				<Skeleton className="h-3 w-20" />

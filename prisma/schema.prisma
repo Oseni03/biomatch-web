@@ -39,59 +39,10 @@ enum AlertStatus {
   alerted
   accepted
   declined
+  withdrawn
   en_route
   arrived
   completed
-  screening_failed
-}
-
-enum NotificationChannel {
-  email
-}
-
-enum NotificationStatus {
-  sent
-  delivered
-  opened
-  failed
-}
-
-model NotificationLog {
-  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  alertId           String              @db.Uuid
-  channel           NotificationChannel
-  status            NotificationStatus  @default(sent)
-  providerMessageId String?
-  sentAt            DateTime            @default(now()) @db.Timestamptz(6)
-  deliveredAt       DateTime?           @db.Timestamptz(6)
-  openedAt          DateTime?           @db.Timestamptz(6)
-  errorMessage      String?
-
-  alert EmergencyAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
-
-  @@index([alertId])
-  @@map("notification_logs")
-}
-
-enum LocationType {
-  region
-  state
-  city
-}
-
-model Location {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String
-  type          LocationType
-  parentId      String?        @db.Uuid
-  parent        Location?      @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children      Location[]     @relation("LocationHierarchy")
-  users         User[]
-  hospitalBanks HospitalBank[]
-
-  @@index([parentId])
-  @@index([type])
-  @@map("locations")
 }
 
 enum BloodGroup {
@@ -110,44 +61,21 @@ model HospitalBank {
   sequenceNumber Int      @default(autoincrement())
   hospitalName   String
   location       String
-  locationId     String?  @db.Uuid
+  address        String?
+  latitude       Float?
+  longitude      Float?
   inventory      Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
   organizationId String?  @db.Uuid
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
   organization Organization?          @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  locationRel  Location?              @relation(fields: [locationId], references: [id])
   donations    Donation[]
-  transactions InventoryTransaction[]
 
   @@unique([sequenceNumber])
-  @@index([locationId])
   @@index([organizationId])
+  @@index([latitude, longitude])
   @@map("hospital_banks")
-}
-
-enum InventoryTransactionReason {
-  donation
-  dispatch
-  manual_adjustment
-  expiry
-}
-
-model InventoryTransaction {
-  id             String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  hospitalBankId String                     @db.Uuid
-  bloodGroup     BloodGroup
-  delta          Int
-  reason         InventoryTransactionReason
-  createdAt      DateTime                   @default(now()) @db.Timestamptz(6)
-
-  hospitalBank HospitalBank @relation(fields: [hospitalBankId], references: [id], onDelete: Cascade)
-
-  @@index([hospitalBankId])
-  @@index([bloodGroup])
-  @@index([createdAt])
-  @@map("inventory_transactions")
 }
 
 model Donation {
@@ -212,13 +140,13 @@ model EmergencyAlert {
   openedAt         DateTime?   @db.Timestamptz(6)
   respondedAt      DateTime?   @db.Timestamptz(6)
   donorConfirmedAt DateTime?   @db.Timestamptz(6)
+  hospitalConfirmedAt DateTime? @db.Timestamptz(6)
+  responseReason   String?
   createdAt        DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime    @updatedAt @db.Timestamptz(6)
 
   request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
-  notificationLogs NotificationLog[]
-  screenings       DonorScreening[]
 
   @@unique([requestId, donorId])
   @@index([requestId])
@@ -238,7 +166,9 @@ model User {
   role              Role               @default(donor)
   updatedHealthInfo Json               @default("{}")
   location          String?
-  locationId        String?            @db.Uuid
+  address           String?
+  latitude          Float?
+  longitude         Float?
   availability      Availability?
   isActive          Boolean            @default(true)
   lastDonationDate  DateTime?          @db.Timestamptz(6)
@@ -247,61 +177,21 @@ model User {
   createdAt         DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
 
-  locationRel Location? @relation(fields: [locationId], references: [id])
-
   sessions                Session[]
   accounts                Account[]
   wallet                  Wallet?
   emergencyAlerts         EmergencyAlert[]   @relation("DonorAlerts")
   donations               Donation[]         @relation("DonorDonations")
-  donorScreenings         DonorScreening[]   @relation("DonorScreeningDonor")
-  staffScreeningsRecorded DonorScreening[]   @relation("DonorScreeningStaff")
   members                 Member[]
   sentInvitations         Invitation[]
 
   @@unique([email])
   @@index([role])
   @@index([bloodGroup])
-  @@index([locationId])
+  @@index([latitude, longitude])
   @@index([lastDonationDate])
   @@index([role, isActive, bloodGroup, blacklistedAt])
   @@map("user")
-}
-
-enum ScreeningStatus {
-  pending
-  passed
-  failed
-}
-
-// DB also enforces at most one `pending` row per (donorId, alertId) via two
-// partial unique indexes applied directly (not representable in Prisma's
-// schema language): donor_screenings_pending_alert_key and
-// donor_screenings_pending_no_alert_key.
-model DonorScreening {
-  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  donorId        String          @db.Uuid
-  organizationId String?         @db.Uuid
-  staffUserId    String          @db.Uuid
-  alertId        String?         @db.Uuid
-  status         ScreeningStatus @default(pending)
-  screenedAt     DateTime        @default(now()) @db.Timestamptz(6)
-  resolvedAt     DateTime?       @db.Timestamptz(6)
-  notes          String?
-  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
-
-  donor        User            @relation("DonorScreeningDonor", fields: [donorId], references: [id], onDelete: Cascade)
-  organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  staffUser    User            @relation("DonorScreeningStaff", fields: [staffUserId], references: [id], onDelete: Restrict)
-  alert        EmergencyAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
-
-  @@index([donorId])
-  @@index([organizationId])
-  @@index([status])
-  @@index([resolvedAt])
-  @@index([alertId])
-  @@map("donor_screenings")
 }
 
 model Session {
@@ -334,7 +224,6 @@ model Organization {
   invitations       Invitation[]
   hospitalBanks     HospitalBank[]
   emergencyRequests EmergencyRequest[]
-  donorScreenings   DonorScreening[]
 
   @@map("organization")
 }

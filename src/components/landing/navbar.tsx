@@ -11,11 +11,21 @@ import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
 import { cn } from "@/lib/utils";
 
-export function Navbar() {
+type ServerSession = {
+	user: { id: string; name?: string | null; email: string; role: string };
+	session: { id: string };
+} | null;
+
+interface NavbarProps {
+	serverSession?: ServerSession;
+}
+
+export function Navbar({ serverSession }: NavbarProps) {
 	const router = useRouter();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
-	const { data: session } = authClient.useSession();
+	const [signedOut, setSignedOut] = useState(false);
+	const session = signedOut ? null : serverSession;
 
 	useEffect(() => {
 		const onScroll = () => setScrolled(window.scrollY > 8);
@@ -33,6 +43,7 @@ export function Navbar() {
 
 	const handleSignOut = async () => {
 		await authClient.signOut();
+		setSignedOut(true);
 		router.push("/");
 		setIsMenuOpen(false);
 	};

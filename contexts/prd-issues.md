@@ -5,7 +5,7 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 ## Issue Map
 
 | # | Type | Title | Blocked By | HITL/AFK | Status |
-|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|
 | 01 | AFK | Emergency Request + Matching Engine | — | AFK | ✅ |
 | 02 | AFK | Donor Alert & Response (In-App) | 01 | AFK | ✅ |
 | 03 | AFK | Radius Expansion | 02 | AFK | ✅ |
@@ -17,6 +17,12 @@ These 11 vertical-slice issues were derived from `BIO_MATCH_PRD.md` via the `to-
 | 09 | AFK | Donor History & Impact Dashboard | 06, 08 | AFK | ✅ |
 | 10 | HITL | Hospital Admin Features | 04, 06 | HITL | ✅ |
 | 11 | HITL | Institutional Partner Management | 08 | HITL | |
+| 67 | AFK | Email Authentication and Verification | — | AFK | ✅ |
+| 68 | AFK | Donor Profile Completion | 67 | AFK | ✅ |
+| 69 | AFK | Server-Side Geolocation Matching | 68 | AFK | ✅ |
+| 70 | AFK | Actionable Donor Dashboard | 68, 69 | AFK | ✅ |
+| 71 | AFK | Donor Emergency Alert Response | 70 | AFK | ✅ |
+| 72 | AFK | Mutual Donation Confirmation | 71 | AFK | ✅ |
 
 ## HITL Decisions Required
 
@@ -43,6 +49,10 @@ These issues require human input before an AFK agent can implement:
  │      └──> 11
 
 04 + 06 ──> 10
+
+67 ──> 68 ──> 69
+			 └──> 70 ──> 71 ──> 72
+		 69 ──> 70
 ```
 
 ## User Stories Coverage Map
@@ -84,3 +94,7 @@ Recommended implementation order:
 9. ~~Issue 09~~ ✅ (donor history — depends on 06, 08)
 10. ~~Issue 10~~ ✅ (hospital admin — date range filters + access control added)
 11. Issue 11 (partners — depends on 08)
+
+## Donor Dashboard Reformation Order
+
+The approved prototype reformation is tracked as issues 67–72. Issue 67 establishes email/password authentication with Resend verification and password recovery. Issue 68 follows with resumable donor profile completion. Issue 69 adds server-side geocoding and private distance matching. Issue 70 rebuilds the donor dashboard around a state-based primary action, followed by alert response in issue 71 and mutual donation confirmation in issue 72.

@@ -1,62 +1,58 @@
+"use client";
+
 import { useState } from "react";
-import { Send, Plus } from "lucide-react";
+import { Send, Plus, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { EmergencyMatchRequest } from "@/lib/donor-types";
+import { Input } from "@/components/ui/input";
+import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
+import { createEmergencyRequest } from "@/servers/emergency";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
+const BG_ENUM: Record<string, string> = {
+	"A+": "A_PLUS",
+	"A-": "A_MINUS",
+	"B+": "B_PLUS",
+	"B-": "B_MINUS",
+	"AB+": "AB_PLUS",
+	"AB-": "AB_MINUS",
+	"O+": "O_PLUS",
+	"O-": "O_MINUS",
+};
+
 interface EmergencyRequestFormProps {
-	hospitalName: string;
-	hospitalLocation: string;
-	hospitalPhone: string;
-	onSubmit: (req: EmergencyMatchRequest) => void;
+	organizationId: string;
 }
 
-export function EmergencyRequestForm({
-	hospitalName,
-	hospitalLocation,
-	hospitalPhone,
-	onSubmit,
-}: EmergencyRequestFormProps) {
+export function EmergencyRequestForm({ organizationId }: EmergencyRequestFormProps) {
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [reqBloodType, setReqBloodType] = useState("O+");
-	const [reqLocation, setReqLocation] = useState(
-		hospitalLocation || "Ikeja, Lagos",
-	);
-	const [reqUrgency, setReqUrgency] = useState<
-		"critical" | "high" | "medium"
-	>("critical");
+	const [reqUrgency, setReqUrgency] = useState<"standard" | "critical">("critical");
 	const [reqPints, setReqPints] = useState(2);
-	const [reqPhone, setReqPhone] = useState(hospitalPhone || "08098765432");
-	const [formSuccess, setFormSuccess] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const handleCreateRequestSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setFormSuccess("");
+		setIsSubmitting(true);
 
-		const newRequest: EmergencyMatchRequest = {
-			id: "req-" + Math.random().toString(36).substr(2, 9),
-			bloodType: reqBloodType,
-			hospitalName,
-			location: reqLocation,
-			urgency: reqUrgency,
-			requiredPints: reqPints,
-			contactPhone: reqPhone,
-			timestamp: new Date().toISOString(),
-			status: "pending",
-			donorConfirmedAt: null,
-		};
+		try {
+			await createEmergencyRequest({
+				organizationId,
+				bloodGroup: BG_ENUM[reqBloodType],
+				unitsNeeded: reqPints,
+				urgencyLevel: reqUrgency,
+			});
 
-		onSubmit(newRequest);
-		setFormSuccess(
-			"Emergency Live Broadcast triggered! Nearby compatible donors alerted via Push & SMS.",
-		);
-
-		setTimeout(() => {
+			toast.success("Emergency request created! Donors are being alerted.");
 			setShowCreateForm(false);
-			setFormSuccess("");
-		}, 2500);
+		} catch (err) {
+			toast.error("Failed to create request. Please try again.");
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	if (!showCreateForm) {
@@ -68,115 +64,146 @@ export function EmergencyRequestForm({
 					className="shadow-md"
 				>
 					<Plus className="h-4 w-4" />
-					Launch Emergency Match Request
+					Create Emergency Request
 				</Button>
 			</div>
 		);
 	}
 
 	return (
-		<Card className="bg-card border-border rounded-xl p-8 mb-8 animate-in slide-in-from-top-4 duration-300 shadow-lg transition-shadow hover:shadow-card-hover">
-			<h2 className="text-xl font-bold tracking-tight mb-2">
-				Publish Immediate Emergency Match Request
-			</h2>
-			<p className="text-muted-foreground text-xs mb-6">
-				This triggers instant emergency broadcasts across the bio
-				network, alerting all nearby voluntary donors matching the blood
-				criteria.
-			</p>
-
-			{formSuccess && (
-				<div className="p-4 mb-6 text-xs text-status-ok bg-status-ok-bg border border-status-ok/20 rounded-2xl animate-fade-in">
-					{formSuccess}
-				</div>
-			)}
+		<Card className="bg-card border-border rounded-2xl p-6 mb-8 shadow-sm">
+			<div className="mb-6">
+				<h2 className="text-lg font-semibold tracking-tight">
+					Create Emergency Request
+				</h2>
+				<p className="text-sm text-muted-foreground mt-1">
+					This alerts all nearby compatible donors matching the blood criteria.
+				</p>
+			</div>
 
 			<form
-				onSubmit={handleCreateRequestSubmit}
-				className="grid grid-cols-1 md:grid-cols-4 gap-6"
+				onSubmit={handleSubmit}
+				className="grid grid-cols-1 md:grid-cols-3 gap-6"
 			>
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
-						Required Blood Type
+					<label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
+						Blood Type
 					</label>
-					<select
-						value={reqBloodType}
-						onChange={(e) => setReqBloodType(e.target.value)}
-						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
-					>
+					<div className="grid grid-cols-4 gap-2">
 						{BLOOD_GROUPS.map((v) => (
-							<option key={v} value={v}>
-								{v} Group
-							</option>
+							<button
+								key={v}
+								type="button"
+								onClick={() => setReqBloodType(v)}
+								className={cn(
+									"flex items-center justify-center rounded-xl border p-2 transition",
+									reqBloodType === v
+										? "border-brand bg-brand-light shadow-sm"
+										: "border-border bg-card hover:border-brand/30 hover:bg-brand-light/40",
+								)}
+							>
+								<BloodTypeBadge
+									bloodGroup={v}
+									size="sm"
+									variant={reqBloodType === v ? "deep" : "default"}
+								/>
+							</button>
 						))}
-					</select>
+					</div>
 				</div>
 
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
-						Location Address
-					</label>
-					<input
-						type="text"
-						value={reqLocation}
-						onChange={(e) => setReqLocation(e.target.value)}
-						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
-						required
-					/>
-				</div>
-
-				<div>
-					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
+					<label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
 						Urgency Level
 					</label>
-					<select
-						value={reqUrgency}
-						onChange={(e) =>
-							setReqUrgency(
-								e.target.value as
-									| "critical"
-									| "high"
-									| "medium",
-							)
-						}
-						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
-					>
-						<option value="critical">
-							Critical (Simultaneous Push & SMS)
-						</option>
-						<option value="high">High (&lt; 2 Hours)</option>
-						<option value="medium">Medium (Scheduled)</option>
-					</select>
+					<div className="grid grid-cols-2 gap-3">
+						<button
+							type="button"
+							onClick={() => setReqUrgency("standard")}
+							className={cn(
+								"rounded-xl border p-3 text-left transition",
+								reqUrgency === "standard"
+									? "border-status-low/40 bg-status-low-bg shadow-sm"
+									: "border-border bg-card hover:border-status-low/30 hover:bg-status-low-bg/40",
+							)}
+						>
+							<span className="text-sm font-semibold text-foreground">
+								Standard
+							</span>
+							<p className="text-xs text-muted-foreground mt-0.5">
+								Schedule within 24 hours
+							</p>
+						</button>
+						<button
+							type="button"
+							onClick={() => setReqUrgency("critical")}
+							className={cn(
+								"rounded-xl border p-3 text-left transition",
+								reqUrgency === "critical"
+									? "border-brand/40 bg-brand-light shadow-sm"
+									: "border-border bg-card hover:border-brand/30 hover:bg-brand-light/40",
+							)}
+						>
+							<span className="flex items-center gap-1.5 text-sm font-semibold text-brand">
+								Critical
+							</span>
+							<p className="text-xs text-muted-foreground mt-0.5">
+								Immediate response needed
+							</p>
+						</button>
+					</div>
 				</div>
 
 				<div>
-					<label className="block text-xs font-mono tracking-wider text-muted-foreground uppercase mb-2">
-						Required Pints
+					<label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
+						Units Needed
 					</label>
-					<input
-						type="number"
-						min="1"
-						max="10"
-						value={reqPints}
-						onChange={(e) =>
-							setReqPints(parseInt(e.target.value) || 1)
-						}
-						className="w-full px-4 py-3 bg-muted border-border rounded-xl text-xs focus:outline-none"
-					/>
+					<div className="flex items-center gap-3">
+						<Button
+							type="button"
+							variant="outline"
+							size="icon"
+							onClick={() =>
+								setReqPints((n) => Math.max(1, n - 1))
+							}
+						>
+							<Minus className="h-4 w-4" />
+						</Button>
+						<Input
+							type="number"
+							min={1}
+							max={10}
+							value={reqPints}
+							onChange={(e) => setReqPints(parseInt(e.target.value) || 1)}
+							className="h-9 w-20 text-center text-base font-semibold"
+						/>
+						<Button
+							type="button"
+							variant="outline"
+							size="icon"
+							onClick={() =>
+								setReqPints((n) => Math.min(10, n + 1))
+							}
+						>
+							<Plus className="h-4 w-4" />
+						</Button>
+					</div>
+					<p className="mt-2 text-xs text-muted-foreground">
+						Adult patient: 1 unit raises hemoglobin by ~1 g/dL
+					</p>
 				</div>
 
-				<div className="md:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t border-border">
+				<div className="md:col-span-3 flex justify-end gap-3 mt-4 pt-4 border-t border-border">
 					<Button
 						type="button"
 						variant="outline"
-						size="lg"
 						onClick={() => setShowCreateForm(false)}
 					>
 						Cancel
 					</Button>
-					<Button type="submit" size="lg" className="shadow">
+					<Button type="submit" disabled={isSubmitting}>
 						<Send className="h-4 w-4" />
-						Launch Live Broadcast
+						{isSubmitting ? "Creating..." : "Create Request"}
 					</Button>
 				</div>
 			</form>

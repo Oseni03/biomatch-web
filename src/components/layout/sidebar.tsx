@@ -4,17 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-	Bell,
-	Building2,
-	HeartPulse,
 	LayoutDashboard,
 	AlertTriangle,
-	Wallet,
 	History,
-	BarChart,
-	Users,
-	UserPlus,
-	ShieldCheck,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -22,7 +14,6 @@ import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
 	SidebarContent,
@@ -38,9 +29,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
-import { useMyHospitalBank } from "@/hooks/use-hospital-bank";
-import { formatHospitalCode } from "@/lib/hospital-code";
-import { cn } from "@/lib/utils";
 
 type Role = "donor" | "hospital";
 
@@ -50,47 +38,16 @@ const NAV_ITEMS: Record<
 > = {
 	donor: [
 		{ title: "Dashboard", url: "/donor", icon: LayoutDashboard },
-		{
-			title: "Health Profile",
-			url: "/donor/health-profile",
-			icon: HeartPulse,
-		},
-		{ title: "My BioMatch Wallet", url: "/donor/wallet", icon: Wallet },
 		{ title: "Donation History", url: "/donor/history", icon: History },
 	],
 	hospital: [
 		{ title: "Dashboard", url: "/hospital", icon: LayoutDashboard },
 		{
-			title: "Live Inventory Grid",
-			url: "/hospital/inventory",
-			icon: Building2,
-		},
-		{
 			title: "Emergency Request",
 			url: "/hospital/emergency",
 			icon: AlertTriangle,
 		},
-		{
-			title: "Donor Directory",
-			url: "/hospital/directory",
-			icon: Users,
-		},
-		{
-			title: "Donor Screening",
-			url: "/hospital/screening",
-			icon: ShieldCheck,
-		},
-		{
-			title: "Analytics & Reports",
-			url: "/hospital/analytics",
-			icon: BarChart,
-		},
 		{ title: "Request History", url: "/hospital/history", icon: History },
-		{
-			title: "Staff Accounts",
-			url: "/hospital/staff",
-			icon: UserPlus,
-		},
 	],
 };
 
@@ -116,9 +73,6 @@ export function SidebarLayout({
 	const { data: donorAlerts } = useDonorAlerts(
 		role === "donor" ? session?.user?.id : undefined,
 	);
-	const { data: hospitalBank } = useMyHospitalBank(
-		role === "hospital" ? organizationId : undefined,
-	);
 	const alertCount = (donorAlerts?.alerts ?? []).filter(
 		(a) =>
 			a.status === "alerted" ||
@@ -142,25 +96,16 @@ export function SidebarLayout({
 								orientation="vertical"
 								className="mr-2 h-4"
 							/>
-							<h1 className="text-sm font-medium flex items-center gap-2">
-								{SECTION_LABELS[role]}
-								{hospitalBank && (
-									<span className="font-mono text-[11px] font-normal text-sidebar-foreground/60">
-										{hospitalBank.hospitalName} ·{" "}
-										{formatHospitalCode(
-											hospitalBank.sequenceNumber,
-										)}
-									</span>
-								)}
-							</h1>
+						<h1 className="text-sm font-medium flex items-center gap-2">
+							{SECTION_LABELS[role]}
+						</h1>
 						</div>
-						<div className="ml-auto flex items-center gap-1.5">
-							<TopBarActions role={role} alertCount={alertCount} />
-							<Separator
-								orientation="vertical"
-								className="mx-1 h-5"
-							/>
-							<NavUser
+					<div className="ml-auto flex items-center gap-1.5">
+						<Separator
+							orientation="vertical"
+							className="mx-1 h-5"
+						/>
+						<NavUser
 								user={{
 									name: userName ?? "BioMatch User",
 									email: role,
@@ -173,84 +118,6 @@ export function SidebarLayout({
 				</div>
 			</SidebarInset>
 		</SidebarProvider>
-	);
-}
-
-function BadgeCount({
-	count,
-	className,
-}: {
-	count: number;
-	className?: string;
-}) {
-	if (count <= 0) return null;
-	return (
-		<span
-			className={cn(
-				"absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white leading-none",
-				className,
-			)}
-		>
-			{count > 9 ? "9+" : count}
-		</span>
-	);
-}
-
-function TopBarActions({
-	role,
-	alertCount,
-}: {
-	role: Role;
-	alertCount: number;
-}) {
-	return (
-		<>
-			{/* {role === "hospital" && (
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					className={cn(
-						"relative text-destructive hover:text-destructive hover:bg-destructive/10",
-						alertCount > 0 && "animate-pulse",
-					)}
-					asChild
-				>
-					<Link href="/hospital/emergency">
-						<AlertTriangle className="size-4" />
-						<span className="sr-only">Emergency Request</span>
-					</Link>
-				</Button>
-			)}
-			{role === "donor" && (
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					className={cn(
-						"relative text-destructive hover:text-destructive hover:bg-destructive/10",
-						alertCount > 0 && "animate-pulse",
-					)}
-					asChild
-				>
-					<Link href="/donor">
-						<AlertTriangle className="size-4" />
-						<BadgeCount
-							count={alertCount}
-							className="bg-destructive"
-						/>
-						<span className="sr-only">Active Alerts</span>
-					</Link>
-				</Button>
-			)}
-			<Button
-				variant="ghost"
-				size="icon-sm"
-				className="relative text-muted-foreground hover:text-foreground"
-			>
-				<Bell className="size-4" />
-				<BadgeCount count={alertCount} className="bg-brand" />
-				<span className="sr-only">Notifications</span>
-			</Button> */}
-		</>
 	);
 }
 

@@ -105,8 +105,20 @@ New server files: `servers/analytics.ts`, `servers/staff.ts`. New hook: `hooks/u
 
 ## Non-goals (decided)
 - No `Donation` model (deferred)
-- No geospatial coordinates (text `location` field instead)
 - No Server Components conversion (keep `"use client"` + React Query)
+
+## Prototype Reformation Tickets (Approved 26 Aug 2026)
+
+The next implementation sequence is tracked in issues 67–72:
+
+1. Email/password authentication with Resend verification and password recovery.
+2. Resumable donor profile completion after simple signup.
+3. Server-side geocoding and private distance-based matching.
+4. Actionable donor dashboard with matched-only requests and explicit empty/loading states.
+5. Donor emergency alert response, including acceptance, decline, and withdrawal.
+6. Mutual donor/hospital donation confirmation with cooldown and rewards.
+
+Geocoding failures remain invisible to users and are logged server-side. Existing accounts remain accessible during the authentication transition.
 
 ## Ordering Rationale
 Phase 1 fixes the largest surface area of technical debt (data fetching pattern, code duplication, missing components) before adding new features. Phase 2 implements the most requested missing feature. Phase 3 upgrades the real-time mechanism.

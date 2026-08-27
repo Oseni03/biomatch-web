@@ -23,7 +23,7 @@ export function SectionCard({
 }: SectionCardProps) {
 	if (!collapsible) {
 		return (
-			<section className="rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-card-hover">
+			<section className="rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-card-hover">
 				<div className="flex items-center gap-2">
 					<Icon className="h-4.5 w-4.5 text-brand" />
 					<h2 className="text-sm font-semibold text-foreground">
@@ -38,7 +38,7 @@ export function SectionCard({
 	return (
 		<Collapsible
 			defaultOpen={defaultOpen}
-			className="rounded-xl border border-border bg-card transition-shadow hover:shadow-card-hover"
+			className="rounded-2xl border border-border bg-card transition-shadow hover:shadow-card-hover"
 		>
 			<CollapsibleTrigger className="flex w-full items-center gap-2 px-6 py-4 text-left">
 				<Icon className="h-4.5 w-4.5 text-brand" />
@@ -55,7 +55,7 @@ export function SectionCard({
 
 export function SectionCardSkeleton() {
 	return (
-		<div className="rounded-xl border border-border bg-card p-6">
+		<div className="rounded-2xl border border-border bg-card p-6">
 			<div className="flex items-center gap-2">
 				<Skeleton className="h-4.5 w-4.5 rounded" />
 				<Skeleton className="h-4 w-32" />

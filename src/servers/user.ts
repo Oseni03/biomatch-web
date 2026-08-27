@@ -3,9 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import type { Availability, BloodGroup, Role } from "@generated/prisma/enums";
 import type { Prisma } from "@generated/prisma/client";
-import { buildLocationLabel } from "./location";
 import { ELIGIBILITY_DAYS } from "@/lib/constants";
-import { getVerifiedDonorIds } from "./screening";
+import { geocodeAddress } from "@/lib/geocoding";
 
 export async function getUserById(id: string) {
 	return prisma.user.findUnique({
@@ -38,6 +37,41 @@ export async function getUserByEmail(email: string) {
 	});
 }
 
+export async function isDonorProfileComplete(
+	user:
+		| (Pick<
+				Prisma.UserGetPayload<{}>,
+				"name" | "bloodGroup" | "location" | "availability" | "updatedHealthInfo"
+		  > & { wallet?: unknown })
+		| null
+		| undefined,
+) {
+	if (!user) return false;
+
+	const health = (user.updatedHealthInfo ?? {}) as Record<string, unknown>;
+	const requiredHealthKeys = [
+		"height_cm",
+		"weight_kg",
+		"blood_pressure",
+		"resting_heart_rate",
+	] as const;
+
+	const hasRequiredHealth = requiredHealthKeys.every((key) => {
+		const value = health[key];
+		return typeof value === "string"
+			? value.trim().length > 0
+			: value != null && String(value).trim().length > 0;
+	});
+
+	return Boolean(
+		user.name?.trim() &&
+			user.bloodGroup &&
+			user.location?.trim() &&
+			user.availability &&
+			hasRequiredHealth,
+	);
+}
+
 export async function updateUserProfile(
 	id: string,
 	data: {
@@ -47,17 +81,27 @@ export async function updateUserProfile(
 		updatedHealthInfo?: any;
 		lastDonationDate?: Date;
 		location?: string;
-		locationId?: string;
 		availability?: Availability;
 		isActive?: boolean;
 	},
 ) {
 	const updateData: Record<string, unknown> = { ...data };
-	delete updateData.locationId;
 
-	if (data.locationId) {
-		updateData.locationId = data.locationId;
-		updateData.location = await buildLocationLabel(data.locationId);
+	if (data.location?.trim()) {
+		try {
+			const geocode = await geocodeAddress(data.location);
+			if (geocode) {
+				updateData.address = geocode.formattedAddress;
+				updateData.latitude = geocode.latitude;
+				updateData.longitude = geocode.longitude;
+			}
+		} catch (error) {
+			console.warn("Geocoding failed while saving donor profile:", {
+				userId: id,
+				location: data.location,
+				error,
+			});
+		}
 	}
 
 	return prisma.user.update({
@@ -113,7 +157,6 @@ export async function listDonors(filters?: ListDonorsFilters) {
 			{ lastDonationDate: null },
 			{ lastDonationDate: { lt: cutoff } },
 		];
-		where.id = { in: await getVerifiedDonorIds() };
 	}
 
 	if (filters?.search) {
@@ -131,7 +174,6 @@ export async function listDonors(filters?: ListDonorsFilters) {
 				genotype: true,
 				lastDonationDate: true,
 				location: true,
-				locationId: true,
 				deferredUntil: true,
 				blacklistedAt: true,
 			},

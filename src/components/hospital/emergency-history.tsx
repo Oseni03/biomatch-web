@@ -53,7 +53,7 @@ export function EmergencyHistory({ organizationId }: EmergencyHistoryProps) {
 					<Clock className="h-5 w-5 animate-spin text-muted-foreground" />
 				</div>
 			) : !data || data.requests.length === 0 ? (
-				<div className="bg-card border-border rounded-xl p-10 text-center text-muted-foreground">
+				<div className="bg-card border-border rounded-2xl p-10 text-center text-muted-foreground">
 					<Calendar className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
 					<p className="text-sm font-medium">
 						No completed emergency requests found.
