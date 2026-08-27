@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
@@ -12,7 +12,7 @@ import { AUTH_STATS } from "@/components/auth/auth-constants";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
-export default function LoginPage() {
+function LoginContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [email, setEmail] = useState(searchParams.get("email") ?? "");
@@ -189,5 +189,13 @@ export default function LoginPage() {
 				</div>
 			</AuthCard>
 		</AuthShell>
+	);
+}
+
+export default function LoginPage() {
+	return (
+		<Suspense fallback={null}>
+			<LoginContent />
+		</Suspense>
 	);
 }
