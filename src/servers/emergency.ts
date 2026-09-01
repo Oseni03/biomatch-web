@@ -295,6 +295,166 @@ export async function getAlertsForDonor(
 	};
 }
 
+export async function getCompatibleEmergencyRequests(
+	donorId: string,
+	filters?: { page?: number; pageSize?: number },
+) {
+	const page = filters?.page ?? 1;
+	const pageSize = filters?.pageSize ?? 10;
+
+	const donor = await prisma.user.findUnique({
+		where: { id: donorId },
+		select: {
+			bloodGroup: true,
+			blacklistedAt: true,
+			lastDonationDate: true,
+			deferredUntil: true,
+			isActive: true,
+		},
+	});
+
+	if (!donor || donor.blacklistedAt) {
+		return {
+			requests: [],
+			total: 0,
+			page,
+			pageSize,
+			totalPages: 0,
+			blacklisted: true,
+		};
+	}
+
+	const now = new Date();
+	const cutoffDate = getEligibilityCutoffDate(now);
+	const eligible =
+		donor.isActive &&
+		(!donor.lastDonationDate || donor.lastDonationDate < cutoffDate) &&
+		(!donor.deferredUntil || donor.deferredUntil < now);
+
+	if (!eligible) {
+		return {
+			requests: [],
+			total: 0,
+			page,
+			pageSize,
+			totalPages: 0,
+			blacklisted: false,
+			eligible: false,
+		};
+	}
+
+	const compatibleGroups = getCompatibleDonorGroups(donor.bloodGroup!);
+
+	const [requests, total] = await Promise.all([
+		prisma.emergencyRequest.findMany({
+			where: {
+				status: { in: ["pending", "matched"] },
+				bloodGroup: { in: compatibleGroups as any },
+			},
+			include: {
+				organization: {
+					select: {
+						id: true,
+						name: true,
+						hospitalBanks: { select: { location: true }, take: 1 },
+					},
+				},
+			},
+			orderBy: [{ urgencyLevel: "desc" }, { createdAt: "desc" }],
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+		}),
+		prisma.emergencyRequest.count({
+			where: {
+				status: { in: ["pending", "matched"] },
+				bloodGroup: { in: compatibleGroups as any },
+			},
+		}),
+	]);
+
+	const requestIds = requests.map((r) => r.id);
+	const existingAlerts =
+		requestIds.length > 0
+			? await prisma.emergencyAlert.findMany({
+					where: {
+						requestId: { in: requestIds },
+						donorId,
+					},
+					select: {
+						requestId: true,
+						status: true,
+						donorConfirmedAt: true,
+						hospitalConfirmedAt: true,
+						id: true,
+					},
+				})
+			: [];
+
+	const alertMap = new Map(existingAlerts.map((a) => [a.requestId, a]));
+
+	const missingRequestIds = requests
+		.filter((r) => !alertMap.has(r.id))
+		.map((r) => r.id);
+
+	if (missingRequestIds.length > 0) {
+		await prisma.emergencyAlert.createMany({
+			data: missingRequestIds.map((requestId) => ({
+				requestId,
+				donorId,
+				status: "alerted",
+			})),
+			skipDuplicates: true,
+		});
+
+		const createdAlerts = await prisma.emergencyAlert.findMany({
+			where: {
+				requestId: { in: missingRequestIds },
+				donorId,
+			},
+			select: {
+				requestId: true,
+				status: true,
+				donorConfirmedAt: true,
+				hospitalConfirmedAt: true,
+				id: true,
+			},
+		});
+
+		for (const a of createdAlerts) {
+			alertMap.set(a.requestId, a);
+		}
+	}
+
+	const mapped = requests.map((r) => {
+		const alert = alertMap.get(r.id);
+		return {
+			id: alert?.id ?? r.id,
+			requestId: r.id,
+			hospitalName: r.organization?.name ?? "Unknown",
+			location: r.organization?.hospitalBanks[0]?.location ?? "Unknown",
+			bloodType: r.bloodGroup,
+			requiredPints: r.unitsNeeded,
+			urgency: r.urgencyLevel === "critical" ? "critical" : "high",
+			timestamp: r.createdAt.toISOString(),
+			alertStatus: alert?.status ?? null,
+			donorConfirmedAt: alert?.donorConfirmedAt
+				? alert.donorConfirmedAt.toISOString()
+				: null,
+			status: r.status,
+		};
+	});
+
+	return {
+		requests: mapped,
+		total,
+		page,
+		pageSize,
+		totalPages: Math.ceil(total / pageSize),
+		blacklisted: false,
+		eligible,
+	};
+}
+
 export async function getEmergencyRequestsForOrganization(
 	organizationId: string,
 	filters?: { page?: number; pageSize?: number },

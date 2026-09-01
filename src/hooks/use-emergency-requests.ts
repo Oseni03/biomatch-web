@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	getAlertsForDonor,
+	getCompatibleEmergencyRequests,
 	getPendingEmergencyRequestsForOrganization,
 	getEmergencyHistory,
 	expandSearchRadius,
@@ -28,6 +29,18 @@ export function useDonorAlerts(
 	});
 }
 
+export function useCompatibleEmergencyRequests(
+	donorId?: string,
+	filters?: { page?: number; pageSize?: number },
+) {
+	return useQuery({
+		queryKey: ["compatible-emergency-requests", donorId, filters],
+		queryFn: () => getCompatibleEmergencyRequests(donorId!, filters),
+		enabled: !!donorId,
+		refetchInterval: POLL_INTERVAL_MS,
+	});
+}
+
 export function useRespondToAlert() {
 	const queryClient = useQueryClient();
 
@@ -43,6 +56,9 @@ export function useRespondToAlert() {
 		}) => respondToAlert(alertId, status, donorId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+			queryClient.invalidateQueries({
+				queryKey: ["compatible-emergency-requests"],
+			});
 		},
 		onError: (err: Error) => {
 			toast.error(err.message);
@@ -65,6 +81,9 @@ export function useUpdateAlertStatus() {
 		}) => updateAlertStatus(alertId, status, donorId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+			queryClient.invalidateQueries({
+				queryKey: ["compatible-emergency-requests"],
+			});
 		},
 		onError: (err: Error) => {
 			toast.error(err.message);
@@ -118,8 +137,9 @@ export function useConfirmDonation() {
 			queryClient.invalidateQueries({
 				queryKey: ["pending-emergency-requests"],
 			});
+			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
 			queryClient.invalidateQueries({
-				queryKey: ["donor-alerts"],
+				queryKey: ["compatible-emergency-requests"],
 			});
 			queryClient.invalidateQueries({
 				queryKey: ["alerts-awaiting-confirmation"],
@@ -149,6 +169,9 @@ export function useDonorConfirmDonation() {
 		}) => donorConfirmDonation(alertId, donorId),
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+			queryClient.invalidateQueries({
+				queryKey: ["compatible-emergency-requests"],
+			});
 			queryClient.invalidateQueries({
 				queryKey: ["alerts-awaiting-confirmation"],
 			});

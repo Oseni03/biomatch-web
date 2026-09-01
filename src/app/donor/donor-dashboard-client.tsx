@@ -8,11 +8,10 @@ import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
 import {
 	displayBloodGroup,
-	type DonorAlertWithRequest,
 	type EmergencyMatchRequest,
 } from "@/lib/donor-types";
 import {
-	useDonorAlerts,
+	useCompatibleEmergencyRequests,
 	useDonorConfirmDonation,
 } from "@/hooks/use-emergency-requests";
 import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
@@ -25,43 +24,6 @@ import { EmergencyAlertsFeed } from "@/components/donor/emergency-alerts-feed";
 import { ProfileIncompleteBanner } from "@/components/donor/profile-incomplete-banner";
 import { ProfileCompleteModal } from "@/components/donor/profile-complete-modal";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-
-function buildRequests(alerts: DonorAlertWithRequest["alerts"]): EmergencyMatchRequest[] {
-	return (alerts ?? [])
-		.filter(
-			(a: { request: { status: string } }) =>
-				a.request.status === "pending" || a.request.status === "matched",
-		)
-		.map((a: {
-			id: string;
-			donorConfirmedAt: Date | null;
-			request: {
-				organization: {
-					name: string;
-					hospitalBanks: { location: string }[];
-				} | null;
-				bloodGroup: string;
-				unitsNeeded: number;
-				urgencyLevel: string;
-				createdAt: Date;
-				status: string;
-			};
-			status: string;
-		}) => ({
-			id: a.id,
-			hospitalName: a.request.organization?.name ?? "Unknown",
-			location: a.request.organization?.hospitalBanks[0]?.location ?? "Unknown",
-			bloodType: displayBloodGroup(a.request.bloodGroup),
-			requiredPints: a.request.unitsNeeded,
-			contactPhone: "N/A",
-			urgency: a.request.urgencyLevel === "critical" ? "critical" : "high",
-			timestamp: new Date(a.request.createdAt).toISOString(),
-			status: a.request.status as "pending" | "matched" | "completed",
-			donorConfirmedAt: a.donorConfirmedAt
-				? new Date(a.donorConfirmedAt).toISOString()
-				: null,
-		}));
-}
 
 function checkProfileIncomplete(user: unknown): boolean {
 	if (!user || typeof user !== "object") return true;
@@ -96,10 +58,10 @@ export function DonorDashboardClient() {
 	const [page, setPage] = useState(1);
 	const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-	const { data: alerts } = useDonorAlerts(session?.user?.id, {
-		page,
-		pageSize: 10,
-	});
+	const { data: compatible } = useCompatibleEmergencyRequests(
+		session?.user?.id,
+		{ page, pageSize: 10 },
+	);
 
 	const lastDonationDate = user?.lastDonationDate
 		? new Date(user.lastDonationDate).toISOString().slice(0, 10)
@@ -111,22 +73,43 @@ export function DonorDashboardClient() {
 	const openedAlertIds = useRef<Set<string>>(new Set());
 
 	useEffect(() => {
-		for (const a of alerts?.alerts ?? []) {
-			if (a.status === "alerted" && !openedAlertIds.current.has(a.id)) {
-				openedAlertIds.current.add(a.id);
-				markAlertOpened(a.id).catch(() => {});
+		for (const r of compatible?.requests ?? []) {
+			const alertId = r.id;
+			const alertStatus = r.alertStatus;
+			if (alertStatus === "alerted" && !openedAlertIds.current.has(alertId)) {
+				openedAlertIds.current.add(alertId);
+				markAlertOpened(alertId).catch(() => {});
 			}
 		}
-	}, [alerts]);
+	}, [compatible]);
 
-	const requests = useMemo(
-		() => buildRequests(alerts?.alerts ?? []),
-		[alerts],
+	const requests = useMemo<EmergencyMatchRequest[]>(
+		() =>
+			(compatible?.requests ?? [])
+				.filter(
+					(r) =>
+						r.status === "pending" || r.status === "matched",
+				)
+				.map((r) => ({
+					id: r.id,
+					hospitalName: r.hospitalName,
+					location: r.location,
+					bloodType: displayBloodGroup(r.bloodType),
+					requiredPints: r.requiredPints,
+					contactPhone: "N/A",
+					urgency: r.urgency,
+					timestamp: r.timestamp,
+					status: r.status as "pending" | "matched" | "completed",
+					donorConfirmedAt: r.donorConfirmedAt,
+				})),
+		[compatible],
 	);
 
 	const donorAlertStatuses: Record<string, string> = {};
-	for (const a of alerts?.alerts ?? []) {
-		donorAlertStatuses[a.id] = a.status;
+	for (const r of compatible?.requests ?? []) {
+		if (r.alertStatus) {
+			donorAlertStatuses[r.id] = r.alertStatus;
+		}
 	}
 
 	const {
@@ -228,10 +211,10 @@ export function DonorDashboardClient() {
 					onConfirmDonation={handleConfirmDonation}
 				/>
 
-				{alerts && alerts.totalPages > 1 && (
+				{compatible && compatible.totalPages > 1 && (
 					<PaginationControls
 						page={page}
-						totalPages={alerts.totalPages}
+						totalPages={compatible.totalPages}
 						onPageChange={setPage}
 						variant="numbered"
 					/>

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getQueryClient } from "@/lib/get-query-client";
 import { getServerSession } from "@/lib/get-session";
 import { getUserById } from "@/servers/user";
-import { getAlertsForDonor } from "@/servers/emergency";
+import { getCompatibleEmergencyRequests } from "@/servers/emergency";
 import { DonorDashboardClient } from "./donor-dashboard-client";
 
 export default async function DonorDashboardPage() {
@@ -21,8 +21,8 @@ export default async function DonorDashboardPage() {
 			queryFn: () => getUserById(userId),
 		}),
 		queryClient.prefetchQuery({
-			queryKey: ["donor-alerts", userId, { page: 1, pageSize: 10 }],
-			queryFn: () => getAlertsForDonor(userId, { page: 1, pageSize: 10 }),
+			queryKey: ["compatible-emergency-requests", userId, { page: 1, pageSize: 10 }],
+			queryFn: () => getCompatibleEmergencyRequests(userId, { page: 1, pageSize: 10 }),
 		}),
 	]);
 
