@@ -66,9 +66,9 @@ export const Pricing: React.FC = () => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full blur-2xl pointer-events-none" />
                         <div>
                             <div className="text-xs font-mono text-red-400 uppercase mb-1">Healthcare Facilities</div>
-                            <div className="text-3xl font-extrabold text-white mb-2">From ₦25,000 <span className="text-sm font-normal text-[#72778f]">/ month</span></div>
+                            <div className="text-3xl font-extrabold text-white mb-2">₦100,000 <span className="text-sm font-normal text-[#72778f]">/ 5 donors</span></div>
                             <p className="text-sm text-[#8b91a7] mb-6">
-                                Flat predictable subscription scaled by licensed bed capacity.
+                                Flat fee covering dispatch matching for up to 5 verified donors.
                             </p>
 
                             <div className="space-y-3 mb-8">
