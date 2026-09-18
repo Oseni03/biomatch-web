@@ -1,107 +1,118 @@
-"use client";
-
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Twitter, Linkedin, Mail } from "lucide-react";
+import React from 'react';
+import { ShieldCheck, Phone, Mail } from 'lucide-react';
+import Link from 'next/link';
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 
-const FOOTER_LINKS = {
-	product: [
-		{ label: "Why BioMatch", href: "#stats" },
-		{ label: "Features", href: "#features" },
-		{ label: "Pricing", href: "#" },
-		{ label: "Status", href: "#" },
-	],
-	company: [
-		{ label: "About", href: "#" },
-		{ label: "Blog", href: "#" },
-		{ label: "Careers", href: "#" },
-		{ label: "Press", href: "#" },
-	],
-	legal: [
-		{ label: "Privacy", href: "#" },
-		{ label: "Terms", href: "#" },
-		{ label: "Security", href: "#" },
-		{ label: "Contact", href: "#" },
-	],
-	social: [
-		{ icon: Twitter, href: "https://twitter.com", label: "Twitter" },
-		{ icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
-		{ icon: Mail, href: "mailto:hello@biomatch.org", label: "Email" },
-	],
-};
-
-export function Footer() {
-  return (
-    <footer className="border-t border-white/10 bg-ink">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto max-w-6xl px-4 py-16 md:py-20"
-      >
-				<div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-5">
-					<div className="col-span-1">
-						<Link href="/" className="mb-6 flex items-center gap-2">
-							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
-								<BloodDropIcon className="h-4 w-4" />
-							</div>
-							<span className="font-serif text-lg font-semibold italic text-white">
-								BioMatch
-							</span>
-						</Link>
-						<p className="text-sm leading-relaxed text-white/50">
-							Emergency blood matching at scale. Saving lives
-							across Nigeria.
-						</p>
-					</div>
-
-					{(["product", "company", "legal"] as const).map((group) => (
-						<div key={group}>
-							<h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/40">
-								{group}
-							</h3>
-							<ul className="space-y-3">
-								{FOOTER_LINKS[group].map((link, i) => (
-									<li key={i}>
-										<Link
-											href={link.href}
-											className="text-sm text-white/60 transition-colors duration-200 hover:text-brand"
-										>
-											{link.label}
-										</Link>
-									</li>
-								))}
-							</ul>
+export const Footer: React.FC = () => {
+	return (
+		<footer className="bg-[#040508] border-t border-[#1a1c28] text-xs text-[#72778f] py-12 px-4 sm:px-6">
+			<div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+				{/* Brand Col (2 cols) */}
+				<div className="md:col-span-2 space-y-4">
+					<Link href="/" className="flex items-center gap-2">
+						<div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#dc2626] to-[#991b1b] flex items-center justify-center shadow-[0_0_14px_rgba(220,38,38,0.4)]">
+							<BloodDropIcon className="w-4 h-4 text-white" />
 						</div>
-					))}
-				</div>
+						<span className="font-extrabold text-base tracking-tight text-white">
+							Bio<span className="text-[#dc2626]">MATCH</span>
+						</span>
+					</Link>
 
-				<div className="flex flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 md:flex-row">
-					<p className="text-sm text-white/40">
-						&copy; {new Date().getFullYear()} BioMatch. All rights
-						reserved.
+					<p className="text-xs text-[#a6abbd] leading-relaxed max-w-sm">
+						Nigeria's emergency blood logistics network. Connecting accredited hospitals, verified cold-storage bank reserves, and voluntary on-call donors within an 8-minute response corridor.
 					</p>
-					<div className="flex items-center gap-4">
-						{FOOTER_LINKS.social.map((item, i) => {
-							const Icon = item.icon;
-							return (
-								<Link
-									key={i}
-									href={item.href}
-									aria-label={item.label}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-white/60 transition-all duration-200 hover:bg-white/10 hover:text-brand"
-								>
-									<Icon className="h-5 w-5" />
-								</Link>
-							);
-						})}
+
+					<div className="flex items-center gap-2 text-xs text-emerald-400">
+						<ShieldCheck className="w-4 h-4 shrink-0" />
+						<span>Fully compliant with NBTS directives & NDPR 2023.</span>
 					</div>
 				</div>
-			</motion.div>
+
+				{/* Hospitals Column */}
+				<div className="space-y-2.5">
+					<h4 className="text-xs font-bold text-white font-mono uppercase tracking-wider">
+						For Hospitals
+					</h4>
+					<ul className="space-y-2">
+						<li>
+							<Link href="/auth/signup?role=hospital" className="hover:text-white transition-colors">
+								Onboard Facility
+							</Link>
+						</li>
+						<li>
+							<a href="#pricing" className="hover:text-white transition-colors">
+								Facility Tiers & Pricing
+							</a>
+						</li>
+						<li>
+							<Link href="/auth/login" className="hover:text-white transition-colors">
+								Physician Command Login
+							</Link>
+						</li>
+						<li>
+							<span className="text-[#555a70]">Inter-Facility API (HL7/FHIR)</span>
+						</li>
+					</ul>
+				</div>
+
+				{/* Donors Column */}
+				<div className="space-y-2.5">
+					<h4 className="text-xs font-bold text-white font-mono uppercase tracking-wider">
+						For Donors
+					</h4>
+					<ul className="space-y-2">
+						<li>
+							<Link href="/auth/signup" className="hover:text-white transition-colors">
+								Register as Volunteer
+							</Link>
+						</li>
+						<li>
+							<Link href="/auth/login" className="hover:text-white transition-colors">
+								Donor Pass Sign In
+							</Link>
+						</li>
+						<li>
+							<a href="#why-it-matters" className="hover:text-white transition-colors">
+								Eligibility Guidelines
+							</a>
+						</li>
+						<li>
+							<span className="text-[#555a70]">Nutrition Support Voucher</span>
+						</li>
+					</ul>
+				</div>
+
+				{/* Emergency Desk Column */}
+				<div className="space-y-2.5">
+					<h4 className="text-xs font-bold text-white font-mono uppercase tracking-wider">
+						Emergency Desk
+					</h4>
+					<ul className="space-y-2">
+						<li className="flex items-center gap-1.5 text-white">
+							<Phone className="w-3.5 h-3.5 text-[#dc2626]" />
+							<span>0800-BIOMATCH</span>
+						</li>
+						<li className="flex items-center gap-1.5 text-[#a6abbd]">
+							<Mail className="w-3.5 h-3.5 text-[#60a5fa]" />
+							<span>emergency@biomatch.ng</span>
+						</li>
+						<li className="text-[11px] text-[#72778f]">
+							24/7 Clinical Triage Hotline
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<div className="max-w-7xl mx-auto pt-6 border-t border-[#1a1c28] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px]">
+				<div>
+					© {new Date().getFullYear()} BioMATCH Nigeria. Built to save lives across Nigerian emergency corridors.
+				</div>
+				<div className="flex items-center gap-6">
+					<a href="#" className="hover:text-white">Privacy Policy</a>
+					<a href="#" className="hover:text-white">Terms of Clinical Custody</a>
+					<a href="#" className="hover:text-white">NBSC Guidelines</a>
+				</div>
+			</div>
 		</footer>
 	);
-}
+};

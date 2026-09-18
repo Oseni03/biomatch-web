@@ -63,9 +63,9 @@
 ### Public Routes
 | Path | Page | Description |
 |---|---|---|
-| `/` | `app/page.tsx` | Landing page |
+| `/` | `app/page.tsx` | Landing page — renders Navbar → Hero → BloodShortage (`#why-it-matters`) → HowItWorks → ForDonors → ForHospitals → Safety → Pricing → FinalCTA → Footer |
 | `/auth/login` | `app/auth/login/page.tsx` | Sign-in |
-| `/auth/signup` | `app/auth/signup/page.tsx` | Register (donor/hospital toggle) |
+| `/auth/signup` | `app/auth/signup/page.tsx` | Register (donor/hospital toggle; accepts `?role=donor\|hospital` to preselect the toggle) |
 | `/auth/onboarding` | `app/auth/onboarding/page.tsx` | Post-signup profile setup |
 | `/auth/forgot-password` | `app/auth/forgot-password/page.tsx` | Request password reset |
 | `/auth/reset-password` | `app/auth/reset-password/page.tsx` | Set a new password |

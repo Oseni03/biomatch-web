@@ -9,6 +9,7 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
+import { EASE_SMOOTH } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type ServerSession = {
@@ -52,7 +53,7 @@ export function Navbar({ serverSession }: NavbarProps) {
 		<motion.nav
 			initial={{ y: -20, opacity: 0 }}
 			animate={{ y: 0, opacity: 1 }}
-			transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+			transition={{ duration: 0.5, ease: EASE_SMOOTH }}
 			className={cn(
 				"sticky top-0 z-50 transition-all duration-300",
 				scrolled
@@ -70,25 +71,39 @@ export function Navbar({ serverSession }: NavbarProps) {
 
 				<div className="hidden md:flex items-center gap-10 text-sm">
 					<a
-						href="#partners"
-						onClick={(e) => handleNavLink(e, "partners")}
+						href="#why-it-matters"
+						onClick={(e) => handleNavLink(e, "why-it-matters")}
 						className="font-medium text-muted-foreground transition-colors hover:text-brand"
 					>
-						Stats
+						Why it matters
 					</a>
 					<a
-						href="#features"
-						onClick={(e) => handleNavLink(e, "features")}
+						href="#how-it-works"
+						onClick={(e) => handleNavLink(e, "how-it-works")}
 						className="font-medium text-muted-foreground transition-colors hover:text-brand"
 					>
-						Features
+						How it works
 					</a>
 					<a
-						href="#impact"
-						onClick={(e) => handleNavLink(e, "impact")}
+						href="#for-donors"
+						onClick={(e) => handleNavLink(e, "for-donors")}
 						className="font-medium text-muted-foreground transition-colors hover:text-brand"
 					>
-						Impact
+						For donors
+					</a>
+					<a
+						href="#for-hospitals"
+						onClick={(e) => handleNavLink(e, "for-hospitals")}
+						className="font-medium text-muted-foreground transition-colors hover:text-brand"
+					>
+						For hospitals
+					</a>
+					<a
+						href="#pricing"
+						onClick={(e) => handleNavLink(e, "pricing")}
+						className="font-medium text-muted-foreground transition-colors hover:text-brand"
+					>
+						Pricing
 					</a>
 				</div>
 
@@ -139,36 +154,57 @@ export function Navbar({ serverSession }: NavbarProps) {
 						initial={{ opacity: 0, height: 0 }}
 						animate={{ opacity: 1, height: "auto" }}
 						exit={{ opacity: 0, height: 0 }}
-						transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+						transition={{ duration: 0.25, ease: EASE_SMOOTH }}
 						className="overflow-hidden border-t border-border md:hidden"
 					>
 						<div className="space-y-4 bg-background px-6 py-6">
 							<a
-								href="#stats"
-								onClick={(e) => handleNavLink(e, "stats")}
+								href="#why-it-matters"
+								onClick={(e) => handleNavLink(e, "why-it-matters")}
 								className="block font-medium text-foreground transition-colors hover:text-brand"
 							>
-								Stats
+								Why it matters
 							</a>
 							<a
 								href="#how-it-works"
 								onClick={(e) => handleNavLink(e, "how-it-works")}
 								className="block font-medium text-foreground transition-colors hover:text-brand"
 							>
-								Features
+								How it works
 							</a>
 							<a
-								href="#impact"
-								onClick={(e) => handleNavLink(e, "impact")}
+								href="#for-donors"
+								onClick={(e) => handleNavLink(e, "for-donors")}
 								className="block font-medium text-foreground transition-colors hover:text-brand"
 							>
-								Impact
+								For donors
+							</a>
+							<a
+								href="#for-hospitals"
+								onClick={(e) => handleNavLink(e, "for-hospitals")}
+								className="block font-medium text-foreground transition-colors hover:text-brand"
+							>
+								For hospitals
+							</a>
+							<a
+								href="#safety"
+								onClick={(e) => handleNavLink(e, "safety")}
+								className="block font-medium text-foreground transition-colors hover:text-brand"
+							>
+								Safety
+							</a>
+							<a
+								href="#pricing"
+								onClick={(e) => handleNavLink(e, "pricing")}
+								className="block font-medium text-foreground transition-colors hover:text-brand"
+							>
+								Pricing
 							</a>
 							<div className="border-t border-border pt-4">
 								{session ? (
 									<>
 										<Link
-											href={`/donor`}
+											href={`/${session.user.role}`}
 											onClick={() => setIsMenuOpen(false)}
 											className="block py-2 font-medium text-foreground transition-colors hover:text-brand"
 										>

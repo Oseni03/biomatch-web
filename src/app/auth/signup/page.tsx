@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -15,9 +15,12 @@ import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 
 type Role = "donor" | "hospital";
 
-export default function SignupPage() {
+function SignupContent() {
 	const router = useRouter();
-	const [role, setRole] = useState<Role>("donor");
+	const searchParams = useSearchParams();
+	const [role, setRole] = useState<Role>(
+		searchParams.get("role") === "hospital" ? "hospital" : "donor",
+	);
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -164,5 +167,13 @@ export default function SignupPage() {
 				</div>
 			</AuthCard>
 		</AuthShell>
+	);
+}
+
+export default function SignupPage() {
+	return (
+		<Suspense fallback={null}>
+			<SignupContent />
+		</Suspense>
 	);
 }

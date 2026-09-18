@@ -53,6 +53,9 @@ export const auth = betterAuth({
 		autoSignInAfterVerification: false,
 		expiresIn: 60 * 60 * 24,
 		sendVerificationEmail: async ({ user, url }) => {
+			if (process.env.NODE_ENV !== "production") {
+				return;
+			}
 			await sendEmail({
 				to: user.email,
 				subject: "Verify your BioMatch email",

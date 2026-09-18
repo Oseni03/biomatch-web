@@ -66,15 +66,16 @@ src/
 │   │   ├── live-status-panel.tsx
 │   │   └── request-funnel-card.tsx
 │   ├── landing/                        # Landing page sections
-│   │   ├── cta-band.tsx
-│   │   ├── feature-rows.tsx
-│   │   ├── footer.tsx
-│   │   ├── hero.tsx
-│   │   ├── impact.tsx
-│   │   ├── navbar.tsx
-│   │   ├── services.tsx
-│   │   ├── stats.tsx
-│   │   └── testimonials.tsx
+│   │   ├── navbar.tsx                   # Sticky nav (EASE_SMOOTH, real section anchors)
+│   │   ├── hero.tsx                     # Live dispatch radar simulation
+│   │   ├── blood-shortage.tsx           # #why-it-matters
+│   │   ├── how-it-works.tsx             # #how-it-works
+│   │   ├── for-donors.tsx               # #for-donors
+│   │   ├── for-hospitals.tsx            # #for-hospitals
+│   │   ├── safety.tsx                   # #safety
+│   │   ├── pricing.tsx                  # #pricing
+│   │   ├── final-cta.tsx                # #final-cta
+│   │   └── footer.tsx                   # Brand BloodDropIcon, /auth/* links
 │   ├── layout/
 │   │   └── sidebar.tsx                  # SidebarLayout for role sections
 │   └── ui/                             # shadcn/ui primitives
