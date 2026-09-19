@@ -4,11 +4,18 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import { usePendingEmergencyRequests } from "@/hooks/use-emergency-requests";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { AppSidebar } from "./app-sidebar";
+import { HospitalSidebar } from "./hospital-sidebar";
 import type { EligibilityView } from "./eligibility-card";
+import {
+    getActiveHospitalItem,
+    getHospitalPageTitle,
+} from "./hospital-nav-config";
+import type { BloodBankStatus } from "./blood-bank-status";
 import {
     FALLBACK_NAME,
     SECTION_LABELS,
@@ -16,6 +23,11 @@ import {
     getPageTitle,
     type Role,
 } from "./nav-config";
+
+function useHospitalActiveRequestCount(organizationId?: string) {
+    const { data } = usePendingEmergencyRequests(organizationId, { page: 1, pageSize: 10 });
+    return data?.total ?? 0;
+}
 
 interface SidebarLayoutProps {
     role: Role;
@@ -26,6 +38,13 @@ interface SidebarLayoutProps {
     /** Shows the red dot on Notifications. */
     hasUnreadNotifications?: boolean;
     children: React.ReactNode;
+
+    /** Hospital-only: feeds the dedicated HospitalSidebar. */
+    organizationId?: string;
+    hospitalName?: string;
+    hospitalLocation?: string;
+    bloodBankStatus?: BloodBankStatus;
+    bloodBankMessage?: string;
 }
 
 export function SidebarLayout({
@@ -34,12 +53,21 @@ export function SidebarLayout({
     eligibility,
     hasUnreadNotifications,
     children,
+    organizationId,
+    hospitalName,
+    hospitalLocation,
+    bloodBankStatus,
+    bloodBankMessage,
 }: SidebarLayoutProps) {
     const { data: session } = authClient.useSession();
     const pathname = usePathname();
 
-    const activeUrl = getActiveItem(role, pathname)?.url;
-    const pageTitle = getPageTitle(role, pathname);
+    const activeUrl =
+        role === "hospital"
+            ? getActiveHospitalItem(pathname)?.url
+            : getActiveItem(role, pathname)?.url;
+    const pageTitle =
+        role === "hospital" ? getHospitalPageTitle(pathname) : getPageTitle(role, pathname);
 
     const user = {
         name: userName ?? session?.user?.name ?? FALLBACK_NAME[role],
@@ -47,16 +75,31 @@ export function SidebarLayout({
         image: session?.user?.image,
     };
 
+    const activeRequestCount = useHospitalActiveRequestCount(organizationId);
+
     return (
         <SidebarProvider>
-            <AppSidebar
-                role={role}
-                userId={session?.user?.id}
-                user={user}
-                activeUrl={activeUrl}
-                eligibility={eligibility}
-                hasUnreadNotifications={hasUnreadNotifications}
-            />
+            {role === "hospital" ? (
+                <HospitalSidebar
+                    user={user}
+                    hospitalName={hospitalName || FALLBACK_NAME.hospital}
+                    hospitalLocation={hospitalLocation ?? ""}
+                    activeUrl={activeUrl}
+                    activeRequestCount={activeRequestCount}
+                    hasUnreadNotifications={hasUnreadNotifications}
+                    bloodBankStatus={bloodBankStatus}
+                    bloodBankMessage={bloodBankMessage}
+                />
+            ) : (
+                <AppSidebar
+                    role={role}
+                    userId={session?.user?.id}
+                    user={user}
+                    activeUrl={activeUrl}
+                    eligibility={eligibility}
+                    hasUnreadNotifications={hasUnreadNotifications}
+                />
+            )}
             <SidebarInset>
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     <header className="on-ink flex h-14 shrink-0 items-center gap-2 rounded-2xl border border-sidebar-border bg-sidebar px-4 shadow-card">

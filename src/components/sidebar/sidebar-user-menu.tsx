@@ -66,11 +66,26 @@ function UserIdentity({ role, user }: { role: Role; user: SidebarUser }) {
     );
 }
 
-export function SidebarUserMenu({ role, user }: { role: Role; user: SidebarUser }) {
+interface SidebarUserMenuProps {
+    role: Role;
+    user: SidebarUser;
+    /** Overrides the built-in Help dialog with a caller-owned one. */
+    onSupportClick?: () => void;
+}
+
+export function SidebarUserMenu({ role, user, onSupportClick }: SidebarUserMenuProps) {
     const router = useRouter();
     const { isMobile, setOpenMobile } = useSidebar();
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
+
+    const openSupport = () => {
+        if (onSupportClick) {
+            onSupportClick();
+        } else {
+            setIsHelpOpen(true);
+        }
+    };
 
     const handleSignOut = async () => {
         if (isSigningOut) return;
@@ -126,7 +141,7 @@ export function SidebarUserMenu({ role, user }: { role: Role; user: SidebarUser 
                                         Profile
                                     </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => setIsHelpOpen(true)}>
+                                <DropdownMenuItem onSelect={openSupport}>
                                     <HelpCircle className="size-4" aria-hidden="true" />
                                     Help &amp; Support
                                 </DropdownMenuItem>

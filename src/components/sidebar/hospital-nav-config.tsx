@@ -6,6 +6,8 @@ export interface HospitalNavItem {
     url: string;
     icon: LucideIcon;
     description: string;
+    /** Only highlight on the exact URL. Needed for the dashboard root, which prefixes every other route. */
+    exact?: boolean;
     /** Shows a live count badge. */
     countKey?: "activeRequests";
     /** Shows a red dot when the matching flag is true. */
@@ -19,11 +21,12 @@ export const HOSPITAL_NAV_ITEMS: HospitalNavItem[] = [
         url: "/hospital",
         icon: LayoutDashboard,
         description: "Overview & emergency stats",
+        exact: true,
     },
     {
         id: "emergency_requests",
         title: "Emergency Requests",
-        url: "/hospital/requests",
+        url: "/hospital/emergency",
         icon: AlertTriangle,
         description: "Live alerts & responding donors",
         countKey: "activeRequests",

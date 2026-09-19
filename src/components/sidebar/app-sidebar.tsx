@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
+import { getEligibility, ELIGIBILITY_MONTHS } from "@/lib/eligibility";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
 import {
@@ -42,6 +44,59 @@ function useActiveAlertCount(role: Role, userId?: string) {
     return (data?.alerts ?? []).filter((alert) => ACTIVE_ALERT_STATUSES.has(alert.status)).length;
 }
 
+type DonorEligibilityUser = {
+    lastDonationDate?: Date | string | null;
+    deferredUntil?: Date | string | null;
+    blacklistedAt?: Date | string | null;
+};
+
+/** Map a donor's screening/cooldown state onto the sidebar eligibility card. */
+function buildEligibilityView(user?: DonorEligibilityUser | null): EligibilityView | undefined {
+    if (!user) return undefined;
+
+    if (user.blacklistedAt) {
+        return {
+            tone: "ineligible",
+            headline: "Permanently blacklisted",
+            detail: "You can no longer donate through BioMATCH.",
+        };
+    }
+
+    if (user.deferredUntil) {
+        const until = new Date(user.deferredUntil);
+        if (until > new Date()) {
+            const dateLabel = until.toLocaleDateString("en-NG", {
+                month: "short",
+                day: "numeric",
+            });
+            return {
+                tone: "deferred",
+                headline: `Deferred until ${dateLabel}`,
+                detail: "Your screening deferred you until this date.",
+            };
+        }
+    }
+
+    const lastDonation = user.lastDonationDate
+        ? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+        : null;
+    const eligibility = getEligibility(lastDonation);
+
+    if (eligibility.eligible) {
+        return {
+            tone: "eligible",
+            headline: "Available today",
+            detail: "You're cleared to donate right now.",
+        };
+    }
+
+    return {
+        tone: "deferred",
+        headline: `Eligible again in ${eligibility.daysRemaining} days`,
+        detail: `${ELIGIBILITY_MONTHS}-month wait between donations.`,
+    };
+}
+
 interface AppSidebarProps {
     role: Role;
     userId?: string;
@@ -62,6 +117,11 @@ export function AppSidebar({
     const { setOpenMobile } = useSidebar();
     const counts = { alerts: useActiveAlertCount(role, userId) };
     const dots = { notifications: hasUnreadNotifications };
+
+    // Server-provided eligibility wins; otherwise live-derive it from the donor
+    // dashboard query (already prefetched on /donor, refreshed by mutations).
+    const donorUser = useDonorDashboard().data;
+    const cardEligibility = eligibility ?? buildEligibilityView(donorUser);
 
     // On mobile the sidebar is a sheet; close it once the user picks a destination.
     const closeMobile = () => setOpenMobile(false);
@@ -147,7 +207,7 @@ export function AppSidebar({
             </SidebarContent>
 
             <SidebarFooter className="gap-2 p-3">
-                {role === "donor" && eligibility && <EligibilityCard {...eligibility} />}
+                {role === "donor" && cardEligibility && <EligibilityCard {...cardEligibility} />}
                 <SidebarUserMenu role={role} user={user} />
             </SidebarFooter>
         </Sidebar>

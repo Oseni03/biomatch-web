@@ -3,7 +3,6 @@ import {
     Bell,
     History,
     LayoutDashboard,
-    Radio,
     type LucideIcon,
 } from "lucide-react";
 
@@ -24,8 +23,13 @@ export interface NavItem {
 // Profile is reached from the account menu in the sidebar footer, not from here.
 export const NAV_ITEMS: Record<Role, NavItem[]> = {
     donor: [
-        { title: "Dashboard", url: "/donor", icon: LayoutDashboard, exact: true },
-        { title: "Urgent Requests", url: "/donor/requests", icon: Radio, countKey: "alerts" },
+        {
+            title: "Dashboard",
+            url: "/donor",
+            icon: LayoutDashboard,
+            exact: true,
+            countKey: "alerts",
+        },
         { title: "Donation History", url: "/donor/history", icon: History },
         {
             title: "Notifications",
@@ -66,7 +70,7 @@ function isWithin(pathname: string, url: string) {
 }
 
 /**
- * Longest-prefix match, so "/donor/requests/42" activates "Urgent Requests".
+ * Longest-prefix match, so "/donor/history/2026" activates "Donation History".
  * Items marked `exact` (the dashboard root) never match sub-routes.
  */
 export function getActiveItem(role: Role, pathname: string): NavItem | undefined {

@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-09-18 — Simplified to prototype spec. Core loop only. Auth form refactor: `AuthForm` rebuilt on shadcn (`Card`/`Badge`/alert banner), added `AuthInput` + `PasswordField`, login page now composes `AuthForm`.
+> Last updated: 2026-09-19 — Wired both role sidebars. Hospital: `SidebarLayout` branches to the dedicated `HospitalSidebar` fed by `getHospitalSidebarContext` (org bank name/location + live blood-bank status); `HOSPITAL_NAV_ITEMS` targets real routes. Donor: `AppSidebar` nav points at real routes (dead `/donor/requests` + `/donor/notifications` removed, live alert badge moved to Dashboard) and the eligibility card is now fed client-side from the prefetched donor-dashboard query.
 
 ```
 src/
@@ -83,8 +83,19 @@ src/
 │   │   ├── pricing.tsx                  # #pricing
 │   │   ├── final-cta.tsx                # #final-cta
 │   │   └── footer.tsx                   # Brand BloodDropIcon, /auth/* links
-│   ├── layout/
-│   │   └── sidebar.tsx                  # SidebarLayout for role sections
+│   ├── sidebar/                         # Modular role-sidebar package (shadcn sidebar)
+│   │   ├── sidebar-layout.tsx           #   Client shell: SidebarProvider + top bar + AppSidebar/HospitalSidebar
+│   │   ├── app-sidebar.tsx              #   Generic donor sidebar (live alert count, eligibility card)
+│   │   ├── hospital-sidebar.tsx         #   Dedicated hospital sidebar (blood-bank status, workspace, support)
+│   │   ├── nav-config.tsx               #   Donor/hospital nav config, active-route matching
+│   │   ├── hospital-nav-config.tsx      #   Hospital nav config + page-title helper
+│   │   ├── sidebar-user-menu.tsx        #   User menu (profile, help/support, sign-out)
+│   │   ├── eligibility-card.tsx         #   Donor eligibility status card
+│   │   ├── blood-bank-status.tsx        #   Blood bank status card (operational/limited/offline)
+│   │   ├── hospital-workspace-card.tsx  #   Hospital name/location/accreditation card
+│   │   ├── hospital-support-dialog.tsx  #   Hospital emergency support contact dialog
+│   │   ├── support-dialog.tsx           #   Generic help & support dialog
+│   │   └── account-summary.tsx          #   (unused) account summary card
 │   └── ui/                             # shadcn/ui primitives
 │       ├── button.tsx
 │       ├── card.tsx
