@@ -49,7 +49,7 @@ html {
     --border: 245 12% 18%;
     --input: 245 12% 18%;
     --ring: 0 100% 27%;
-    --radius: 0.625rem;
+    --radius: 0.375rem;
     --sidebar-background: 245 35% 4%;
     --sidebar-foreground: 240 15% 90%;
     --sidebar-primary: 0 100% 27%;
@@ -68,9 +68,11 @@ html {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }

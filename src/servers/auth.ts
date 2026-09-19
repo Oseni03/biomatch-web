@@ -26,6 +26,45 @@ async function generateUniqueOrgSlug(name: string): Promise<string> {
 	return slug;
 }
 
+type DonorProfile = {
+	phone: string;
+	/** "A+" | "A-" | ... | "O-", or "unknown" when the donor hasn't been screened */
+	bloodGroup: string;
+	preferredHospital: string;
+	emergencyOnly: boolean;
+};
+
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_GROUP_UNKNOWN = "unknown";
+const PHONE_PATTERN = /^\+?[0-9\s-]{10,15}$/;
+const BG_ENUM: Record<string, string> = {
+	"A+": "A_PLUS",
+	"A-": "A_MINUS",
+	"B+": "B_PLUS",
+	"B-": "B_MINUS",
+	"AB+": "AB_PLUS",
+	"AB-": "AB_MINUS",
+	"O+": "O_PLUS",
+	"O-": "O_MINUS",
+};
+
+// The client validates too, but server actions are public endpoints, so re-check here.
+function validateDonorProfile(profile: DonorProfile): string | null {
+	if (!PHONE_PATTERN.test(profile.phone.trim())) {
+		return "Enter a valid phone number";
+	}
+	if (
+		profile.bloodGroup !== BLOOD_GROUP_UNKNOWN &&
+		!BLOOD_GROUPS.includes(profile.bloodGroup)
+	) {
+		return "Select a valid blood group";
+	}
+	if (!profile.preferredHospital.trim()) {
+		return "Select a screening hospital";
+	}
+	return null;
+}
+
 export async function signUpWithProfile(formData: {
 	email: string;
 	password: string;
@@ -34,6 +73,7 @@ export async function signUpWithProfile(formData: {
 	location?: string;
 	availability?: Availability;
 	isActive?: boolean;
+	donorProfile?: DonorProfile;
 }) {
 	const {
 		email,
@@ -43,7 +83,15 @@ export async function signUpWithProfile(formData: {
 		location,
 		availability,
 		isActive,
+		donorProfile,
 	} = formData;
+
+	// Validate before creating the account so a bad profile can't leave a half-created user.
+	if (role === "donor" && donorProfile) {
+		const message = validateDonorProfile(donorProfile);
+		if (message) return { error: message };
+	}
+
 	try {
 		const data = await auth.api.signUpEmail({
 			body: {
@@ -71,6 +119,17 @@ export async function signUpWithProfile(formData: {
 			if (availability !== undefined)
 				updateData.availability = availability;
 			if (isActive !== undefined) updateData.isActive = isActive;
+
+			if (donorProfile) {
+				updateData.phone = donorProfile.phone.trim();
+				// Unknown blood group is stored as null until a hospital screens the donor.
+				updateData.bloodGroup =
+					donorProfile.bloodGroup === BLOOD_GROUP_UNKNOWN
+						? null
+						: BG_ENUM[donorProfile.bloodGroup];
+				updateData.preferredHospital = donorProfile.preferredHospital.trim();
+				updateData.emergencyOnly = donorProfile.emergencyOnly;
+			}
 
 			if (Object.keys(updateData).length > 0) {
 				await prisma.user.update({

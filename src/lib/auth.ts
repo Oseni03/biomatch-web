@@ -79,6 +79,7 @@ export const auth = betterAuth({
 			});
 		},
 		resetPasswordTokenExpiresIn: 60 * 60,
+		requireEmailVerification: process.env.NODE_ENV === "production"
 	},
 	plugins: [
 		organization({

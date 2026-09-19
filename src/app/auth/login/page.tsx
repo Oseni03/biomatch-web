@@ -3,21 +3,22 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+import { ArrowRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { AuthCard } from "@/components/auth/auth-card";
-import { AuthFormField } from "@/components/auth/auth-form-field";
+import { AuthForm } from "@/components/auth/auth-form";
+import { AuthInput } from "@/components/auth/auth-input";
+import { PasswordField } from "@/components/auth/password-field";
+import { Wordmark } from "@/components/brand/wordmark";
+import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { AUTH_STATS } from "@/components/auth/auth-constants";
 import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
 
 function LoginContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [email, setEmail] = useState(searchParams.get("email") ?? "");
 	const [password, setPassword] = useState("");
-	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState(
 		searchParams.get("verify-required") === "1"
 			? "Please verify your email before accessing BioMatch."
@@ -30,10 +31,14 @@ function LoginContent() {
 	);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const clearAlert = () => {
 		setError("");
 		setSuccess("");
+	};
+
+	const handleLogin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		clearAlert();
 		setIsLoading(true);
 
 		const { data, error: authError } = await authClient.signIn.email({
@@ -51,16 +56,10 @@ function LoginContent() {
 			return;
 		}
 
-		const user = data?.user as { role?: string; emailVerified?: boolean } | undefined;
-		if (user?.emailVerified === false) {
-			setError("Your email is not verified yet. Check your inbox for the verification link or resend it below.");
-			setIsLoading(false);
-			return;
-		}
+		const role = data?.user.role;
 
-		const userRole = user?.role;
-		if (userRole) {
-			router.push(`/${userRole}`);
+		if (role) {
+			router.push(`/${role}`);
 		} else {
 			setError("Login succeeded but unable to determine your role.");
 			setIsLoading(false);
@@ -74,7 +73,7 @@ function LoginContent() {
 		}
 
 		setIsLoading(true);
-		setError("");
+		clearAlert();
 
 		const response = await fetch("/api/auth/send-verification-email", {
 			method: "POST",
@@ -111,83 +110,96 @@ function LoginContent() {
 			description="Every donor and hospital on BioMatch is verified in real time — pick up right where you left off."
 			stats={AUTH_STATS}
 		>
-			<AuthCard
-				icon={<BloodDropIcon className="h-5 w-5 text-white" />}
-				title="Welcome back"
-				description="Sign in to access your dashboard"
+			<Link href="/" className="mx-auto mb-8 flex w-fit items-center gap-2.5">
+				<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-brand transition-transform duration-300 hover:scale-105">
+					<BloodDropIcon className="size-5" />
+				</div>
+				<Wordmark size="lg" className="text-white" />
+			</Link>
+
+			<AuthForm
+				title="Sign in to BioMATCH"
+				subtitle="Access the national emergency blood logistics console or manage your voluntary donor status."
+				error={error}
+				success={success}
+				onClearAlert={clearAlert}
+				onSubmit={handleLogin}
+				footer={
+					<div className="space-y-3">
+						<div className="text-sm text-muted-foreground">
+							New to BioMATCH?{" "}
+							<Link
+								href="/auth/signup"
+								className="font-medium text-brand transition-colors hover:text-brand-hover"
+							>
+								Create an account
+							</Link>
+						</div>
+						<div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+							<Link
+								href="/auth/signup?role=hospital"
+								className="transition-colors hover:text-foreground"
+							>
+								Register Hospital
+							</Link>
+							<span className="text-muted-foreground/50" aria-hidden>
+								•
+							</span>
+							<Link href="/auth/signup" className="transition-colors hover:text-foreground">
+								Register as Blood Donor
+							</Link>
+						</div>
+					</div>
+				}
 			>
-				{error && (
-					<div className="mb-6 rounded-2xl border border-brand/20 bg-brand-light p-4 text-sm text-brand">
-						{error}
-					</div>
-				)}
-				{success && (
-					<div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
-						{success}
-					</div>
-				)}
+				<AuthInput
+					id="login-identifier"
+					label="Email Address"
+					requiredIndicator
+					leftIcon={<Mail className="h-4 w-4" />}
+					value={email}
+					onChange={(e) => setEmail(e.target.value)}
+					placeholder="name@hospital.org or donor@biomatch.test"
+					autoComplete="email"
+				/>
 
-				<form onSubmit={handleSubmit} className="space-y-5">
-					<AuthFormField
-						label="Email Address"
-						icon="mail"
-						type="email"
-						value={email}
-						onChange={setEmail}
-						placeholder="example@biomatch.org"
-						required
-					/>
-					<AuthFormField
-						label="Password"
-						icon="lock"
-						type="password"
-						value={password}
-						onChange={setPassword}
-						placeholder="••••••••"
-						required
-					/>
-
-					<div className="flex items-center justify-between">
-						<span />
+				<PasswordField
+					id="login-password"
+					label="Password"
+					requiredIndicator
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					placeholder="Enter your password"
+					autoComplete="current-password"
+					headerAction={
 						<Link
 							href="/auth/forgot-password"
-							className="text-xs text-brand hover:text-brand-hover transition-colors"
+							className="text-xs font-medium text-brand transition-colors hover:text-brand-hover"
 						>
 							Forgot password?
 						</Link>
-					</div>
+					}
+				/>
 
-					<Button
-						type="submit"
-						disabled={isLoading}
-						className="w-full rounded-2xl py-6 text-sm font-medium"
-					>
-						{isLoading ? "Authenticating..." : "Sign in"}
-					</Button>
+				<Button
+					type="submit"
+					disabled={isLoading}
+					className="w-full rounded-2xl py-6 text-sm font-medium"
+				>
+					{isLoading ? "Verifying Credentials..." : "Sign In to BioMATCH"}
+					{!isLoading && <ArrowRight className="h-4 w-4" />}
+				</Button>
 
-					<Button
-						type="button"
-						variant="outline"
-						disabled={isLoading}
-						onClick={handleResendVerification}
-						className="w-full rounded-2xl py-6 text-sm font-medium"
-					>
-						Resend verification email
-					</Button>
-				</form>
-
-				<div className="mt-8 border-t border-border pt-6 text-center">
-					<p className="text-sm text-muted-foreground">
-						Don&apos;t have an account?{" "}
-						<Link
-							href="/auth/signup"
-							className="font-medium text-brand hover:text-brand-hover transition-colors"
-						>
-							Register here
-						</Link>
-					</p>
-				</div>
-			</AuthCard>
+				<Button
+					type="button"
+					variant="outline"
+					disabled={isLoading}
+					onClick={handleResendVerification}
+					className="w-full rounded-2xl py-6 text-sm font-medium"
+				>
+					Resend verification email
+				</Button>
+			</AuthForm>
 		</AuthShell>
 	);
 }

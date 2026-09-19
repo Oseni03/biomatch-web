@@ -167,6 +167,9 @@ model User {
   updatedHealthInfo Json               @default("{}")
   location          String?
   address           String?
+  phone             String?
+  preferredHospital String?
+  emergencyOnly     Boolean @default(true)
   latitude          Float?
   longitude         Float?
   availability      Availability?
