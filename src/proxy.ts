@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(new URL("/auth/login", request.url));
 		}
 
-		if (session.user.emailVerified === false) {
+		if (process.env.NODE_ENV === "production" && session.user.emailVerified === false) {
 			const loginUrl = new URL("/auth/login", request.url);
 			loginUrl.searchParams.set("email", session.user.email ?? "");
 			loginUrl.searchParams.set("verify-required", "1");

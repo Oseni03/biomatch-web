@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-08-27 — Simplified to prototype spec. Core loop only.
+> Last updated: 2026-09-18 — Simplified to prototype spec. Core loop only. Auth form refactor: `AuthForm` rebuilt on shadcn (`Card`/`Badge`/alert banner), added `AuthInput` + `PasswordField`, login page now composes `AuthForm`.
 
 ```
 src/
@@ -10,7 +10,7 @@ src/
 │   ├── auth/
 │   │   ├── accept-invitation/page.tsx # Accept org staff invite
 │   │   ├── forgot-password/page.tsx   # Request password reset
-│   │   ├── login/page.tsx             # Sign-in
+│   │   ├── login/page.tsx             # Sign-in (brand logo + AuthForm + resend verification)
 │   │   ├── onboarding/page.tsx        # Post-signup profile setup (blood group, phone, org name)
 │   │   ├── reset-password/page.tsx    # Set new password from reset token
 │   │   └── signup/page.tsx            # Registration (donor/hospital toggle)
@@ -43,7 +43,14 @@ src/
 │
 ├── components/
 │   ├── auth/
-│   │   └── auth-shell.tsx              # Shared auth page shell
+│   │   ├── accept-invitation-client.tsx # Org staff invite accept flow
+│   │   ├── auth-card.tsx               # Card wrapper (icon + title + description)
+│   │   ├── auth-constants.ts           # Shared shell stats
+│   │   ├── auth-form.tsx               # Shadcn auth card form (title, error/success alert, footer)
+│   │   ├── auth-form-field.tsx         # Legacy labeled input (icon: mail/lock/phone, toggle)
+│   │   ├── auth-input.tsx              # Shadcn input w/ label, leftIcon, hint, error
+│   │   ├── auth-shell.tsx              # Shared auth page shell
+│   │   └── password-field.tsx          # Password input w/ visibility toggle + headerAction
 │   ├── brand/                          # Brand design-system components
 │   │   ├── blood-drop-icon.tsx
 │   │   ├── blood-type-badge.tsx
