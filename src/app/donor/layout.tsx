@@ -1,4 +1,4 @@
-import { SidebarLayout } from "@/components/layout/sidebar";
+import { SidebarLayout } from "@/components/sidebar/sidebar-layout";
 import { getServerSession } from "@/lib/get-session";
 
 export default async function DonorSectionLayout({ children }: { children: React.ReactNode }) {

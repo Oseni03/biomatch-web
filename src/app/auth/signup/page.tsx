@@ -21,6 +21,7 @@ import { DonorAlertStep, DonorScreeningStep } from "@/components/auth/donor-step
 import { signUpWithProfile } from "@/servers/auth";
 import { toast } from "sonner";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
+import { Wordmark } from "@/components/brand/wordmark";
 
 type Role = "donor" | "hospital";
 
@@ -184,6 +185,14 @@ function SignupContent() {
 			description="Create your account with email and password. Donors add their blood group, screening hospital, and alert preferences as part of signup, while hospitals can start creating requests once their org is set up."
 			stats={AUTH_STATS}
 		>
+
+			<Link href="/" className="mx-auto mb-8 flex w-fit items-center gap-2.5">
+				<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-brand transition-transform duration-300 hover:scale-105">
+					<BloodDropIcon className="size-5" />
+				</div>
+				<Wordmark size="lg" className="text-white" />
+			</Link>
+
 			<AuthForm
 				title={copy.title}
 				subtitle={copy.subtitle}
