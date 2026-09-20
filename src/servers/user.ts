@@ -78,6 +78,7 @@ export async function updateUserProfile(
 		name?: string;
 		bloodGroup?: BloodGroup;
 		genotype?: string;
+		phone?: string;
 		updatedHealthInfo?: any;
 		lastDonationDate?: Date;
 		location?: string;

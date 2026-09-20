@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-09-19 — Wired both role sidebars. Hospital: `SidebarLayout` branches to the dedicated `HospitalSidebar` fed by `getHospitalSidebarContext` (org bank name/location + live blood-bank status); `HOSPITAL_NAV_ITEMS` targets real routes. Donor: `AppSidebar` nav points at real routes (dead `/donor/requests` + `/donor/notifications` removed, live alert badge moved to Dashboard) and the eligibility card is now fed client-side from the prefetched donor-dashboard query.
+> Last updated: 2026-09-19 — Wired both role sidebars. Hospital: `SidebarLayout` branches to the dedicated `HospitalSidebar` fed by `getHospitalSidebarContext` (org bank name/location + live blood-bank status); `HOSPITAL_NAV_ITEMS` targets real routes. Donor: `AppSidebar` nav points at real routes (dead `/donor/requests` + `/donor/notifications` removed, live alert badge moved to Dashboard) and the eligibility card is now fed client-side from the prefetched donor-dashboard query. Same session: merged the (React-Router prototype) donor dashboard mock into the real donor dashboard — new `UrgentRequestCard` hero ("Urgent Request Near You", I Can Help / Not Available feeding existing respond/decline, confirmed-mission state with en-route/arrived/donation-confirm/withdraw), plus Eligibility and Verified Donation Record cards; `ActiveMissionTracker` component retired (its confirmed-mission role absorbed by the hero card). Follow-up same day: ported the mock's remaining layout deltas into `donor-dashboard-client.tsx` — in-page tabs (Dashboard / Live Requests / My Responses with live counts), time-aware greeting with standby subtitle, `My Responses` view reusing `UrgentRequestCard` for accepted/en-route/arrived/completed alerts with the mock's empty state, `max-w-4xl` content constraint, Eligibility + Ledger scoped to the Dashboard tab; removed a stray `icon="heart"` prop on the shared Button (no such prop — Heart already renders as a child). Accept path in `useEmergencyMissionTracker` now fires a success toast ("Response confirmed. The hospital blood bank team has been notified.") matching the prototype's confirmation toast.
 
 ```
 src/
@@ -17,9 +17,14 @@ src/
 │   ├── donor/                          # Donor section (role=donor)
 │   │   ├── layout.tsx                  #   Wraps children in SidebarLayout role="donor"
 │   │   ├── page.tsx                    #   Dashboard — server data loader
-│   │   ├── donor-dashboard-client.tsx  #   Client orchestrator
+│   │   ├── donor-dashboard-client.tsx  #   Thin orchestrator (data + view switch)
 │   │   ├── loading.tsx                 #   Route-level skeleton
 │   │   ├── error.tsx                   #   Route-level error boundary
+│   │   ├── profile/
+│   │   │   ├── page.tsx                #   Donor profile — server data loader
+│   │   │   ├── donor-profile-client.tsx #  Prefilled update form (personal, donation, health) + completion progress
+│   │   │   ├── loading.tsx
+│   │   │   └── error.tsx
 │   │   └── history/
 │   │       ├── page.tsx                #   Donation history & impact
 │   │       ├── donor-history-client.tsx
@@ -61,12 +66,19 @@ src/
 │   │   ├── stat-card.tsx
 │   │   └── section-card.tsx
 │   ├── donor/
-│   │   ├── active-mission-tracker.tsx
 │   │   ├── alert-card.tsx
+│   │   ├── dashboard-eligibility.tsx   # Eligibility + blood-profile tiles
+│   │   ├── dashboard-header.tsx        # Time-aware greeting
+│   │   ├── dashboard-record.tsx        # Verified Donation Record ledger card
+│   │   ├── dashboard-responses.tsx     # My Emergency Responses view
+│   │   ├── dashboard-shared.tsx        # CardHandlers type, EmptyState, InfoCard, InfoTile
+│   │   ├── dashboard-urgent.tsx        # Urgent Request Near You hero
 │   │   ├── declined-alert-row.tsx
 │   │   ├── donation-history-table.tsx
 │   │   ├── emergency-alerts-feed.tsx
-│   │   └── success-modal.tsx
+│   │   ├── profile-incomplete-banner.tsx # Links to /donor/profile
+│   │   ├── success-modal.tsx
+│   │   └── urgent-request-card.tsx      #   Dashboard hero: urgent match + CTA / confirmed-mission state
 │   ├── hospital/
 │   │   ├── emergency-request-form.tsx
 │   │   ├── emergency-history.tsx
@@ -115,6 +127,7 @@ src/
 │   ├── auth-client.ts                  # BetterAuth client
 │   ├── blood-compatibility.ts
 │   ├── constants.ts
+│   ├── donor-dashboard.ts              # Profile-completeness, request mapping, greeting/date helpers
 │   ├── donor-types.ts
 │   ├── eligibility.ts
 │   ├── geocoding.ts

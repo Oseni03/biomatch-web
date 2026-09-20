@@ -26,6 +26,9 @@ export function useEmergencyMissionTracker() {
 			try {
 				await respondToAlert(reqId, "accepted", donorId);
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
+				toast.success(
+					"Response confirmed. The hospital blood bank team has been notified.",
+				);
 			} catch {
 				toast.error("Failed to accept alert");
 			}
