@@ -1,6 +1,4 @@
-import { prisma } from "@/lib/prisma";
-
-export type GeocodeResult = {
+type GeocodeResult = {
 	latitude: number;
 	longitude: number;
 	formattedAddress: string;
@@ -86,31 +84,6 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
 		longitude: Number(first.lon),
 		formattedAddress: first.display_name ?? trimmed,
 	};
-}
-
-export async function persistAddressCoordinates(
-	userId: string,
-	address: string,
-) {
-	const trimmed = address.trim();
-	if (!trimmed) return { updated: false };
-
-	const coordinates = await geocodeAddress(trimmed);
-	if (!coordinates) {
-		console.warn(`Geocoding failed for user ${userId}: ${trimmed}`);
-		return { updated: false };
-	}
-
-	await prisma.user.update({
-		where: { id: userId },
-		data: {
-			address: trimmed,
-			latitude: coordinates.latitude,
-			longitude: coordinates.longitude,
-		},
-	});
-
-	return { updated: true, coordinates };
 }
 
 export function haversineDistanceKm(

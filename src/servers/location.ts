@@ -29,14 +29,3 @@ export async function scoreDonorProximity(
 	if (distanceKm <= 50) return 2;
 	return 0;
 }
-
-export async function proximityPassesThreshold(
-	score: number,
-	searchRadius: number,
-): Promise<boolean> {
-	if (score > 0) {
-		const threshold = searchRadius <= 5 ? 3 : searchRadius <= 15 ? 2 : 1;
-		return score >= threshold;
-	}
-	return true;
-}

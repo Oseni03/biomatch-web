@@ -73,12 +73,14 @@ Enums: `Role` (donor/hospital/admin), `BloodGroup` (A+/A-/B+/B-/AB+/AB-/O+/O-), 
 
 | File | Functions |
 |---|---|
-| `auth.ts` | `signUpWithProfile()`, `loginWithRole()` |
-| `emergency.ts` | `createEmergencyRequest()`, `getActiveEmergencyRequests()`, `getAlertsForDonor()`, `getEmergencyRequestsForHospital()`, `getPendingEmergencyRequestsForHospital()`, `expandSearchRadius()`, `respondToAlert()`, `updateAlertStatus()`, `markAlertOpened()`, `getEmergencyRequestStatus()`, `getEmergencyHistory()` |
-| `hospital.ts` | `getAllHospitalBanks()`, `getHospitalBankById()`, `createHospitalBank()`, `updateHospitalBankInventory()` |
-| `incentive.ts` | `createIncentiveClaim()`, `getClaimsByUserId()`, `getPendingClaims()`, `updateClaimStatus()` |
-| `user.ts` | `getUserById()`, `getUserBasicById()`, `getUserByEmail()`, `updateUserProfile()`, `updateUserRole()`, `listDonors()` |
-| `wallet.ts` | `getWalletByUserId()`, `awardPoints()`, `deductPoints()` |
+| `auth.ts` | `signUpWithProfile()`, `acceptInvitationSignUp()` |
+| `emergency.ts` | `createEmergencyRequest()`, `getAlertsForDonor()`, `getPendingEmergencyRequestsForOrganization()`, `getEmergencyHistory()`, `getAlertsAwaitingConfirmation()`, `expandSearchRadius()`, `respondToAlert()`, `withdrawAlert()`, `updateAlertStatus()`, `markAlertOpened()`, `confirmDonation()`, `donorConfirmDonation()`, `getDonorHistory()`, `getLocalDemandStats()` |
+| `hospital.ts` | `createHospitalBank()`, `getHospitalSidebarContext()` |
+| `location.ts` | `scoreDonorProximity()` |
+| `notification.ts` | `sendEmergencyAlertEmail()` |
+| `organization.ts` | `getActiveOrganizationId()`, `getOrganizationOwnerUserId()`, `isUserInAnyOrganization()`, `getActiveOrganizationRole()`, `authorizeOrgAction()` |
+| `staff.ts` | `getInvitationPreview()` (invite-accept flow only) |
+| `user.ts` | `getUserById()`, `updateUserProfile()` |
 
 ## Code Conventions
 

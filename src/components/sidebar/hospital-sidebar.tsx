@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
@@ -145,6 +145,40 @@ export function HospitalSidebar({
                                         </SidebarMenuItem>
                                     );
                                 })}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        className="h-auto gap-3 rounded-xl border border-brand/25 bg-brand/10 px-3 py-2.5 text-xs font-semibold text-brand transition-colors hover:bg-brand/20 hover:text-brand"
+                                    >
+                                        <Link
+                                            href="/hospital/emergency"
+                                            onClick={closeMobile}
+                                        >
+                                            <Plus
+                                                aria-hidden="true"
+                                                className="size-[18px]"
+                                            />
+                                            <span className="min-w-0 flex-1 text-left">
+                                                <span className="block truncate">
+                                                    Create Blood Request
+                                                </span>
+                                                <span className="block truncate text-[10px] font-normal text-sidebar-foreground/50">
+                                                    Broadcast to nearby donors
+                                                </span>
+                                            </span>
+                                            <span className="shrink-0 rounded-full bg-brand px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                                                Urgent
+                                            </span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>

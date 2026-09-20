@@ -8,9 +8,12 @@ import {
 	History,
 	Activity,
 	CheckCircle2,
-	AlertTriangle,
+	Send,
 } from "lucide-react";
-import { usePendingEmergencyRequests } from "@/hooks/use-emergency-requests";
+import {
+	useAlertsAwaitingConfirmation,
+	usePendingEmergencyRequests,
+} from "@/hooks/use-emergency-requests";
 import { StatCard } from "@/components/dashboard/stat-card";
 
 const TABS = [
@@ -32,44 +35,51 @@ export function HospitalDashboardShell({
 		page: 1,
 		pageSize: 10,
 	});
+	const { data: awaitingConfirmation } =
+		useAlertsAwaitingConfirmation(organizationId);
 
 	const pendingServerReqs = pendingData?.requests ?? [];
-	const totalAlerts = pendingData?.total ?? pendingServerReqs.length;
-	const activeAlerts = pendingServerReqs.filter(
-		(r) => r.status === "pending" || r.status === "matched",
-	).length;
-	const fulfilledAlerts = pendingServerReqs.filter(
-		(r) => r.status === "fulfilled",
-	).length;
+	const activeCount = pendingData?.total ?? pendingServerReqs.length;
+	const respondingCount = pendingServerReqs.reduce(
+		(sum, r) =>
+			sum +
+			r.aggregates.accepted +
+			r.aggregates.en_route +
+			r.aggregates.arrived +
+			r.aggregates.completed,
+		0,
+	);
+	const notifiedCount = pendingServerReqs.reduce(
+		(sum, r) => sum + r.alerts.length,
+		0,
+	);
+	const awaitingCount = awaitingConfirmation?.length ?? 0;
 
 	return (
 		<div className="space-y-8 text-left">
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 				<StatCard
 					icon={Activity}
-					label="Total Requests"
-					value={String(totalAlerts)}
-				/>
-				<StatCard
-					icon={AlertTriangle}
-					label="Active Alerts"
-					value={String(activeAlerts)}
-					tone={activeAlerts > 0 ? "warning" : "default"}
+					label="Active Requests"
+					value={String(activeCount)}
+					tone={activeCount > 0 ? "warning" : "default"}
 				/>
 				<StatCard
 					icon={Users}
 					label="Donors Responding"
-					value={String(
-						pendingServerReqs.reduce(
-							(sum, r) => sum + r.alerts.length,
-							0,
-						),
-					)}
+					value={String(respondingCount)}
+					tone={respondingCount > 0 ? "warning" : "default"}
+				/>
+				<StatCard
+					icon={Send}
+					label="Donors Notified"
+					value={String(notifiedCount)}
 				/>
 				<StatCard
 					icon={CheckCircle2}
-					label="Fulfilled"
-					value={String(fulfilledAlerts)}
+					label="Awaiting Confirmation"
+					value={String(awaitingCount)}
+					tone={awaitingCount > 0 ? "warning" : "default"}
 				/>
 			</div>
 

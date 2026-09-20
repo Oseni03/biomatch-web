@@ -130,10 +130,10 @@ export function EmergencyRequestClient({
 							</Button>
 							<Button
 								onClick={() =>
-									router.push("/hospital/inventory")
+									router.push("/hospital")
 								}
 							>
-								View Inventory
+								View Active Requests
 							</Button>
 						</div>
 					</CardContent>

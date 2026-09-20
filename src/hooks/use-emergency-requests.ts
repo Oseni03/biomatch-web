@@ -4,9 +4,6 @@ import {
 	getPendingEmergencyRequestsForOrganization,
 	getEmergencyHistory,
 	expandSearchRadius,
-	respondToAlert,
-	updateAlertStatus,
-	confirmDonation,
 	donorConfirmDonation,
 	getAlertsAwaitingConfirmation,
 } from "@/servers/emergency";
@@ -25,50 +22,6 @@ export function useDonorAlerts(
 		queryFn: () => getAlertsForDonor(donorId!, filters),
 		enabled: !!donorId,
 		refetchInterval: POLL_INTERVAL_MS,
-	});
-}
-
-export function useRespondToAlert() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({
-			alertId,
-			status,
-			donorId,
-		}: {
-			alertId: string;
-			status: "accepted" | "declined";
-			donorId?: string;
-		}) => respondToAlert(alertId, status, donorId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-		},
-		onError: (err: Error) => {
-			toast.error(err.message);
-		},
-	});
-}
-
-export function useUpdateAlertStatus() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({
-			alertId,
-			status,
-			donorId,
-		}: {
-			alertId: string;
-			status: "en_route" | "arrived";
-			donorId?: string;
-		}) => updateAlertStatus(alertId, status, donorId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
-		},
-		onError: (err: Error) => {
-			toast.error(err.message);
-		},
 	});
 }
 
@@ -100,39 +53,6 @@ export function useEmergencyHistory(
 		queryKey: ["emergency-history", organizationId, filters],
 		queryFn: () => getEmergencyHistory(organizationId!, filters),
 		enabled: !!organizationId,
-	});
-}
-
-export function useConfirmDonation() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({
-			alertId,
-			staffUserId,
-		}: {
-			alertId: string;
-			staffUserId: string;
-		}) => confirmDonation(alertId, staffUserId),
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({
-				queryKey: ["pending-emergency-requests"],
-			});
-			queryClient.invalidateQueries({
-				queryKey: ["donor-alerts"],
-			});
-			queryClient.invalidateQueries({
-				queryKey: ["alerts-awaiting-confirmation"],
-			});
-			toast.success(
-				data.completed
-					? `Donation confirmed for ${data.donorName}. ${data.completedCount}/${data.unitsNeeded} units completed.`
-					: "Hospital confirmation recorded. Waiting for the donor to confirm.",
-			);
-		},
-		onError: (err: Error) => {
-			toast.error(err.message);
-		},
 	});
 }
 

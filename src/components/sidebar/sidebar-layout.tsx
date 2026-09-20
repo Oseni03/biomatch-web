@@ -24,9 +24,18 @@ import {
     type Role,
 } from "./nav-config";
 
-function useHospitalActiveRequestCount(organizationId?: string) {
+function useHospitalRequestActivity(organizationId?: string) {
     const { data } = usePendingEmergencyRequests(organizationId, { page: 1, pageSize: 10 });
-    return data?.total ?? 0;
+    const requests = data?.requests ?? [];
+    // Red dot when a donor needs hospital attention: accepted, en route, or arrived.
+    const hasActionableResponses = requests.some(
+        (r) =>
+            r.aggregates.accepted + r.aggregates.en_route + r.aggregates.arrived > 0,
+    );
+    return {
+        activeRequestCount: data?.total ?? 0,
+        hasActionableResponses,
+    };
 }
 
 interface SidebarLayoutProps {
@@ -75,7 +84,9 @@ export function SidebarLayout({
         image: session?.user?.image,
     };
 
-    const activeRequestCount = useHospitalActiveRequestCount(organizationId);
+    const hospitalActivity = useHospitalRequestActivity(
+        role === "hospital" ? organizationId : undefined,
+    );
 
     return (
         <SidebarProvider>
@@ -85,8 +96,10 @@ export function SidebarLayout({
                     hospitalName={hospitalName || FALLBACK_NAME.hospital}
                     hospitalLocation={hospitalLocation ?? ""}
                     activeUrl={activeUrl}
-                    activeRequestCount={activeRequestCount}
-                    hasUnreadNotifications={hasUnreadNotifications}
+                    activeRequestCount={hospitalActivity.activeRequestCount}
+                    hasUnreadNotifications={
+                        hasUnreadNotifications ?? hospitalActivity.hasActionableResponses
+                    }
                     bloodBankStatus={bloodBankStatus}
                     bloodBankMessage={bloodBankMessage}
                 />

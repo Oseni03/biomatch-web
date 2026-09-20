@@ -40,9 +40,9 @@ Route protection lives in **`src/proxy.ts`** (Next.js's newer replacement for `m
 - `app/` — Next.js App Router pages. Each role section (`donor/`, `hospital/`) has its own `layout.tsx` wrapping children in `SidebarLayout` from `components/layout/sidebar.tsx`.
 - `servers/` — All database access, as `"use server"` files, one per domain (`emergency.ts`, `hospital.ts`, `user.ts`, `location.ts`, `notification.ts`, `staff.ts`, `analytics.ts`, `auth.ts`). Pages call these directly; there is no separate API layer for internal data access.
 - `hooks/` — `@tanstack/react-query` hooks (`use-<domain>.ts`) that wrap server actions for pages. Prefer adding a hook here over calling a server action with manual `useState`/`useEffect` in a component.
-- `lib/` — Cross-cutting utilities: `auth.ts` (better-auth server config), `auth-client.ts` (browser client), `prisma.ts` (singleton client), `constants.ts` (shared domain constants like `ELIGIBILITY_DAYS`, `POINTS_PER_DONATION`, `CRITICAL_THRESHOLD` — import these rather than re-declaring), `radius-expansion.ts` (emergency alert radius tiers), `blood-compatibility.ts`, `eligibility.ts`, `email.ts` (Resend wrapper, mocks when `RESEND_API_KEY` is unset).
+- `lib/` — Cross-cutting utilities: `auth.ts` (better-auth server config), `auth-client.ts` (browser client), `prisma.ts` (singleton client), `constants.ts` (shared domain constants like `ELIGIBILITY_MONTHS`, `POINTS_PER_DONATION`, `CRITICAL_THRESHOLD` — import these rather than re-declaring), `radius-expansion.ts` (emergency alert radius tiers), `blood-compatibility.ts`, `eligibility.ts`, `email.ts` (Resend wrapper, mocks when `RESEND_API_KEY` is unset).
 - `components/ui/` — shadcn/ui primitives (Radix Nova style, configured in `components.json`).
-- `components/brand/` — BioMatch design-system primitives (`BloodDropIcon`, `BloodTypeBadge`, `StatusTag`, `InventoryGauge`, `EmergencyAlert`, `DashboardGreeting`). See `DESIGN_SYSTEM.md`.
+- `components/brand/` — BioMatch design-system primitives (`BloodDropIcon`, `BloodTypeBadge`, `StatusTag`, `DashboardGreeting`). See `DESIGN_SYSTEM.md`.
 - `emails/` — React Email templates sent via `lib/email.ts`.
 
 ### Data model (`prisma/schema.prisma`)

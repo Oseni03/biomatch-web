@@ -1,4 +1,4 @@
-import { AlertTriangle, Bell, History, LayoutDashboard, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Bell, Building2, History, LayoutDashboard, type LucideIcon } from "lucide-react";
 
 export interface HospitalNavItem {
     id: string;
@@ -20,16 +20,17 @@ export const HOSPITAL_NAV_ITEMS: HospitalNavItem[] = [
         title: "Dashboard",
         url: "/hospital",
         icon: LayoutDashboard,
-        description: "Overview & emergency stats",
+        description: "Overview & live requests",
         exact: true,
+        /** Shows a live count badge. */
+        countKey: "activeRequests",
     },
     {
         id: "emergency_requests",
         title: "Emergency Requests",
         url: "/hospital/emergency",
         icon: AlertTriangle,
-        description: "Live alerts & responding donors",
-        countKey: "activeRequests",
+        description: "Broadcast to compatible donors",
     },
     {
         id: "request_history",
@@ -46,9 +47,14 @@ export const HOSPITAL_NAV_ITEMS: HospitalNavItem[] = [
         description: "Dispatch and donor updates",
         dotKey: "notifications",
     },
+    {
+        id: "hospital_profile",
+        title: "Hospital Profile",
+        url: "/hospital/profile",
+        icon: Building2,
+        description: "Workspace and accreditation",
+    },
 ] as const;
-
-export const FALLBACK_HOSPITAL_NAME = "Hospital Account";
 
 export function getActiveHospitalItem(pathname: string): HospitalNavItem | undefined {
     let best: HospitalNavItem | undefined;
@@ -63,7 +69,5 @@ export function getActiveHospitalItem(pathname: string): HospitalNavItem | undef
 }
 
 export function getHospitalPageTitle(pathname: string): string | undefined {
-    // Check for pages that don't have nav items
-    if (pathname.includes("/hospital/profile")) return "Hospital Profile";
     return getActiveHospitalItem(pathname)?.title;
 }

@@ -2,8 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { createHospitalBank } from "./hospital";
 import type { Availability } from "@generated/prisma/enums";
 
@@ -235,21 +233,4 @@ export async function acceptInvitationSignUp(formData: {
 		console.error("Accepting invitation failed:", err);
 		return { error: err.message ?? "Failed to accept invitation" };
 	}
-}
-
-export async function loginWithRole(email: string, password: string) {
-	const { user } = await auth.api.signInEmail({
-		body: {
-			email,
-			password,
-		},
-		headers: await headers(),
-	});
-
-	if (!user) {
-		return { error: "Invalid credentials" };
-	}
-
-	// Redirect based on role (server-side)
-	redirect(`/${user.role}`);
 }

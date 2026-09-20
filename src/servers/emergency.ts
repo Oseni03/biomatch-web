@@ -198,47 +198,6 @@ export async function createEmergencyRequest(data: {
 	};
 }
 
-export async function getActiveEmergencyRequests(filters?: {
-	page?: number;
-	pageSize?: number;
-}) {
-	const page = filters?.page ?? 1;
-	const pageSize = filters?.pageSize ?? 10;
-
-	const [requests, total] = await Promise.all([
-		prisma.emergencyRequest.findMany({
-			where: {
-				status: { in: ["pending", "matched"] },
-			},
-			include: {
-				organization: {
-					select: {
-						id: true,
-						name: true,
-						hospitalBanks: { select: { location: true }, take: 1 },
-					},
-				},
-				alerts: {
-					select: { id: true, donorId: true, status: true },
-				},
-			},
-			orderBy: [{ urgencyLevel: "desc" }, { createdAt: "desc" }],
-			skip: (page - 1) * pageSize,
-			take: pageSize,
-		}),
-		prisma.emergencyRequest.count({
-			where: { status: { in: ["pending", "matched"] } },
-		}),
-	]);
-	return {
-		requests,
-		total,
-		page,
-		pageSize,
-		totalPages: Math.ceil(total / pageSize),
-	};
-}
-
 export async function getAlertsForDonor(
 	donorId: string,
 	filters?: { page?: number; pageSize?: number },
@@ -292,45 +251,6 @@ export async function getAlertsForDonor(
 		pageSize,
 		totalPages: Math.ceil(total / pageSize),
 		blacklisted: false,
-	};
-}
-
-export async function getEmergencyRequestsForOrganization(
-	organizationId: string,
-	filters?: { page?: number; pageSize?: number },
-) {
-	const page = filters?.page ?? 1;
-	const pageSize = filters?.pageSize ?? 10;
-
-	const [requests, total] = await Promise.all([
-		prisma.emergencyRequest.findMany({
-			where: { organizationId },
-			include: {
-				alerts: {
-					include: {
-						donor: {
-							select: {
-								id: true,
-								name: true,
-								bloodGroup: true,
-								location: true,
-							},
-						},
-					},
-				},
-			},
-			orderBy: { createdAt: "desc" },
-			skip: (page - 1) * pageSize,
-			take: pageSize,
-		}),
-		prisma.emergencyRequest.count({ where: { organizationId } }),
-	]);
-	return {
-		requests,
-		total,
-		page,
-		pageSize,
-		totalPages: Math.ceil(total / pageSize),
 	};
 }
 
@@ -516,40 +436,6 @@ export async function expandSearchRadius(requestId: string) {
 		newDonorsAdded: filteredNewDonors.length,
 		totalDonors: request.alerts.length + filteredNewDonors.length,
 	};
-}
-
-export async function getEmergencyRequestStatus(requestId: string) {
-	const request = await prisma.emergencyRequest.findUnique({
-		where: { id: requestId },
-		include: {
-			organization: {
-				select: {
-					id: true,
-					name: true,
-					hospitalBanks: { select: { location: true }, take: 1 },
-				},
-			},
-			alerts: {
-				include: {
-					donor: {
-						select: {
-							id: true,
-							name: true,
-							bloodGroup: true,
-							location: true,
-						},
-					},
-				},
-				orderBy: { updatedAt: "desc" },
-			},
-		},
-	});
-
-	if (!request) {
-		throw new Error("Emergency request not found");
-	}
-
-	return { ...request, aggregates: computeAlertAggregates(request.alerts) };
 }
 
 export async function getEmergencyHistory(

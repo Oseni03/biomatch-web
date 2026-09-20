@@ -51,6 +51,3 @@ export const orgRoles = {
 	requester: requesterRole,
 	viewer: viewerRole,
 };
-
-export const INVITABLE_ROLES = ["admin", "requester", "viewer"] as const;
-export type InvitableRole = (typeof INVITABLE_ROLES)[number];

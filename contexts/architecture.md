@@ -56,7 +56,7 @@
 - `NotificationLog` — delivery tracking (not in prototype spec)
 
 ### Shared Domain Constants (`lib/constants.ts`)
-- `ELIGIBILITY_DAYS = 56`, `POINTS_PER_DONATION = 100`, `CRITICAL_THRESHOLD = 5`
+- `ELIGIBILITY_MONTHS = 3`, `POINTS_PER_DONATION = 100`, `CRITICAL_THRESHOLD = 5`
 
 ## Routing Structure
 
@@ -82,8 +82,11 @@
 ### Protected — Hospital
 | Path | Page | Description |
 |---|---|---|
-| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — create & manage emergency requests |
+| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — time-aware greeting, summary strip, expandable active requests, recent-activity preview, create-request dialog |
 | `/hospital/history` | `app/hospital/history/page.tsx` | Emergency request history |
+| `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Full-page emergency request form (blood group, units, urgency, radius) |
+| `/hospital/notifications` | `app/hospital/notifications/page.tsx` | Dispatch notifications derived from live pending requests + alert transitions |
+| `/hospital/profile` | `app/hospital/profile/page.tsx` | Workspace profile from bank context (name, location, blood-bank status, role) |
 
 ### API
 | Path | File | Description |
@@ -104,7 +107,7 @@
 
 1. **Signup** → `signUpWithProfile()` creates user via BetterAuth, creates Wallet for donors, creates Organization for hospitals
 2. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name
-3. **Login** → `loginWithRole()` authenticates and redirects to role dashboard
+3. **Login** → `authClient.signIn.email()` authenticates, client redirects to role dashboard
 4. **Client** → `authClient.useSession()` provides session to client components
 
 ## Location & Proximity
@@ -112,7 +115,6 @@
 - Simplified to lat/long coordinates + free text location string
 - `scoreDonorProximity()` in `servers/location.ts` uses haversine distance
 - Score tiers: ≤10km = 4, ≤25km = 3, ≤50km = 2, >50km = 0
-- `proximityPassesThreshold()` applies radius-tiered threshold
 
 ## Key Patterns
 
