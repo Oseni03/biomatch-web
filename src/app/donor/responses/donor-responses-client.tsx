@@ -4,30 +4,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { ACTIVE_ALERT_STATUSES } from "@/lib/constants";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
-import { displayBloodGroup } from "@/lib/donor-types";
-import {
-	buildRequests,
-	formatNextEligibleDate,
-	hasIncompleteProfile,
-} from "@/lib/donor-dashboard";
+import { buildRequests } from "@/lib/donor-dashboard";
 import {
 	useDonorAlerts,
 	useDonorConfirmDonation,
 } from "@/hooks/use-emergency-requests";
 import { useEmergencyMissionTracker } from "@/hooks/use-emergency-mission-tracker";
-import { EmergencyAlertsFeed } from "@/components/donor/emergency-alerts-feed";
-import { ProfileIncompleteBanner } from "@/components/donor/profile-incomplete-banner";
-import { DashboardHeader } from "@/components/donor/dashboard-header";
-import { UrgentSection } from "@/components/donor/dashboard-urgent";
-import { EligibilitySection } from "@/components/donor/dashboard-eligibility";
-import { DonationRecordSection } from "@/components/donor/dashboard-record";
+import { ResponsesSection } from "@/components/donor/dashboard-responses";
 import type { CardHandlers } from "@/components/donor/dashboard-shared";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
-export function DonorDashboardClient() {
+export function DonorResponsesClient() {
 	const { data: session, isPending: sessionLoading } = authClient.useSession();
 	const {
 		data: user,
@@ -36,11 +27,10 @@ export function DonorDashboardClient() {
 	} = useDonorDashboard();
 	const [page, setPage] = useState(1);
 
-	const {
-		data: alerts,
-		refetch: refetchAlerts,
-		isFetching: isFetchingAlerts,
-	} = useDonorAlerts(session?.user?.id, { page, pageSize: 10 });
+	const { data: alerts } = useDonorAlerts(session?.user?.id, {
+		page,
+		pageSize: 10,
+	});
 
 	const {
 		activeTrackingId,
@@ -73,25 +63,6 @@ export function DonorDashboardClient() {
 		return { requests: list, donorAlertStatuses: statuses };
 	}, [alerts]);
 
-	const lastDonationDate = user?.lastDonationDate
-		? new Date(user.lastDonationDate).toISOString().slice(0, 10)
-		: null;
-	const eligibility = getEligibility(lastDonationDate);
-	const lifetimeDonations = user?.wallet?.lifetimeDonations ?? 0;
-	const donorBloodGroup = displayBloodGroup(user?.bloodGroup);
-	const nextEligibleLabel = user?.lastDonationDate
-		? formatNextEligibleDate(new Date(user.lastDonationDate))
-		: null;
-
-	const actionable = requests.filter((r) => donorAlertStatuses[r.id] !== "declined");
-	const heroRequest =
-		actionable.find((r) => r.id === activeTrackingId) ?? actionable[0] ?? null;
-	const feedRequests = requests.filter((r) => r.id !== heroRequest?.id);
-	const showFeed =
-		feedRequests.length > 0 &&
-		(heroRequest !== null ||
-			feedRequests.some((r) => donorAlertStatuses[r.id] !== "declined"));
-
 	if (sessionLoading || userLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
@@ -103,10 +74,19 @@ export function DonorDashboardClient() {
 	if (!session?.user) {
 		return (
 			<p className="text-sm text-muted-foreground">
-				Sign in to view the donor dashboard
+				Sign in to view your emergency responses
 			</p>
 		);
 	}
+
+	const lastDonationDate = user?.lastDonationDate
+		? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+		: null;
+	const eligibility = getEligibility(lastDonationDate);
+
+	const myResponses = requests.filter((r) =>
+		(ACTIVE_ALERT_STATUSES as readonly string[]).includes(donorAlertStatuses[r.id]),
+	);
 
 	const handleConfirmDonation = (alertId: string) => {
 		donorConfirmDonation.mutate({ alertId, donorId: session.user.id });
@@ -125,47 +105,21 @@ export function DonorDashboardClient() {
 
 	return (
 		<div className="mx-auto w-full max-w-4xl space-y-8">
-			<DashboardHeader name={session.user.name?.trim() || "Donor"} />
-
-			{hasIncompleteProfile(user) && <ProfileIncompleteBanner />}
-
-		<UrgentSection
-			hero={heroRequest}
-			heroStatus={
-				heroRequest ? donorAlertStatuses[heroRequest.id] : undefined
-			}
-			trackedId={activeTrackingId}
-			handlers={cardHandlers}
-			onRefresh={() => refetchAlerts()}
-			refreshing={isFetchingAlerts}
-		/>
-
-		<EligibilitySection
-			eligibility={eligibility}
-			nextEligibleLabel={nextEligibleLabel}
-			bloodGroup={donorBloodGroup}
-			hasBloodGroup={Boolean(user?.bloodGroup)}
-		/>
-		<DonationRecordSection lifetimeDonations={lifetimeDonations} />
-
-		{showFeed && (
-			<EmergencyAlertsFeed
-				requests={feedRequests}
-				bloodType={donorBloodGroup}
-				donorAlertStatuses={donorAlertStatuses}
-				activeTrackingId={activeTrackingId}
-				{...cardHandlers}
+			<ResponsesSection
+				responses={myResponses}
+				statuses={donorAlertStatuses}
+				trackedId={activeTrackingId}
+				handlers={cardHandlers}
 			/>
-		)}
 
-		{alerts && alerts.totalPages > 1 && (
-			<PaginationControls
-				page={page}
-				totalPages={alerts.totalPages}
-				onPageChange={setPage}
-				variant="numbered"
-			/>
-		)}
+			{alerts && alerts.totalPages > 1 && (
+				<PaginationControls
+					page={page}
+					totalPages={alerts.totalPages}
+					onPageChange={setPage}
+					variant="numbered"
+				/>
+			)}
 		</div>
 	);
 }

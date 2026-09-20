@@ -76,6 +76,7 @@
 |---|---|---|
 | `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, alerts, critical needs |
 | `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
+| `/donor/responses` | `app/donor/responses/page.tsx` | My Emergency Responses — active/accepted alerts |
 
 ### Protected — Hospital
 | Path | Page | Description |

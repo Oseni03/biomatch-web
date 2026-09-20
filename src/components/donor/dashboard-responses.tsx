@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { HeartHandshake } from "lucide-react";
 import type { EmergencyMatchRequest } from "@/lib/donor-types";
 import { EmergencyRequestCard } from "@/components/donor/urgent-request-card";
+import { Button } from "@/components/ui/button";
 import {
 	EmptyState,
 	SectionHeading,
@@ -39,11 +41,16 @@ export function ResponsesSection({
 					/>
 				))
 			) : (
-				<EmptyState
-					icon={HeartHandshake}
-					title="No active emergency responses."
-					description="When you accept an urgent blood request, your dispatch details and hospital directions will appear here."
-				/>
+			<EmptyState
+				icon={HeartHandshake}
+				title="No active emergency responses."
+				description="When you accept an urgent blood request, your dispatch details and hospital directions will appear here."
+				action={
+					<Button size="sm" asChild>
+						<Link href="/donor">View Live Requests</Link>
+					</Button>
+				}
+			/>
 			)}
 		</section>
 	);

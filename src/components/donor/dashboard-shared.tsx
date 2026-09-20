@@ -28,11 +28,13 @@ export function EmptyState({
 	iconClassName,
 	title,
 	description,
+	action,
 }: {
 	icon: LucideIcon;
 	iconClassName?: string;
 	title: string;
 	description: string;
+	action?: React.ReactNode;
 }) {
 	return (
 		<div className="space-y-2 rounded-2xl border border-dashed border-border bg-card p-8 text-center sm:p-10">
@@ -43,6 +45,7 @@ export function EmptyState({
 			<p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground">
 				{description}
 			</p>
+			{action && <div className="pt-3">{action}</div>}
 		</div>
 	);
 }

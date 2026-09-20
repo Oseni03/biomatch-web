@@ -17,9 +17,14 @@ src/
 │   ├── donor/                          # Donor section (role=donor)
 │   │   ├── layout.tsx                  #   Wraps children in SidebarLayout role="donor"
 │   │   ├── page.tsx                    #   Dashboard — server data loader
-│   │   ├── donor-dashboard-client.tsx  #   Thin orchestrator (data + view switch)
+│   │   ├── donor-dashboard-client.tsx  #   Dashboard (urgent hero + eligibility + ledger + feed)
 │   │   ├── loading.tsx                 #   Route-level skeleton
 │   │   ├── error.tsx                   #   Route-level error boundary
+│   │   ├── responses/
+│   │   │   ├── page.tsx                #   My Emergency Responses — server data loader
+│   │   │   ├── donor-responses-client.tsx #  Active responses (accepted/en_route/arrived/completed) + pagination
+│   │   │   ├── loading.tsx
+│   │   │   └── error.tsx
 │   │   ├── profile/
 │   │   │   ├── page.tsx                #   Donor profile — server data loader
 │   │   │   ├── donor-profile-client.tsx #  Prefilled update form (personal, donation, health) + completion progress
@@ -70,7 +75,7 @@ src/
 │   │   ├── dashboard-eligibility.tsx   # Eligibility + blood-profile tiles
 │   │   ├── dashboard-header.tsx        # Time-aware greeting
 │   │   ├── dashboard-record.tsx        # Verified Donation Record ledger card
-│   │   ├── dashboard-responses.tsx     # My Emergency Responses view
+│   │   ├── dashboard-responses.tsx     # My Emergency Responses section (dedicated /donor/responses page)
 │   │   ├── dashboard-shared.tsx        # CardHandlers type, EmptyState, InfoCard, InfoTile
 │   │   ├── dashboard-urgent.tsx        # Urgent Request Near You hero
 │   │   ├── declined-alert-row.tsx

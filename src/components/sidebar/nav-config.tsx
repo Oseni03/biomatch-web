@@ -1,6 +1,7 @@
 import {
     AlertTriangle,
     Bell,
+    HeartHandshake,
     History,
     LayoutDashboard,
     type LucideIcon,
@@ -31,6 +32,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
             countKey: "alerts",
         },
         { title: "Donation History", url: "/donor/history", icon: History },
+        { title: "My Responses", url: "/donor/responses", icon: HeartHandshake },
         {
             title: "Notifications",
             url: "/donor/notifications",
