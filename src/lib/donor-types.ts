@@ -42,8 +42,13 @@ export interface DonorAlertWithRequest {
 	alerts: {
 		id: string;
 		status: string;
+		openedAt: Date | null;
+		respondedAt: Date | null;
+		responseReason: string | null;
 		donorConfirmedAt: Date | null;
 		hospitalConfirmedAt: Date | null;
+		createdAt: Date;
+		updatedAt: Date;
 		request: {
 			bloodGroup: string;
 			unitsNeeded: number;

@@ -1,6 +1,6 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-09-19 — Wired both role sidebars. Hospital: `SidebarLayout` branches to the dedicated `HospitalSidebar` fed by `getHospitalSidebarContext` (org bank name/location + live blood-bank status); `HOSPITAL_NAV_ITEMS` targets real routes. Donor: `AppSidebar` nav points at real routes (dead `/donor/requests` + `/donor/notifications` removed, live alert badge moved to Dashboard) and the eligibility card is now fed client-side from the prefetched donor-dashboard query. Same session: merged the (React-Router prototype) donor dashboard mock into the real donor dashboard — new `UrgentRequestCard` hero ("Urgent Request Near You", I Can Help / Not Available feeding existing respond/decline, confirmed-mission state with en-route/arrived/donation-confirm/withdraw), plus Eligibility and Verified Donation Record cards; `ActiveMissionTracker` component retired (its confirmed-mission role absorbed by the hero card). Follow-up same day: ported the mock's remaining layout deltas into `donor-dashboard-client.tsx` — in-page tabs (Dashboard / Live Requests / My Responses with live counts), time-aware greeting with standby subtitle, `My Responses` view reusing `UrgentRequestCard` for accepted/en-route/arrived/completed alerts with the mock's empty state, `max-w-4xl` content constraint, Eligibility + Ledger scoped to the Dashboard tab; removed a stray `icon="heart"` prop on the shared Button (no such prop — Heart already renders as a child). Accept path in `useEmergencyMissionTracker` now fires a success toast ("Response confirmed. The hospital blood bank team has been notified.") matching the prototype's confirmation toast.
+> Last updated: 2026-09-20 — Added the missing `/donor/notifications` route the donor sidebar already linked to (was a dead 404). New `app/donor/notifications/` route (`page.tsx` server prefetch + `donor-notifications-client.tsx` + `loading.tsx`/`error.tsx`) with presentational `components/donor/notifications-section.tsx`: All/Unread/Blood-Requests filters, unread badge + mark-all-read, per-item mark-as-read, all wired to real data (alert-derived `blood_request`/`status_update` items with `openedAt` as the read receipt via existing `markAlertOpened`, plus derived `eligibility_reminder`/`account_notification` items — no new DB model). Donor section layout now feeds the sidebar's Notifications red dot from a live unopened-alert count. `DonorAlertWithRequest` alert-item type extended with the `openedAt`/`respondedAt`/`responseReason`/`createdAt`/`updatedAt` fields the queries already returned. Previous state: wired both role sidebars. Hospital: `SidebarLayout` branches to the dedicated `HospitalSidebar` fed by `getHospitalSidebarContext` (org bank name/location + live blood-bank status); `HOSPITAL_NAV_ITEMS` targets real routes. Donor: `AppSidebar` nav points at real routes (dead `/donor/requests` removed; `/donor/notifications` implemented 2026-09-20, live alert badge moved to Dashboard) and the eligibility card is now fed client-side from the prefetched donor-dashboard query. Same session: merged the (React-Router prototype) donor dashboard mock into the real donor dashboard — new `UrgentRequestCard` hero ("Urgent Request Near You", I Can Help / Not Available feeding existing respond/decline, confirmed-mission state with en-route/arrived/donation-confirm/withdraw), plus Eligibility and Verified Donation Record cards; `ActiveMissionTracker` component retired (its confirmed-mission role absorbed by the hero card). Follow-up same day: ported the mock's remaining layout deltas into `donor-dashboard-client.tsx` — in-page tabs (Dashboard / Live Requests / My Responses with live counts), time-aware greeting with standby subtitle, `My Responses` view reusing `UrgentRequestCard` for accepted/en-route/arrived/completed alerts with the mock's empty state, `max-w-4xl` content constraint, Eligibility + Ledger scoped to the Dashboard tab; removed a stray `icon="heart"` prop on the shared Button (no such prop — Heart already renders as a child). Accept path in `useEmergencyMissionTracker` now fires a success toast ("Response confirmed. The hospital blood bank team has been notified.") matching the prototype's confirmation toast.
 
 ```
 src/
@@ -15,11 +15,16 @@ src/
 │   │   ├── reset-password/page.tsx    # Set new password from reset token
 │   │   └── signup/page.tsx            # Registration (donor/hospital toggle)
 │   ├── donor/                          # Donor section (role=donor)
-│   │   ├── layout.tsx                  #   Wraps children in SidebarLayout role="donor"
+│   │   ├── layout.tsx                  #   Wraps children in SidebarLayout role="donor" + live unread-alert dot
 │   │   ├── page.tsx                    #   Dashboard — server data loader
 │   │   ├── donor-dashboard-client.tsx  #   Dashboard (urgent hero + eligibility + ledger + feed)
 │   │   ├── loading.tsx                 #   Route-level skeleton
 │   │   ├── error.tsx                   #   Route-level error boundary
+│   │   ├── notifications/
+│   │   │   ├── page.tsx                #   Notifications — server data loader
+│   │   │   ├── donor-notifications-client.tsx #  Alert-derived + eligibility/profile items, filters, mark-read
+│   │   │   ├── loading.tsx
+│   │   │   └── error.tsx
 │   │   ├── responses/
 │   │   │   ├── page.tsx                #   My Emergency Responses — server data loader
 │   │   │   ├── donor-responses-client.tsx #  Active responses (accepted/en_route/arrived/completed) + pagination
@@ -72,6 +77,7 @@ src/
 │   │   └── section-card.tsx
 │   ├── donor/
 │   │   ├── alert-card.tsx
+│   │   ├── notifications-section.tsx   # Notifications list UI (filters, unread badge, empty state)
 │   │   ├── dashboard-eligibility.tsx   # Eligibility + blood-profile tiles
 │   │   ├── dashboard-header.tsx        # Time-aware greeting
 │   │   ├── dashboard-record.tsx        # Verified Donation Record ledger card

@@ -75,6 +75,7 @@
 | Path | Page | Description |
 |---|---|---|
 | `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, alerts, critical needs |
+| `/donor/notifications` | `app/donor/notifications/page.tsx` | Notifications — alert-derived + eligibility/profile items, filters, mark-read |
 | `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
 | `/donor/responses` | `app/donor/responses/page.tsx` | My Emergency Responses — active/accepted alerts |
 
