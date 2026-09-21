@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { updateUserProfile } from "@/servers/user";
+import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
 import { displayBloodGroup } from "@/lib/donor-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -435,6 +436,13 @@ export function DonorProfileClient() {
 					{isSaving ? "Saving..." : "Save Profile"}
 				</Button>
 			</form>
+
+			<Section
+				title="Communication preferences"
+				description="Choose which optional messages you receive from BioMatch."
+			>
+				<MarketingConsentToggle />
+			</Section>
 		</div>
 	);
 }

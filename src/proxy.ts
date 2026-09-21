@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { hasSatisfiedConsents } from "@/servers/consent";
 import { getSessionRole } from "@/servers/user";
+
+const CONSENT_GATED_PREFIXES = ["/donor", "/hospital", "/admin", "/auth/onboarding"];
+
+function needsConsentGate(pathname: string): boolean {
+	return CONSENT_GATED_PREFIXES.some(
+		(prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+	);
+}
 
 export async function proxy(request: NextRequest) {
 	const { nextUrl } = request;
@@ -42,6 +51,15 @@ export async function proxy(request: NextRequest) {
 			const role = await getSessionRole(session.user.id);
 			if (role !== "admin") {
 				return NextResponse.redirect(new URL("/donor", request.url));
+			}
+		}
+
+		if (needsConsentGate(pathname)) {
+			const satisfied = await hasSatisfiedConsents(session.user.id);
+			if (!satisfied) {
+				const consentUrl = new URL("/auth/consent", request.url);
+				consentUrl.searchParams.set("next", pathname + nextUrl.search);
+				return NextResponse.redirect(consentUrl);
 			}
 		}
 

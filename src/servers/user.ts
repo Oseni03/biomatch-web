@@ -1,8 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireConsentsForUser } from "@/servers/consent";
 
 export async function getUserById(id: string) {
+	await requireConsentsForUser(id);
 	return prisma.user.findUnique({
 		where: { id },
 		include: {
@@ -20,6 +22,7 @@ export async function updateUserProfile(
 		name?: string;
 	},
 ) {
+	await requireConsentsForUser(id);
 	return prisma.user.update({
 		where: { id },
 		data: {

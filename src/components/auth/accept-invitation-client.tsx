@@ -9,6 +9,13 @@ import { AuthFormField } from "@/components/auth/auth-form-field";
 import { authClient } from "@/lib/auth-client";
 import { acceptInvitationSignUp } from "@/servers/auth";
 import { isUserInAnyOrganization } from "@/servers/organization";
+import { acceptConsents } from "@/servers/consent";
+import {
+	ConsentChoicesFields,
+	EMPTY_CONSENT_CHOICES,
+	requiredConsentsAccepted,
+	type ConsentChoices,
+} from "@/components/consent/consent-choices";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import type { InvitationPreview } from "@/servers/staff";
 
@@ -26,6 +33,9 @@ export function AcceptInvitationClient({
 	const [name, setName] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
+	const [consents, setConsents] = useState<ConsentChoices>(
+		EMPTY_CONSENT_CHOICES,
+	);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [alreadyInOrg, setAlreadyInOrg] = useState<boolean | null>(null);
@@ -34,7 +44,9 @@ export function AcceptInvitationClient({
 
 	useEffect(() => {
 		if (!loggedIn || !session?.user?.id) return;
-		isUserInAnyOrganization(session.user.id).then(setAlreadyInOrg);
+		isUserInAnyOrganization(session.user.id)
+			.then(setAlreadyInOrg)
+			.catch(() => setAlreadyInOrg(false));
 	}, [loggedIn, session?.user?.id]);
 
 	if (!invitation || invitation.status !== "pending") {
@@ -138,6 +150,12 @@ export function AcceptInvitationClient({
 			setError("Password must be at least 6 characters");
 			return;
 		}
+		if (!requiredConsentsAccepted(consents)) {
+			setError(
+				"Please accept the Terms of Service, Privacy Policy and data processing consent to create your account",
+			);
+			return;
+		}
 
 		setIsLoading(true);
 		const result = await acceptInvitationSignUp({
@@ -150,6 +168,13 @@ export function AcceptInvitationClient({
 			setError(result.error);
 			setIsLoading(false);
 			return;
+		}
+
+		try {
+			await acceptConsents({ marketing: consents.marketing });
+		} catch {
+			// No session yet: the consent gate redirects to the
+			// re-consent screen on the next visit.
 		}
 
 		router.push("/hospital");
@@ -195,6 +220,11 @@ export function AcceptInvitationClient({
 					onChange={setPassword}
 					placeholder="At least 6 characters"
 					required
+				/>
+				<ConsentChoicesFields
+					value={consents}
+					onChange={setConsents}
+					idPrefix="invite"
 				/>
 
 				<Button

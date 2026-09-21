@@ -2,8 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { orgRoles } from "@/lib/organization-access";
+import { requireConsentsForUser } from "@/servers/consent";
 
 export async function getActiveOrganizationId(userId: string): Promise<string> {
+	await requireConsentsForUser(userId);
 	const membership = await prisma.member.findFirst({
 		where: { userId },
 		select: { organizationId: true },
@@ -28,6 +30,7 @@ export async function getOrganizationOwnerUserId(
 }
 
 export async function isUserInAnyOrganization(userId: string): Promise<boolean> {
+	await requireConsentsForUser(userId);
 	const membership = await prisma.member.findFirst({
 		where: { userId },
 		select: { id: true },
@@ -39,6 +42,7 @@ export async function getActiveOrganizationRole(
 	organizationId: string,
 	userId: string,
 ): Promise<string> {
+	await requireConsentsForUser(userId);
 	const membership = await prisma.member.findUnique({
 		where: { organizationId_userId: { organizationId, userId } },
 		select: { role: true },
@@ -54,6 +58,7 @@ export async function authorizeOrgAction(
 	callerUserId: string,
 	permission: Record<string, string[]>,
 ) {
+	await requireConsentsForUser(callerUserId);
 	const roleName = await getActiveOrganizationRole(organizationId, callerUserId);
 	const role = orgRoles[roleName as keyof typeof orgRoles];
 	if (!role) {

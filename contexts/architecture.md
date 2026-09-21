@@ -45,6 +45,8 @@
 
 **EmergencyAlert** — Donor alert for a request. `requestId`, `donorId`, `status`, `openedAt`, `respondedAt`, `donorConfirmedAt`, `hospitalConfirmedAt`, `responseReason`, `createdAt`, `updatedAt`.
 
+**ConsentRecord** — NDPR consent log (issue 04, append-only). `userId`, `consentType` (`terms | privacy_policy | data_processing | marketing`), `policyVersion` (always the server's `CONSENT_POLICY_VERSION`, never client input), `grantedAt`, `revokedAt` (marketing opt-out keeps the row), `ipAddress`.
+
 **Donation** — Completed donation record. `donorId`, `hospitalBankId`, `emergencyRequestId`, `bloodGroup`, `donatedAt`, `createdAt`.
 
 **Session, Account, Verification** — BetterAuth internal models.
@@ -69,6 +71,7 @@
 | `/auth/onboarding` | `app/auth/onboarding/page.tsx` | Post-signup profile setup |
 | `/auth/forgot-password` | `app/auth/forgot-password/page.tsx` | Request password reset |
 | `/auth/reset-password` | `app/auth/reset-password/page.tsx` | Set a new password |
+| `/auth/consent` | `app/auth/consent/page.tsx` | NDPR re-consent screen — the proxy gate sends users missing required consents here with `?next=` |
 | `/auth/accept-invitation` | `app/auth/accept-invitation/page.tsx` | Accept org staff invite |
 
 ### Protected — Donor (`proxy.ts` guards role=donor)
@@ -106,7 +109,9 @@
 ## Auth Flow
 
 1. **Signup** → `signUpWithProfile()` creates user via BetterAuth, creates Wallet for donors, creates Organization for hospitals
-2. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name
+2. **Consents** → signup and invitation-signup forms require terms + privacy + data-processing acceptance (marketing optional); `acceptConsents()` records rows at the server policy version with the request IP. Acceptance is idempotent — re-submitting creates no duplicates.
+3. **Gate** → `proxy.ts` redirects authenticated users missing required consents away from `/donor`, `/hospital`, `/admin`, `/auth/onboarding` to `/auth/consent?next=…`; `requireConsentsForUser()` enforces the same gate inside `servers/user.ts` and `servers/organization.ts` (new authed endpoints must call it). Bumping `CONSENT_POLICY_VERSION` forces re-consent. Required consents can't be withdrawn (points to account deletion); marketing toggles in profile settings keep revoked rows.
+4. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name
 3. **Login** → `authClient.signIn.email()` authenticates, client redirects to role dashboard
 4. **Client** → `authClient.useSession()` provides session to client components
 

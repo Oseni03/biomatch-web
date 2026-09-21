@@ -13,6 +13,13 @@ import { AUTH_STATS } from "@/components/auth/auth-constants";
 import { authClient } from "@/lib/auth-client";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { Wordmark } from "@/components/brand/wordmark";
+import {
+	ConsentChoicesFields,
+	EMPTY_CONSENT_CHOICES,
+	requiredConsentsAccepted,
+	type ConsentChoices,
+} from "@/components/consent/consent-choices";
+import { acceptConsents } from "@/servers/consent";
 
 function SignupContent() {
 	const router = useRouter();
@@ -20,6 +27,9 @@ function SignupContent() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [consents, setConsents] = useState<ConsentChoices>(
+		EMPTY_CONSENT_CHOICES,
+	);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -33,6 +43,12 @@ function SignupContent() {
 		}
 		if (password.length < 8) {
 			setError("Password must be at least 8 characters");
+			return;
+		}
+		if (!requiredConsentsAccepted(consents)) {
+			setError(
+				"Please accept the Terms of Service, Privacy Policy and data processing consent to create your account",
+			);
 			return;
 		}
 
@@ -52,6 +68,13 @@ function SignupContent() {
 			);
 			setIsLoading(false);
 			return;
+		}
+
+		try {
+			await acceptConsents({ marketing: consents.marketing });
+		} catch {
+			// No session yet (e.g. email verification pending): the consent
+			// gate redirects to the re-consent screen on the next visit.
 		}
 
 		const callbackUrl = searchParams.get("callbackUrl");
@@ -130,6 +153,11 @@ function SignupContent() {
 					onChange={(e) => setPassword(e.target.value)}
 					placeholder="At least 8 characters"
 					autoComplete="new-password"
+				/>
+				<ConsentChoicesFields
+					value={consents}
+					onChange={setConsents}
+					idPrefix="signup"
 				/>
 				<Button
 					type="submit"

@@ -114,3 +114,4 @@ Desktop.ini
 *.orig
 /src/generated/
 /generated/
+.agents

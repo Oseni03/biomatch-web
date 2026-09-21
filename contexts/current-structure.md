@@ -1,5 +1,25 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-21 — Issue 04 (NDPR consent gate) implemented: only the
+> `ConsentRecord` schema existed, no enforcement. Added `src/lib/consent.ts`
+> (server policy version + pure gate helpers), `src/servers/consent.ts`
+> (session-derived `acceptConsents`/`updateMarketingConsent`/`withdrawConsent`,
+> userId-based `recordConsentsForUser`/`setMarketingForUser`/`requireConsentsForUser`/`hasSatisfiedConsents` for the
+> proxy and tests), `src/hooks/use-consent.ts`, `src/components/consent/`
+> (`consent-choices` shared checkboxes, `marketing-consent-toggle` settings
+> switch), `/auth/consent` re-consent route (page + client + loading + error),
+> required checkboxes on signup + invitation signup, `MarketingConsentToggle`
+> embedded in donor + hospital profile, proxy gate redirecting ungated
+> `/donor|/hospital|/admin|/auth/onboarding` visits to `/auth/consent?next=…`,
+> `requireConsentsForUser` wired into `servers/user.ts` (`getUserById`,
+> `updateUserProfile`) and `servers/organization.ts` (org id/role/authorize
+> choke points; `getSessionRole` stays exempt for the proxy), and
+> `tests/consent-gate.test.ts` (gate, idempotency, revoke-keeps-rows,
+> version-bump, required-withdrawal refusal — 5 passing). Future slices must
+> call `requireConsentsForUser` from new authed endpoints (emergency stubs in
+> `servers/emergency.ts` left ungated until slices 12–18 thread a caller id
+> through). Previous state:
+
 > Last updated: 2026-09-21 — Remodel issue 01 (HITL) decided: no separate
 > backend service; backend = Next.js server layer (Route Handlers + Server
 > Actions), single host. ADRs committed under `docs/adr/` (001 backend
@@ -43,6 +63,7 @@ src/
 │   │   └── auth/[...all]/route.ts  # BetterAuth API catch-all
 │   ├── auth/
 │   │   ├── accept-invitation/page.tsx # Accept org staff invite
+│   │   ├── consent/page.tsx        # NDPR re-consent screen (issue 04) + consent-client + loading + error
 │   │   ├── forgot-password/page.tsx   # Request password reset
 │   │   ├── login/page.tsx             # Sign-in (brand logo + AuthForm + resend verification)
 │   │   ├── onboarding/page.tsx        # Post-signup profile setup (blood group, phone, org name)
@@ -119,6 +140,9 @@ src/
 │   │   ├── dashboard-greeting.tsx
 │   │   ├── status-tag.tsx
 │   │   └── wordmark.tsx
+│   ├── consent/                        # NDPR consent UI (issue 04)
+│   │   ├── consent-choices.tsx         #   Shared required + marketing checkboxes
+│   │   └── marketing-consent-toggle.tsx #  Settings switch (donor + hospital profile)
 │   ├── dashboard/
 │   │   └── stat-card.tsx
 │   ├── donor/
@@ -181,6 +205,7 @@ src/
 │       └── tooltip.tsx
 │
 ├── hooks/                              # React Query hooks (all imported)
+│   ├── use-consent.ts
 │   ├── use-donor-dashboard.ts
 │   ├── use-donor-history.ts
 │   ├── use-emergency-mission-tracker.ts
@@ -192,6 +217,7 @@ src/
 │   ├── auth.ts                         # BetterAuth server config
 │   ├── auth-client.ts                  # BetterAuth client
 │   ├── blood-compatibility.ts
+│   ├── consent.ts                      # NDPR policy version + gate helpers (issue 04)
 │   ├── constants.ts
 │   ├── donor-dashboard.ts              # Profile-completeness, request mapping, greeting/date helpers
 │   ├── donor-types.ts
@@ -208,6 +234,7 @@ src/
 
 ├── servers/                            # Server actions (all exports have callers)
 │   ├── auth.ts                         # signUpWithProfile, acceptInvitationSignUp
+│   ├── consent.ts                      # NDPR consent log + gate (issue 04)
 │   ├── emergency.ts                    # dispatch funnel + matching + confirmation + history
 │   ├── hospital.ts                     # createHospitalBank, getHospitalSidebarContext
 │   ├── location.ts                     # scoreDonorProximity
@@ -221,6 +248,10 @@ src/
     ├── reset-password-email.tsx
     ├── staff-invitation.tsx
     └── verification-email.tsx
+
+tests/
+├── auth-skeleton.test.ts               # Issue 03 walking-skeleton integration test
+└── consent-gate.test.ts                # Issue 04 gate/idempotency/version-bump tests
 ```
 
 ## Removed (simplified out)

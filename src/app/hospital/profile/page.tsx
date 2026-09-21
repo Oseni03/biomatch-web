@@ -5,6 +5,7 @@ import { getActiveOrganizationId, getActiveOrganizationRole } from "@/servers/or
 import { getHospitalSidebarContext } from "@/servers/hospital";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatusTag } from "@/components/brand/status-tag";
+import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
 
 export default async function HospitalProfilePage() {
 	const session = await getServerSession();
@@ -82,6 +83,13 @@ export default async function HospitalProfilePage() {
 							Dispatch alerts and staff invites go here
 						</div>
 					</div>
+				</div>
+
+				<div className="p-4 rounded-xl bg-muted/50 border border-border space-y-2">
+					<div className="text-muted-foreground uppercase font-bold text-[10px]">
+						Communication Preferences
+					</div>
+					<MarketingConsentToggle />
 				</div>
 
 				<div className="p-4 rounded-xl bg-muted/50 border border-border space-y-2">
