@@ -1,112 +1,69 @@
-````markdown
-# BioMatch — Setup & Deployment (Prisma + Supabase)
+# BioMatch — Setup & Deployment
 
-This is a complete, runnable Next.js 14 App Router project using **Prisma** as the ORM and Supabase for Auth + Realtime + Hosting.
+Single-host deployment (ADR 004): the Next.js app and its server layer
+(Route Handlers + Server Actions, ADR 001) deploy together on Vercel.
+There is no separate backend service and no cross-domain auth (ADR 002).
 
-## 1. Unzip and install
+Stack: Next.js 16 (App Router) + TypeScript, Prisma 7 with
+`@prisma/adapter-pg`, PostgreSQL, Better Auth (email/password +
+organization plugin), Resend for email.
+
+## 1. Local setup
 
 ```bash
-cd biomatch
 npm install
-```
-````
-
-## 2. Create your Supabase project
-
-1. Go to https://supabase.com/dashboard → New Project.
-2. Once provisioned, go to **Project Settings → API** and copy:
-    - Project URL
-    - anon public key
-    - service_role key (keep server-side only)
-
-## 3. Environment variables
-
-```bash
 cp .env.local.example .env.local
-```
-
-Add your Supabase connection string to Prisma:
-
-```env
-DATABASE_URL="postgresql://postgres.[your-project-ref]:[your-password]@aws-0-[region].pooler.supabase.com:5432/postgres?schema=public"
-```
-
-> You can find the direct connection string in Supabase → Project Settings → Database.
-
-## 4. Database migration with Prisma
-
-```bash
-# Generate Prisma Client and push schema to Supabase
 npx prisma generate
-npx prisma db push
-```
-
-This applies the Prisma schema (`prisma/schema.prisma`) — creating tables, enums, indexes, and defaults.  
-RLS policies are **not** in Prisma. After `db push`, run the RLS + helper functions + realtime config from `001_biomatch_rls.sql` (or equivalent) in the Supabase SQL Editor.
-
-## 5. Run locally
-
-```bash
 npm run dev
 ```
 
-Visit http://localhost:3000, sign up as a donor or hospital, and confirm you land on the correct dashboard.
+## 2. Environment variables
 
-To test realtime hospital inventory:
+| Variable | Used for |
+|---|---|
+| `DATABASE_URL` | Postgres connection string (Prisma adapter) |
+| `BETTER_AUTH_SECRET` | Better Auth session encryption (min 32 chars) |
+| `APP_URL` | Base URL of the app: auth `baseURL` + links in emails (`BETTER_AUTH_URL` also accepted as fallback) |
+| `RESEND_API_KEY` | Resend email sending |
+| `EMAIL_FROM` | Sender address for auth and alert emails |
 
-- Insert a sample row via Supabase SQL Editor (as before).
-- Updates made in Supabase will reflect live on the dashboard.
+Secrets live in provider env dashboards (and `.env.local` for development).
+Never commit them.
 
-## 6. Push to GitHub
+## 3. Prototype database
 
-```bash
-git init
-git add .
-git commit -m "Initial BioMatch build with Prisma"
-gh repo create biomatch --private --source=. --push
-```
+Per ADR 006 the prototype database is reset to the baseline schema:
 
-## 7. Deploy to Vercel
+1. Apply the baseline migration to an empty Postgres database
+   (`npx prisma migrate dev` for dev).
+2. Apply `prisma/biomatch_constraints.sql` — CHECKs, partial indexes,
+   triggers, and the `blood_compatibility` seed data. These live outside
+   Prisma migrations by design; if `migrate dev` output ever conflicts with
+   them, hand-maintain the SQL file (see its header warning).
+3. Run `npx prisma generate` after any schema change.
 
-**Via dashboard (recommended):**
+## 4. Deploy to Vercel
 
-1. https://vercel.com/new → Import GitHub repo.
-2. Add these environment variables in Vercel:
-    - `DATABASE_URL` (use the **direct** Supabase connection string)
+1. Import the GitHub repo at https://vercel.com/new.
+2. Set the environment variables above for Preview and Production.
+   `APP_URL` must match each environment's public URL.
+3. Build with `npm run vercel-build` (`prisma generate && next build`,
+   see `vercel.json` + `package.json`).
 
-**Via CLI:**
+## 5. Background jobs
 
-```bash
-npm install -g vercel
-vercel link
-vercel env add DATABASE_URL
-vercel --prod
-```
+Escalation (slice 15) and voucher-expiry (slice 23) workers run as a
+scheduled cron polling the existing indexes (ADR 005). No queue
+infrastructure. Not configured yet — lands with those slices.
 
-After deploy, run `npx prisma generate` in your build command if needed (or add to `postinstall`).
+## 6. Before slice 03 (human checklist)
 
-## 8. Post-deploy: Supabase Auth
+- [ ] Staging and production Postgres databases provisioned.
+- [ ] `APP_URL`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`
+      set in the Vercel dashboard for Preview and Production.
+- [ ] Baseline migration + constraints SQL verified against an empty
+      database (slice 03 acceptance criterion).
 
-In Supabase Dashboard → Authentication → URL Configuration, add your Vercel URL (e.g. `https://biomatch.vercel.app`) to **Site URL** and **Redirect URLs**.
+## Scope note
 
-## Prisma Workflow Notes
-
-- Schema changes: Edit `prisma/schema.prisma` → `npx prisma db push` (dev) or `npx prisma migrate dev` (when you want migration files).
-- After any schema change that affects the client: `npx prisma generate`.
-- For production deploys, Vercel will run `prisma generate` automatically if configured.
-
-## What's intentionally not built yet
-
-- Real-time inventory write UI for hospitals.
-- Admin verification flows (placeholders).
-- Email confirmation uses Supabase defaults.
-
-## Note on scope
-
-Same as before — no cash payouts for blood donations.
-
-Run `npm install && npx prisma generate && npm run dev` locally to verify. Flag any issues.
-
-```
-
-```
+No cash payouts for blood donations.

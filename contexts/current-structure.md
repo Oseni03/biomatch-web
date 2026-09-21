@@ -1,5 +1,31 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-21 — Remodel issue 01 (HITL) decided: no separate
+> backend service; backend = Next.js server layer (Route Handlers + Server
+> Actions), single host. ADRs committed under `docs/adr/` (001 backend
+> layout, 002 auth topology, 003 API style, 004 hosting/secrets,
+> 005 background jobs, 006 prototype-data reset, 007 frontend keep-list,
+> 008 Prisma carry-over). ADR follow-ups implemented same day: `src/lib/auth.ts`
+> simplified to single same-domain URL (COOKIE_DOMAIN stub removed,
+> BETTER_AUTH_URL kept as fallback; `notification.ts` alert link aligned,
+> `.env.local.example` switched to APP_URL), `DEPLOYMENT.md` rewritten for the
+> current stack, `vercel.json` buildCommand fixed to `npm run vercel-build`.
+> Slices 03 and 29 still need rescoping (both assumed the split). Previous state:
+
+```
+docs/
+├── adr/                              # Remodel issue 01 decisions (HITL, 2026-09-21)
+│   ├── 001-backend-framework-and-layout.md
+│   ├── 002-auth-topology.md
+│   ├── 003-api-style.md
+│   ├── 004-hosting-environments-secrets.md
+│   ├── 005-background-jobs.md
+│   ├── 006-prototype-data.md
+│   ├── 007-frontend-keep-list.md
+│   └── 008-prisma-config.md
+```
+
+
 > Last updated: 2026-09-20 — Hospital mock re-merge pass: the React-Router `HospitalSidebar`/`HospitalDashboardPage` prototype was already merged (see "Previous state" below), so no verbatim port; the one uncovered mock concept — the sidebar "Create Blood Request" quick action — is now covered by a route-compliant CTA in `components/sidebar/hospital-sidebar.tsx` (links to `/hospital/emergency`, brand tokens, closes mobile drawer). Mock concepts still intentionally NOT ported: local useState request lists, Routine/Urgent 3-tier urgency, emergencyRef/location free-text, tab-state navigation, hard-coded dark hexes, manual Mark-Fulfilled, hard-coded notifications/profile content. Follow-up: dashboard greeting now takes the server-resolved bank name as a prop (`page.tsx` via `getHospitalSidebarContext`, same source + fallback chain as the sidebar workspace card and profile page) instead of guessing from the first pending request / client session — so the greeting, sidebar, and profile always show the same hospital name. Previous dead-code sweep state:
 
 > Previous state: Merged the (React-Router prototype) hospital dashboard mock into the real hospital section, following the donor-dashboard-merge precedent. `EmergencyRequestForm` is now a shadcn-Dialog creation modal (blood-type grid, 1–20 unit stepper, Standard/Critical urgency mapped to the schema enum, 5–25km radius slider, toasts + query invalidation on success). `LiveStatusPanel` gained the mock's card layout (BloodTypeBadge hero, urgency + Donors-Responding status tags, notified/responding/created meta grid, expandable responding-donor coordination list with relative times, expand-radius action) while keeping the funnel grid. `hospital-broadcasts-client` composes a time-aware `DashboardGreeting` + summary strip (Active/Responding/Notified) + active list with mock-style empty state + new `RecentActivitySection` (3-item `useEmergencyHistory` preview linking to full history). New real-data routes close the dead `/hospital/notifications` nav link (dispatch feed derived from pending requests + alert transitions, no new model) and add `/hospital/profile` (bank context + member role + compliance note, no invented accreditation IDs); nav gained a Hospital Profile item. Mock concepts intentionally NOT ported: local useState request lists (React Query owns data), Routine/Urgent 3-tier urgency (schema is standard/critical), emergencyRef/location free-text (org + bank location own this), tab-state navigation (routes own this), hard-coded dark hexes (design tokens own this), manual Mark-Fulfilled (fulfillment is the mutual-confirmation flow).

@@ -47,7 +47,7 @@ export async function sendEmergencyAlertEmail(alertId: string) {
 				bloodGroup: alert.request.bloodGroup,
 				urgencyLevel: alert.request.urgencyLevel,
 				distance: "Nearby",
-				acceptUrl: `${process.env.BETTER_AUTH_URL}/donor?alert=${alert.id}`,
+				acceptUrl: `${process.env.APP_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000"}/donor?alert=${alert.id}`,
 			}),
 		});
 

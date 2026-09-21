@@ -1,3 +1,43 @@
+// =====================================================================
+// BioMATCH: Prisma schema (PostgreSQL, Better Auth)
+//
+// Merged from contexts/schema.prisma in preparation for the remodel
+// described in contexts/README.md (slices 01-29).
+// - Baseline for slice 03 (walking skeleton): Better Auth core tables
+//   with the admin, phoneNumber, organization + dynamic-access-control
+//   plugins and the BioMATCH additional fields, UUID ids, plus the
+//   hand-written migration in prisma/biomatch_constraints.sql (CHECKs,
+//   partial indexes, triggers, seed data) which Prisma cannot express.
+// - Retires the monolith models (slice 29): HospitalBank, Wallet,
+//   EmergencyRequest, EmergencyAlert and the Role/Availability/
+//   UrgencyLevel/AlertStatus enums. Roles are derived (donor profile,
+//   organization membership, admin plugin role), not a role column.
+// - Prisma 7: datasource url lives in prisma.config.ts; generator uses
+//   the prisma-client provider with output into ../generated/prisma.
+//
+// HOW TO USE
+//  1. Auth models below (user, session, account, verification, organization,
+//     member, invitation, organizationRole) reflect the plugins you chose:
+//     admin, phoneNumber, organization + dynamic access control.
+//     Run `npx @better-auth/cli@latest generate` and treat ITS output as
+//     authoritative for those models, then re-apply the BioMATCH additions
+//     marked "// BIOMATCH".  Re-run after adding/changing plugins.
+//  2. Create the migration with `prisma migrate dev --create-only`, then append
+//     the contents of prisma/biomatch_constraints.sql (CHECKs, partial indexes,
+//     triggers, seed data), which Prisma cannot express.
+//  3. Better Auth config: advanced.database.generateId = "uuid".
+//
+// CONVENTIONS
+//  - Better Auth models keep Better Auth's names (lowercase, camelCase columns).
+//    Better Auth looks up MODEL names, so never rename these models.
+//  - Our tables use PascalCase models with snake_case table names (@@map);
+//    columns stay camelCase so raw SQL is consistent across both.
+//  - Every id is a Postgres uuid so foreign keys line up.
+//  - Actor columns such as reviewedBy / closedBy / actorId are plain uuids
+//    with NO foreign key on purpose: audit references must survive
+//    anonymisation and deletion.
+// =====================================================================
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -7,261 +47,192 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  donor
-  hospital
-  admin
+// ---------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------
+
+enum BloodGroup {
+  A_POS  @map("A+")
+  A_NEG  @map("A-")
+  B_POS  @map("B+")
+  B_NEG  @map("B-")
+  AB_POS @map("AB+")
+  AB_NEG @map("AB-")
+  O_POS  @map("O+")
+  O_NEG  @map("O-")
+
+  @@map("blood_group")
 }
 
-enum Availability {
-  weekdays
-  weekends
-  mornings
-  afternoons
-  evenings
-  anytime
+enum VerificationDecision {
+  pending
+  approved
+  rejected
+
+  @@map("verification_decision")
 }
 
-enum UrgencyLevel {
-  standard
-  critical
+enum DonorVerificationStatus {
+  unverified
+  verified
+  failed
+
+  @@map("donor_verification_status")
+}
+
+enum DonorAccountStatus {
+  active
+  restricted
+
+  @@map("donor_account_status")
+}
+
+enum ScreeningResult {
+  passed
+  failed
+
+  @@map("screening_result")
 }
 
 enum RequestStatus {
-  pending
-  matched
-  expired
-  cancelled
+  active
   fulfilled
+  closed
+  cancelled
+
+  @@map("request_status")
 }
 
-enum AlertStatus {
-  alerted
+enum MatchStatus {
+  notified
   accepted
   declined
-  withdrawn
-  en_route
-  arrived
+  expired
+  filled
+  cancelled
   completed
+
+  @@map("match_status")
 }
 
-enum BloodGroup {
-  A_PLUS
-  A_MINUS
-  B_PLUS
-  B_MINUS
-  AB_PLUS
-  AB_MINUS
-  O_PLUS
-  O_MINUS
+enum DonationStatus {
+  pending
+  completed
+  cancelled
+
+  @@map("donation_status")
 }
 
-model HospitalBank {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sequenceNumber Int      @default(autoincrement())
-  hospitalName   String
-  location       String
-  address        String?
-  latitude       Float?
-  longitude      Float?
-  inventory      Json     @default("{\"A+\": 0, \"A-\": 0, \"B+\": 0, \"B-\": 0, \"AB+\": 0, \"AB-\": 0, \"O+\": 0, \"O-\": 0}")
-  organizationId String?  @db.Uuid
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+enum WalletEntryType {
+  donation_reward
+  redemption
+  adjustment
+  reversal
 
-  organization Organization?          @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  donations    Donation[]
-
-  @@unique([sequenceNumber])
-  @@index([organizationId])
-  @@index([latitude, longitude])
-  @@map("hospital_banks")
+  @@map("wallet_entry_type")
 }
 
-model Donation {
-  id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  donorId            String     @db.Uuid
-  hospitalBankId     String?    @db.Uuid
-  emergencyRequestId String?    @db.Uuid
-  bloodGroup         BloodGroup
-  donatedAt          DateTime   @default(now()) @db.Timestamptz(6)
-  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
+enum RedemptionStatus {
+  issued
+  redeemed
+  expired
+  cancelled
 
-  donor            User              @relation("DonorDonations", fields: [donorId], references: [id], onDelete: Restrict)
-  hospitalBank     HospitalBank?     @relation(fields: [hospitalBankId], references: [id], onDelete: SetNull)
-  emergencyRequest EmergencyRequest? @relation(fields: [emergencyRequestId], references: [id], onDelete: SetNull)
-
-  @@index([donorId])
-  @@index([hospitalBankId])
-  @@index([donatedAt])
-  @@map("donations")
+  @@map("redemption_status")
 }
 
-model Wallet {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String   @unique @db.Uuid
-  points            Int      @default(0)
-  lifetimeDonations Int      @default(0)
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+enum NotificationChannel {
+  sms
+  whatsapp
+  email
+  push
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("wallets")
+  @@map("notification_channel")
 }
 
-model EmergencyRequest {
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String?       @db.Uuid
-  bloodGroup     BloodGroup
-  unitsNeeded    Int
-  urgencyLevel   UrgencyLevel  @default(standard)
-  status         RequestStatus @default(pending)
-  searchRadius   Int           @default(15)
-  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime      @updatedAt @db.Timestamptz(6)
+enum DeliveryStatus {
+  queued
+  sent
+  delivered
+  failed
 
-  organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  alerts       EmergencyAlert[]
-  donations    Donation[]
-
-  @@index([organizationId])
-  @@index([bloodGroup])
-  @@index([status])
-  @@index([createdAt])
-  @@map("emergency_requests")
+  @@map("delivery_status")
 }
 
-model EmergencyAlert {
-  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  requestId        String      @db.Uuid
-  donorId          String      @db.Uuid
-  status           AlertStatus @default(alerted)
-  openedAt         DateTime?   @db.Timestamptz(6)
-  respondedAt      DateTime?   @db.Timestamptz(6)
-  donorConfirmedAt DateTime?   @db.Timestamptz(6)
-  hospitalConfirmedAt DateTime? @db.Timestamptz(6)
-  responseReason   String?
-  createdAt        DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime    @updatedAt @db.Timestamptz(6)
+enum ConsentType {
+  terms
+  privacy_policy
+  data_processing
+  marketing
 
-  request          EmergencyRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  donor            User              @relation("DonorAlerts", fields: [donorId], references: [id], onDelete: Cascade)
-
-  @@unique([requestId, donorId])
-  @@index([requestId])
-  @@index([donorId])
-  @@index([status])
-  @@map("emergency_alerts")
+  @@map("consent_type")
 }
+
+// =====================================================================
+// BETTER AUTH MODELS
+// =====================================================================
 
 model User {
-  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String
-  email             String
-  emailVerified     Boolean            @default(false)
-  image             String?
-  bloodGroup        BloodGroup?
-  genotype          String?
-  role              Role               @default(donor)
-  updatedHealthInfo Json               @default("{}")
-  location          String?
-  address           String?
-  phone             String?
-  preferredHospital String?
-  emergencyOnly     Boolean @default(true)
-  latitude          Float?
-  longitude         Float?
-  availability      Availability?
-  isActive          Boolean            @default(true)
-  lastDonationDate  DateTime?          @db.Timestamptz(6)
-  deferredUntil     DateTime?          @db.Timestamptz(6)
-  blacklistedAt     DateTime?          @db.Timestamptz(6)
-  createdAt         DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 
-  sessions                Session[]
-  accounts                Account[]
-  wallet                  Wallet?
-  emergencyAlerts         EmergencyAlert[]   @relation("DonorAlerts")
-  donations               Donation[]         @relation("DonorDonations")
-  members                 Member[]
-  sentInvitations         Invitation[]
+  // admin plugin. role: 'user' | 'admin' (single founder admin). banned = suspended.
+  role       String?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
 
-  @@unique([email])
-  @@index([role])
-  @@index([bloodGroup])
-  @@index([latitude, longitude])
-  @@index([lastDonationDate])
-  @@index([role, isActive, bloodGroup, blacklistedAt])
+  // phoneNumber plugin. Phone is set from profile settings and verified by OTP there.
+  phoneNumber         String?  @unique
+  phoneNumberVerified Boolean?
+
+  // BIOMATCH additionalFields (declare all as input: false in auth config)
+  notifySms      Boolean   @default(true)
+  notifyWhatsapp Boolean   @default(true)
+  notifyEmail    Boolean   @default(true)
+  notifyPush     Boolean   @default(true)
+  onboardedAt    DateTime? // first-time walkthrough completed
+  anonymisedAt   DateTime? // NDPR erasure; see anonymise_user()
+
+  sessions           Session[]
+  accounts           Account[]
+  members            Member[]
+  // BIOMATCH relations
+  consentRecords     ConsentRecord[]
+  donorProfile       DonorProfile?
+  screeningsRecorded DonorScreening[]
+  requestsCreated    BloodRequest[]
+  notifications      Notification[]
+  merchantStaff      MerchantStaff[]
+
+  invitations Invitation[]
+
   @@map("user")
 }
 
 model Session {
-  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  expiresAt            DateTime
-  token                String   @unique
-  createdAt            DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt            DateTime @updatedAt @db.Timestamptz(6)
-  ipAddress            String?
-  userAgent            String?
-  userId               String   @db.Uuid
-  activeOrganizationId String?  @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // admin plugin
+  impersonatedBy       String? @db.Uuid
+  // organization plugin: the hospital the staff member is currently working in
+  activeOrganizationId String? @db.Uuid
 
   @@index([userId])
   @@map("session")
-}
-
-model Organization {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  slug      String    @unique
-  logo      String?
-  metadata  String?
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime? @updatedAt @db.Timestamptz(6)
-
-  members           Member[]
-  invitations       Invitation[]
-  hospitalBanks     HospitalBank[]
-  emergencyRequests EmergencyRequest[]
-
-  @@map("organization")
-}
-
-model Member {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String   @db.Uuid
-  userId         String   @db.Uuid
-  role           String   @default("member")
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, userId])
-  @@index([userId])
-  @@map("member")
-}
-
-model Invitation {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String   @db.Uuid
-  email          String
-  role           String
-  status         String   @default("pending")
-  expiresAt      DateTime @db.Timestamptz(6)
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  inviterId      String   @db.Uuid
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  inviter      User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId])
-  @@index([email])
-  @@map("invitation")
 }
 
 model Account {
@@ -269,6 +240,7 @@ model Account {
   accountId             String
   providerId            String
   userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -276,23 +248,469 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now()) @updatedAt
 
   @@index([userId])
   @@map("account")
 }
+
+// Also stores email verification tokens, password resets and phone OTPs
 
 model Verification {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
 
   @@index([identifier])
   @@map("verification")
+}
+
+// A hospital IS an organization. Hospital columns are additionalFields.
+// In auth config mark verificationStatus, isScreeningPartner, approvedAt
+// as input: false so a hospital cannot approve itself at registration.
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  slug      String   @unique
+  logo      String?
+  createdAt DateTime @default(now())
+  metadata  String?
+
+  // BIOMATCH: hospital fields
+  officialEmail      String    @unique // the "hospitality email"
+  phone              String?
+  registrationNumber String?   @unique
+  address            String
+  state              String
+  lga                String?
+  latitude           Float
+  longitude          Float
+  isScreeningPartner Boolean   @default(false)
+  verificationStatus String    @default("pending") // pending|approved|rejected|suspended (CHECK in migration)
+  approvedAt         DateTime?
+
+  members       Member[]
+  invitations   Invitation[]
+  // BIOMATCH relations
+  verifications HospitalVerification[]
+  screenings    DonorScreening[]
+  bloodRequests BloodRequest[]
+  donations     Donation[]
+
+  organizationroles OrganizationRole[]
+
+  @@index([verificationStatus])
+  @@index([state])
+  @@map("organization")
+}
+
+// member.role holds one or more role names, comma-separated (Better Auth behaviour)
+
+model Member {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime     @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String       @db.Uuid
+  inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
+}
+
+// Dynamic access control: per-hospital custom roles.
+// `permission` is JSON text such as {"bloodRequest":["create","update"]}.
+
+model OrganizationRole {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String
+  permission     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @default(now()) @updatedAt
+
+  @@index([organizationId])
+  @@index([role])
+  @@map("organizationRole")
+}
+
+// =====================================================================
+// BIOMATCH DOMAIN MODELS
+// =====================================================================
+
+// ---------------------------------------------------------------------
+// Consent + hospital verification
+// ---------------------------------------------------------------------
+
+model ConsentRecord {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String      @db.Uuid
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentType   ConsentType
+  policyVersion String
+  grantedAt     DateTime    @default(now())
+  revokedAt     DateTime?
+  ipAddress     String?     @db.Inet
+
+  @@index([userId, consentType])
+  @@map("consent_records")
+}
+
+// One row per application. At most one pending per hospital (partial index in migration).
+// The hospital's current status is organization.verificationStatus.
+
+model HospitalVerification {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String               @db.Uuid
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submittedBy     String?              @db.Uuid
+  submittedAt     DateTime             @default(now())
+  decision        VerificationDecision @default(pending)
+  reviewedBy      String?              @db.Uuid
+  reviewedAt      DateTime?
+  rejectionReason String?
+  notes           String?
+
+  @@index([organizationId])
+  @@index([decision, submittedAt])
+  @@map("hospital_verifications")
+}
+
+// ---------------------------------------------------------------------
+// Reference data
+// ---------------------------------------------------------------------
+// recipientGroup can safely receive from donorGroup (red-cell compatibility)
+
+model BloodCompatibility {
+  recipientGroup BloodGroup
+  donorGroup     BloodGroup
+
+  @@id([recipientGroup, donorGroup])
+  @@map("blood_compatibility")
+}
+
+// ---------------------------------------------------------------------
+// Donors
+// ---------------------------------------------------------------------
+
+model DonorProfile {
+  userId             String                  @id @db.Uuid
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  donorCode          String                  @unique // e.g. BM-7K3Q9X; shown in the donor app, used by screening staff
+  bloodGroup         BloodGroup
+  dateOfBirth        DateTime?               @db.Date
+  homeAddress        String?
+  state              String?
+  lga                String?
+  homeLatitude       Float?
+  homeLongitude      Float?
+  lastKnownLatitude  Float?
+  lastKnownLongitude Float?
+  lastKnownAt        DateTime?
+  verificationStatus DonorVerificationStatus @default(unverified)
+  verifiedAt         DateTime?
+  donorStatus        DonorAccountStatus      @default(active) // admin flag / restrict
+  restrictedReason   String?
+  restrictedBy       String?                 @db.Uuid
+  restrictedAt       DateTime?
+  isAvailable        Boolean                 @default(true) // availability toggle
+  lastDonatedAt      DateTime?
+  cooldownUntil      DateTime? // eligible when NULL or in the past
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @default(now()) @updatedAt
+
+  screenings         DonorScreening[]
+  matches            RequestMatch[]
+  donations          Donation[]
+  wallet             DonorWallet?
+  walletTransactions WalletTransaction[]
+  voucherRedemptions VoucherRedemption[]
+
+  // Partial "match pool" index is in biomatch_constraints.sql
+  @@index([state])
+  @@map("donor_profiles")
+}
+
+// Recorded by partner-hospital staff with the donor.recordScreening permission.
+// A trigger syncs donor_profiles.verificationStatus (latest screening wins).
+
+model DonorScreening {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  donorId        String          @db.Uuid
+  donor          DonorProfile    @relation(fields: [donorId], references: [userId], onDelete: Cascade)
+  organizationId String          @db.Uuid
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  recordedById   String          @db.Uuid
+  recordedBy     User            @relation(fields: [recordedById], references: [id])
+  result         ScreeningResult
+  screenedAt     DateTime        @default(now())
+  notes          String?
+  createdAt      DateTime        @default(now())
+
+  @@index([donorId, screenedAt(sort: Desc)])
+  @@index([organizationId])
+  @@map("donor_screenings")
+}
+
+// ---------------------------------------------------------------------
+// Blood requests, matching, donations
+// ---------------------------------------------------------------------
+
+model BloodRequest {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String        @db.Uuid
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  createdById    String        @db.Uuid
+  createdBy      User          @relation(fields: [createdById], references: [id])
+  bloodGroup     BloodGroup
+  unitsRequired  Int
+  unitsAccepted  Int           @default(0) // capped at unitsRequired (CHECK + atomic UPDATE)
+  status         RequestStatus @default(active)
+
+  locationName String // shown to donors
+  latitude     Float
+  longitude    Float
+
+  // escalation state
+  currentRadiusKm  Decimal   @db.Decimal(6, 1)
+  escalationLevel  Int       @default(0)
+  nextEscalationAt DateTime?
+
+  // Hospital-private. Patient identity is never stored or shown to donors.
+  internalReference String?
+  internalNotes     String?
+
+  closedAt      DateTime?
+  closedBy      String?   @db.Uuid
+  closureReason String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  matches   RequestMatch[]
+  donations Donation[]
+
+  @@index([organizationId, status, createdAt(sort: Desc)])
+  @@index([latitude, longitude])
+  @@map("blood_requests")
+}
+
+model RequestMatch {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId       String       @db.Uuid
+  request         BloodRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donorId         String       @db.Uuid
+  donor           DonorProfile @relation(fields: [donorId], references: [userId])
+  status          MatchStatus  @default(notified)
+  distanceKm      Decimal      @db.Decimal(6, 2)
+  escalationLevel Int          @default(0)
+  notifiedAt      DateTime     @default(now())
+  respondedAt     DateTime?
+
+  donation Donation?
+
+  @@unique([requestId, donorId])
+  @@index([donorId, status, notifiedAt(sort: Desc)])
+  @@index([requestId, status])
+  @@map("request_matches")
+}
+
+model Donation {
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  matchId             String         @unique @db.Uuid
+  match               RequestMatch   @relation(fields: [matchId], references: [id])
+  requestId           String         @db.Uuid
+  request             BloodRequest   @relation(fields: [requestId], references: [id])
+  donorId             String         @db.Uuid
+  donor               DonorProfile   @relation(fields: [donorId], references: [userId])
+  organizationId      String         @db.Uuid
+  organization        Organization   @relation(fields: [organizationId], references: [id])
+  status              DonationStatus @default(pending)
+  donorConfirmedAt    DateTime?
+  hospitalConfirmedAt DateTime?
+  hospitalConfirmedBy String?        @db.Uuid
+  completedAt         DateTime? // set when BOTH sides have confirmed
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @default(now()) @updatedAt
+
+  walletTransactions WalletTransaction[]
+
+  @@index([donorId, completedAt(sort: Desc)])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([requestId])
+  @@map("donations")
+}
+
+// ---------------------------------------------------------------------
+// Rewards
+// ---------------------------------------------------------------------
+
+model Merchant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  category  String? // mart, mall, ...
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  staff       MerchantStaff[]
+  redemptions VoucherRedemption[]
+
+  @@map("merchants")
+}
+
+// Merchant cashiers/managers. They are ordinary Better Auth users; membership here
+// is what authorises them to redeem vouchers for that merchant only.
+
+model MerchantStaff {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  merchantId String   @db.Uuid
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@unique([merchantId, userId])
+  @@index([userId])
+  @@map("merchant_staff")
+}
+
+// Maintained by trigger from wallet_transactions; CHECK blocks overdrafts.
+
+model DonorWallet {
+  donorId     String       @id @db.Uuid
+  donor       DonorProfile @relation(fields: [donorId], references: [userId])
+  balanceKobo BigInt       @default(0)
+  updatedAt   DateTime     @default(now()) @updatedAt
+
+  @@map("donor_wallets")
+}
+
+model VoucherRedemption {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  donorId          String           @db.Uuid
+  donor            DonorProfile     @relation(fields: [donorId], references: [userId])
+  merchantId       String           @db.Uuid
+  merchant         Merchant         @relation(fields: [merchantId], references: [id])
+  amountKobo       BigInt
+  code             String           @unique
+  status           RedemptionStatus @default(issued)
+  issuedAt         DateTime         @default(now())
+  expiresAt        DateTime
+  redeemedAt       DateTime?
+  redeemedByUserId String?          @db.Uuid // merchant staff who confirmed; audit reference, no FK
+
+  walletTransactions WalletTransaction[]
+
+  @@index([donorId, issuedAt(sort: Desc)])
+  @@index([merchantId, status])
+  @@map("voucher_redemptions")
+}
+
+// Append-only (trigger). Credits positive, debits negative. Balance = SUM(amountKobo).
+
+model WalletTransaction {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  donorId      String             @db.Uuid
+  donor        DonorProfile       @relation(fields: [donorId], references: [userId])
+  entryType    WalletEntryType
+  amountKobo   BigInt
+  currency     String             @default("NGN") @db.Char(3)
+  donationId   String?            @db.Uuid
+  donation     Donation?          @relation(fields: [donationId], references: [id])
+  redemptionId String?            @db.Uuid
+  redemption   VoucherRedemption? @relation(fields: [redemptionId], references: [id])
+  description  String?
+  createdBy    String?            @db.Uuid // set for manual adjustments
+  createdAt    DateTime           @default(now())
+
+  @@index([donorId, createdAt(sort: Desc)])
+  @@map("wallet_transactions")
+}
+
+// ---------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------
+
+model Notification {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // 'request.new_match', 'request.donor_accepted', 'donation.completed', ...
+  title     String
+  body      String
+  data      Json      @default("{}") // ids only, never patient data
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  deliveries NotificationDelivery[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model NotificationDelivery {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  notificationId    String              @db.Uuid
+  notification      Notification        @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  channel           NotificationChannel
+  status            DeliveryStatus      @default(queued)
+  provider          String?
+  providerMessageId String?
+  attempts          Int                 @default(0)
+  error             String?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  createdAt         DateTime            @default(now())
+
+  @@unique([notificationId, channel])
+  @@index([provider, providerMessageId])
+  @@map("notification_deliveries")
+}
+
+// ---------------------------------------------------------------------
+// Audit
+// ---------------------------------------------------------------------
+
+model AuditLog {
+  id             BigInt   @id @default(autoincrement())
+  actorId        String?  @db.Uuid
+  organizationId String?  @db.Uuid
+  action         String // 'hospital.approve', 'donor.restrict', 'wallet.adjust', ...
+  entityType     String
+  entityId       String?  @db.Uuid
+  metadata       Json     @default("{}")
+  ipAddress      String?  @db.Inet
+  createdAt      DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@map("audit_logs")
 }
