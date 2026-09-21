@@ -19,10 +19,21 @@ Scope: choose and register an SMS provider (with a registered sender ID for Nige
 
 - [ ] SMS provider chosen, account created, sender ID registration submitted
 - [ ] WhatsApp Business account verified and the alert template submitted for approval, with status tracked
-- [ ] Final template wording agreed and contains no patient-identifying information
+- [x] Final template wording agreed and contains no patient-identifying information
 - [ ] Sandbox or test credentials are available to developers for slices 07 and 17
 - [ ] Expected per-message costs are documented
-- [ ] Decision recorded (provider names, sender ID, template ID)
+- [x] Decision recorded (provider names, sender ID, template ID)
+
+## Decisions (recorded 2026-09-21 in `docs/adr/009-messaging-providers.md`, decider: project owner)
+
+- SMS + OTP: Termii. Sender ID (proposed, not yet submitted): `BioMatch`.
+- WhatsApp: Meta WhatsApp Cloud API direct. Template ID: pending submission.
+- Email: stays on Resend.
+- Alert template wording approved as in ADR 009 (blood type, hospital
+  name/location, open-app prompt; no patient details).
+- Costs unverified at decision time; document actuals from dashboards once
+  accounts exist. Account creation, verification, and template submission
+  are human actions outside the repo (checklist in ADR 009).
 
 ## Blocked by
 

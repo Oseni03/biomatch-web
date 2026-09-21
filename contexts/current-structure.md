@@ -22,7 +22,9 @@ docs/
 │   ├── 005-background-jobs.md
 │   ├── 006-prototype-data.md
 │   ├── 007-frontend-keep-list.md
-│   └── 008-prisma-config.md
+│   ├── 008-prisma-config.md
+│   ├── 009-messaging-providers.md
+│   └── 010-slice-03-rescope.md
 ```
 
 
