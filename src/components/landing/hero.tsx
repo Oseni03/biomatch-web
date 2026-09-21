@@ -11,11 +11,7 @@ import {
 	Clock,
 	CheckCircle2,
 	MessageSquare,
-	Sparkles,
 	Zap,
-	PhoneCall,
-	Activity,
-	MapPin,
 	Send,
 	RotateCcw,
 } from 'lucide-react';

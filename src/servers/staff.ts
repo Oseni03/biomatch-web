@@ -23,7 +23,7 @@ export async function getInvitationPreview(
 	return {
 		id: invitation.id,
 		email: invitation.email,
-		role: invitation.role,
+		role: invitation.role ?? "member",
 		status: invitation.status,
 		expiresAt: invitation.expiresAt,
 		organizationName: invitation.organization.name,

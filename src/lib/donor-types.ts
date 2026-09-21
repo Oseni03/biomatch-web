@@ -38,6 +38,25 @@ export interface DonationRecord {
 
 export type DonorStatus = "available" | "busy" | "inactive";
 
+export interface LegacyDonorWalletSnapshot {
+	lifetimeDonations?: number | null;
+	points?: number | null;
+}
+
+export interface LegacyDonorSnapshot {
+	donorProfile?: {
+		lastDonatedAt?: string | Date | null;
+		lifetimeDonations?: number | null;
+		bloodGroup?: string | null;
+		isAvailable?: boolean | null;
+		wallet?: LegacyDonorWalletSnapshot | null;
+	} | null;
+	lastDonationDate?: string | Date | null;
+	bloodGroup?: string | null;
+	isActive?: boolean | null;
+	wallet?: LegacyDonorWalletSnapshot | null;
+}
+
 export interface DonorAlertWithRequest {
 	alerts: {
 		id: string;

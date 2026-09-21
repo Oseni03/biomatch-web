@@ -64,9 +64,9 @@ export function HospitalBroadcastsClient({
 					</div>
 				) : (
 					<div className="space-y-3.5">
-						{requests.map((req) => (
-							<LiveStatusPanel key={req.id} request={req} />
-						))}
+					{requests.map((req) => (
+						<LiveStatusPanel key={req.id} request={req} />
+					))}
 					</div>
 				)}
 			</section>

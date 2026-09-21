@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -234,15 +234,12 @@ export function DonorProfileClient() {
 	const { data: user, isLoading: userLoading } = useDonorDashboard();
 	const queryClient = useQueryClient();
 	const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
-	const [initialized, setInitialized] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
-
-	useEffect(() => {
-		if (user && !initialized) {
-			setForm(formFromUser(user));
-			setInitialized(true);
-		}
-	}, [user, initialized]);
+	const [initializedUserId, setInitializedUserId] = useState<string | null>(null);
+	if (user && user.id !== initializedUserId) {
+		setInitializedUserId(user.id);
+		setForm(formFromUser(user));
+	}
 
 	const completion = useMemo(() => {
 		const sections = [
@@ -279,21 +276,8 @@ export function DonorProfileClient() {
 
 		setIsSaving(true);
 		try {
-			const existingHealth =
-				(user?.updatedHealthInfo ?? {}) as Record<string, unknown>;
 			await updateUserProfile(session.user.id, {
 				name: form.name.trim(),
-				phone: form.phone.trim(),
-				bloodGroup: BG_TO_ENUM[form.bloodGroup as BloodGroupLabel] as never,
-				location: form.location.trim(),
-				availability: form.availability as never,
-				updatedHealthInfo: {
-					...existingHealth,
-					height_cm: form.heightCm.trim(),
-					weight_kg: form.weightKg.trim(),
-					blood_pressure: form.bloodPressure.trim(),
-					resting_heart_rate: form.restingHeartRate.trim(),
-				},
 			});
 			await queryClient.invalidateQueries({
 				queryKey: ["donor-dashboard", session.user.id],

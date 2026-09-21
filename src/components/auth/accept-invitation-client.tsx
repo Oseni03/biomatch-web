@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthCard } from "@/components/auth/auth-card";
 import { AuthFormField } from "@/components/auth/auth-form-field";
@@ -88,7 +87,7 @@ export function AcceptInvitationClient({
 				title={`Join ${invitation.organizationName}`}
 				description={
 					<span>
-						You've been invited as a{" "}
+						You&apos;ve been invited as a{" "}
 						<span className="font-medium text-foreground">
 							{invitation.role}
 						</span>
@@ -99,7 +98,7 @@ export function AcceptInvitationClient({
 				{wrongEmail ? (
 					<div className="rounded-2xl border border-brand/20 bg-brand-light p-4 text-sm text-brand">
 						This invitation was sent to {invitation.email}, but
-						you're signed in as {session!.user.email}. Log out
+						you&apos;re signed in as {session!.user.email}. Log out
 						and sign in with the invited email to accept.
 					</div>
 				) : alreadyInOrg ? (

@@ -1,14 +1,15 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { Availability, BloodGroup } from "@generated/prisma/enums";
-import { geocodeAddress } from "@/lib/geocoding";
 
 export async function getUserById(id: string) {
 	return prisma.user.findUnique({
 		where: { id },
 		include: {
-			wallet: true,
+			donorProfile: true,
+			members: {
+				select: { organizationId: true, role: true },
+			},
 		},
 	});
 }
@@ -17,38 +18,30 @@ export async function updateUserProfile(
 	id: string,
 	data: {
 		name?: string;
-		bloodGroup?: BloodGroup;
-		genotype?: string;
-		phone?: string;
-		updatedHealthInfo?: any;
-		lastDonationDate?: Date;
-		location?: string;
-		availability?: Availability;
-		isActive?: boolean;
 	},
 ) {
-	const updateData: Record<string, unknown> = { ...data };
-
-	if (data.location?.trim()) {
-		try {
-			const geocode = await geocodeAddress(data.location);
-			if (geocode) {
-				updateData.address = geocode.formattedAddress;
-				updateData.latitude = geocode.latitude;
-				updateData.longitude = geocode.longitude;
-			}
-		} catch (error) {
-			console.warn("Geocoding failed while saving donor profile:", {
-				userId: id,
-				location: data.location,
-				error,
-			});
-		}
-	}
-
 	return prisma.user.update({
 		where: { id },
-		data: updateData as any,
-		include: { wallet: true },
+		data: {
+			...(data.name !== undefined ? { name: data.name } : {}),
+		},
+		include: {
+			donorProfile: true,
+		},
 	});
+}
+
+export async function getSessionRole(userId: string) {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: {
+			role: true,
+			donorProfile: { select: { userId: true } },
+			members: { select: { organizationId: true }, take: 1 },
+		},
+	});
+	if (!user) return null;
+	if (user.role === "admin") return "admin";
+	if (user.members.length > 0) return "hospital";
+	return "donor";
 }

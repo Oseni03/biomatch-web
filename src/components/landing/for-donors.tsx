@@ -33,7 +33,7 @@ export const ForDonors: React.FC = () => {
                             <span>SMS ALERT • BioMATCH</span>
                         </div>
                         <p className="text-xs sm:text-sm text-white leading-relaxed font-sans">
-                            "URGENT: General Hospital Gbagada urgently requires 2 units of A+ blood for an emergency surgery. Distance: 1.8km. Reply 1 to accept."
+                            &quot;URGENT: General Hospital Gbagada urgently requires 2 units of A+ blood for an emergency surgery. Distance: 1.8km. Reply 1 to accept.&quot;
                         </p>
                         <div className="mt-3 text-[11px] text-[#72778f] font-mono">
                             Delivery via SMS & WhatsApp • Zero data cost

@@ -7,7 +7,7 @@ import { authClient } from "@/lib/auth-client";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
-import { displayBloodGroup } from "@/lib/donor-types";
+import { displayBloodGroup, type LegacyDonorSnapshot } from "@/lib/donor-types";
 import {
 	buildRequests,
 	formatNextEligibleDate,
@@ -73,14 +73,16 @@ export function DonorDashboardClient() {
 		return { requests: list, donorAlertStatuses: statuses };
 	}, [alerts]);
 
-	const lastDonationDate = user?.lastDonationDate
-		? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+	const u = user as LegacyDonorSnapshot | null | undefined;
+	const lastDonatedAt = u?.donorProfile?.lastDonatedAt ?? u?.lastDonationDate ?? null;
+	const lastDonationDate = lastDonatedAt
+		? new Date(lastDonatedAt).toISOString().slice(0, 10)
 		: null;
 	const eligibility = getEligibility(lastDonationDate);
-	const lifetimeDonations = user?.wallet?.lifetimeDonations ?? 0;
-	const donorBloodGroup = displayBloodGroup(user?.bloodGroup);
-	const nextEligibleLabel = user?.lastDonationDate
-		? formatNextEligibleDate(new Date(user.lastDonationDate))
+	const lifetimeDonations = u?.donorProfile?.lifetimeDonations ?? u?.wallet?.lifetimeDonations ?? 0;
+	const donorBloodGroup = displayBloodGroup(u?.donorProfile?.bloodGroup ?? u?.bloodGroup);
+	const nextEligibleLabel = lastDonatedAt
+		? formatNextEligibleDate(new Date(lastDonatedAt))
 		: null;
 
 	const actionable = requests.filter((r) => donorAlertStatuses[r.id] !== "declined");
@@ -114,7 +116,7 @@ export function DonorDashboardClient() {
 
 	const cardHandlers: CardHandlers = {
 		eligibility,
-		donorStatus: user?.isActive ? "available" : "inactive",
+		donorStatus: u?.donorProfile?.isAvailable ?? u?.isActive ?? true ? "available" : "inactive",
 		onRespond: handleRespond,
 		onDecline: handleDecline,
 		onWithdraw: (reqId, reason) => handleWithdraw(reqId, session.user.id, reason),
@@ -144,7 +146,7 @@ export function DonorDashboardClient() {
 			eligibility={eligibility}
 			nextEligibleLabel={nextEligibleLabel}
 			bloodGroup={donorBloodGroup}
-			hasBloodGroup={Boolean(user?.bloodGroup)}
+			hasBloodGroup={Boolean(u?.donorProfile?.bloodGroup ?? u?.bloodGroup)}
 		/>
 		<DonationRecordSection lifetimeDonations={lifetimeDonations} />
 

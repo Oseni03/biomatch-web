@@ -9,7 +9,7 @@ import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { useDonorAlerts } from "@/hooks/use-emergency-requests";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
-import { displayBloodGroup, type DonorAlertWithRequest } from "@/lib/donor-types";
+import { displayBloodGroup, type DonorAlertWithRequest, type LegacyDonorSnapshot } from "@/lib/donor-types";
 import {
 	formatNextEligibleDate,
 	hasIncompleteProfile,
@@ -187,12 +187,14 @@ export function DonorNotificationsClient() {
 		if (page !== 1) return alertItems;
 
 		const derived: DonorNotificationItem[] = [];
-		const lastDonationDate = user?.lastDonationDate
-			? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+		const u = user as LegacyDonorSnapshot | null | undefined;
+		const lastDonatedAt = u?.donorProfile?.lastDonatedAt ?? u?.lastDonationDate ?? null;
+		const lastDonationDate = lastDonatedAt
+			? new Date(lastDonatedAt).toISOString().slice(0, 10)
 			: null;
 		const eligibility = getEligibility(lastDonationDate);
-		const nextEligibleLabel = user?.lastDonationDate
-			? formatNextEligibleDate(new Date(user.lastDonationDate))
+		const nextEligibleLabel = lastDonatedAt
+			? formatNextEligibleDate(new Date(lastDonatedAt))
 			: null;
 		derived.push({
 			id: "eligibility",
@@ -206,7 +208,7 @@ export function DonorNotificationsClient() {
 			href: "/donor",
 			actionLabel: "View Eligibility",
 		});
-		if (hasIncompleteProfile(user)) {
+		if (hasIncompleteProfile(u)) {
 			derived.push({
 				id: "profile",
 				type: "account_notification",

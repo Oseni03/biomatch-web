@@ -53,7 +53,7 @@ export default function StaffInvitationEmail({
 							marginBottom: 8,
 						}}
 					>
-						You've Been Invited
+						You&apos;ve Been Invited
 					</Heading>
 
 					<Text

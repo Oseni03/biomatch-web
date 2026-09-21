@@ -1,34 +1,39 @@
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
-import { getQueryClient } from "@/lib/get-query-client";
 import { getServerSession } from "@/lib/get-session";
-import { getUserById } from "@/servers/user";
-import { getAlertsForDonor } from "@/servers/emergency";
-import { DonorDashboardClient } from "./donor-dashboard-client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function DonorDashboardPage() {
 	const session = await getServerSession();
 	if (!session?.user?.id) {
-		redirect("/auth/login");
+		redirect("/auth/login?callbackUrl=/donor");
 	}
 
-	const queryClient = getQueryClient();
-	const userId = session.user.id;
-
-	await Promise.all([
-		queryClient.prefetchQuery({
-			queryKey: ["donor-dashboard", userId],
-			queryFn: () => getUserById(userId),
-		}),
-		queryClient.prefetchQuery({
-			queryKey: ["donor-alerts", userId, { page: 1, pageSize: 10 }],
-			queryFn: () => getAlertsForDonor(userId, { page: 1, pageSize: 10 }),
-		}),
-	]);
-
 	return (
-		<HydrationBoundary state={dehydrate(queryClient)}>
-			<DonorDashboardClient />
-		</HydrationBoundary>
+		<div className="mx-auto w-full max-w-2xl p-6">
+			<Card>
+				<CardHeader>
+					<CardTitle>Welcome, {session.user.name ?? "donor"}</CardTitle>
+					<CardDescription>
+						You are signed in. Your session persists across reloads.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<dl className="space-y-2 text-sm">
+						<div className="flex justify-between gap-4">
+							<dt className="text-muted-foreground">User ID</dt>
+							<dd className="break-all">{session.user.id}</dd>
+						</div>
+						<div className="flex justify-between gap-4">
+							<dt className="text-muted-foreground">Email</dt>
+							<dd className="break-all">{session.user.email}</dd>
+						</div>
+						<div className="flex justify-between gap-4">
+							<dt className="text-muted-foreground">Session ID</dt>
+							<dd className="break-all">{session.session.id}</dd>
+						</div>
+					</dl>
+				</CardContent>
+			</Card>
+		</div>
 	);
 }

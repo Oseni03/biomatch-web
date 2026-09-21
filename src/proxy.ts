@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getSessionRole } from "@/servers/user";
 
 export async function proxy(request: NextRequest) {
 	const { nextUrl } = request;
 	const pathname = nextUrl.pathname;
 
 	const authOnlyPublicRoutes = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/reset-password", "/auth/accept-invitation"];
-	const publicPrefixes = ["/api/auth"];
+	const publicPrefixes = ["/api/auth", "/api/health"];
 
 	if (
 		authOnlyPublicRoutes.includes(pathname) ||
@@ -30,16 +31,6 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(loginUrl);
 		}
 
-		const userRole = session.user.role as
-			| "donor"
-			| "hospital"
-			| "admin"
-			| undefined;
-
-		if (!userRole) {
-			return NextResponse.redirect(new URL("/auth/login", request.url));
-		}
-
 		if (process.env.NODE_ENV === "production" && session.user.emailVerified === false) {
 			const loginUrl = new URL("/auth/login", request.url);
 			loginUrl.searchParams.set("email", session.user.email ?? "");
@@ -47,23 +38,15 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(loginUrl);
 		}
 
-		if (pathname.startsWith("/admin") && userRole !== "admin") {
-			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
-		}
-
-		if (pathname.startsWith("/hospital") && userRole !== "hospital") {
-			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
-		}
-
-		if (pathname.startsWith("/donor") && userRole !== "donor") {
-			return NextResponse.redirect(new URL(`/${userRole}`, request.url));
+		if (pathname.startsWith("/admin")) {
+			const role = await getSessionRole(session.user.id);
+			if (role !== "admin") {
+				return NextResponse.redirect(new URL("/donor", request.url));
+			}
 		}
 
 		return NextResponse.next();
-	} catch (error) {
-		if (pathname === "/") {
-			return NextResponse.next();
-		}
+	} catch {
 		const loginUrl = new URL("/auth/login", request.url);
 		loginUrl.searchParams.set("callbackUrl", pathname);
 		return NextResponse.redirect(loginUrl);

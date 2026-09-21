@@ -41,7 +41,7 @@ const NAV_BUTTON_CLASS = [
 /** Live count of alerts a donor still needs to act on. Always 0 for hospitals. */
 function useActiveAlertCount(role: Role, userId?: string) {
     const { data } = useDonorAlerts(role === "donor" ? userId : undefined);
-    return (data?.alerts ?? []).filter((alert) => ACTIVE_ALERT_STATUSES.has(alert.status)).length;
+    return (data?.alerts ?? []).filter((alert) => (ACTIVE_ALERT_STATUSES as readonly string[]).includes(alert.status)).length;
 }
 
 type DonorEligibilityUser = {
@@ -121,7 +121,7 @@ export function AppSidebar({
     // Server-provided eligibility wins; otherwise live-derive it from the donor
     // dashboard query (already prefetched on /donor, refreshed by mutations).
     const donorUser = useDonorDashboard().data;
-    const cardEligibility = eligibility ?? buildEligibilityView(donorUser);
+    const cardEligibility = eligibility ?? buildEligibilityView(donorUser ?? null);
 
     // On mobile the sidebar is a sheet; close it once the user picks a destination.
     const closeMobile = () => setOpenMobile(false);

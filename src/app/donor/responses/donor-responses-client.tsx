@@ -8,6 +8,7 @@ import { ACTIVE_ALERT_STATUSES } from "@/lib/constants";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { markAlertOpened } from "@/servers/emergency";
 import { getEligibility } from "@/lib/eligibility";
+import type { LegacyDonorSnapshot } from "@/lib/donor-types";
 import { buildRequests } from "@/lib/donor-dashboard";
 import {
 	useDonorAlerts,
@@ -79,8 +80,10 @@ export function DonorResponsesClient() {
 		);
 	}
 
-	const lastDonationDate = user?.lastDonationDate
-		? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+	const u = user as LegacyDonorSnapshot | null | undefined;
+	const lastDonatedAt = u?.donorProfile?.lastDonatedAt ?? u?.lastDonationDate ?? null;
+	const lastDonationDate = lastDonatedAt
+		? new Date(lastDonatedAt).toISOString().slice(0, 10)
 		: null;
 	const eligibility = getEligibility(lastDonationDate);
 
@@ -94,7 +97,7 @@ export function DonorResponsesClient() {
 
 	const cardHandlers: CardHandlers = {
 		eligibility,
-		donorStatus: user?.isActive ? "available" : "inactive",
+		donorStatus: u?.donorProfile?.isAvailable ?? u?.isActive ?? true ? "available" : "inactive",
 		onRespond: handleRespond,
 		onDecline: handleDecline,
 		onWithdraw: (reqId, reason) => handleWithdraw(reqId, session.user.id, reason),

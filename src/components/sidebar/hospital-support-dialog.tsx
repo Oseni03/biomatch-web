@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, Mail, Phone, ShieldCheck } from "lucide-react";
+import { HelpCircle, Mail, ShieldCheck } from "lucide-react";
 import {
     Dialog,
     DialogContent,

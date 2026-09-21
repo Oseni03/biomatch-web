@@ -1,11 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
-import { EASE_SMOOTH } from "@/lib/animations";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 interface AuthCardProps {

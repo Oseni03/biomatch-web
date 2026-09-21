@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
 					</Link>
 
 					<p className="text-xs text-[#a6abbd] leading-relaxed max-w-sm">
-						Nigeria's emergency blood logistics network. Connecting accredited hospitals, verified cold-storage bank reserves, and voluntary on-call donors within an 8-minute response corridor.
+						Nigeria&apos;s emergency blood logistics network. Connecting accredited hospitals, verified cold-storage bank reserves, and voluntary on-call donors within an 8-minute response corridor.
 					</p>
 
 					<div className="flex items-center gap-2 text-xs text-emerald-400">

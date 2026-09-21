@@ -9,6 +9,7 @@ import {
 	useLocalDemandStats,
 } from "@/hooks/use-donor-history";
 import { getEligibility } from "@/lib/eligibility";
+import type { LegacyDonorSnapshot } from "@/lib/donor-types";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -20,7 +21,7 @@ export function DonorHistoryClient() {
 	const [page, setPage] = useState(1);
 	const { data: historyData, isLoading: historyLoading } =
 		useDonorHistory(page);
-	const { data: demandStats, isLoading: demandLoading } =
+	const { data: demandStats } =
 		useLocalDemandStats();
 
 	const isLoading = sessionLoading || userLoading || historyLoading;
@@ -41,11 +42,13 @@ export function DonorHistoryClient() {
 		);
 	}
 
-	const lastDonationDate = user?.lastDonationDate
-		? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+	const u = user as LegacyDonorSnapshot | null | undefined;
+	const lastDonatedAt = u?.donorProfile?.lastDonatedAt ?? u?.lastDonationDate ?? null;
+	const lastDonationDate = lastDonatedAt
+		? new Date(lastDonatedAt).toISOString().slice(0, 10)
 		: null;
 	const eligibility = getEligibility(lastDonationDate);
-	const walletData = user?.wallet;
+	const walletData = u?.donorProfile?.wallet ?? u?.wallet;
 	const completedCount = walletData?.lifetimeDonations ?? 0;
 	const points = walletData?.points ?? 0;
 	const livesImpacted = completedCount * 2;
@@ -88,7 +91,7 @@ export function DonorHistoryClient() {
 				<StatCard
 					icon={MapPin}
 					label="Local Requests"
-					value={String(demandStats?.totalThisMonth ?? 0)}
+					value={String(demandStats?.monthlyDemand ?? 0)}
 				/>
 				<StatCard
 					icon={Activity}

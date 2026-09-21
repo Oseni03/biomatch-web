@@ -50,19 +50,21 @@ function LoginContent() {
 			setError(
 				typeof authError === "string"
 					? authError
-					: (authError as any)?.message ?? "Invalid credentials",
+					: (authError as { message?: string })?.message ?? "Invalid credentials",
 			);
 			setIsLoading(false);
 			return;
 		}
 
-		const role = data?.user.role;
+		const callbackUrl = searchParams.get("callbackUrl");
+		const isAdmin = (data?.user as { role?: string | null })?.role === "admin";
 
-		if (role) {
-			router.push(`/${role}`);
+		if (isAdmin) {
+			router.push("/admin");
+		} else if (callbackUrl && callbackUrl.startsWith("/")) {
+			router.push(callbackUrl);
 		} else {
-			setError("Login succeeded but unable to determine your role.");
-			setIsLoading(false);
+			router.push("/donor");
 		}
 	};
 

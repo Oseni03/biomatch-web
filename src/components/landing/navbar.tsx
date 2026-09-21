@@ -13,9 +13,9 @@ import { EASE_SMOOTH } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type ServerSession = {
-	user: { id: string; name?: string | null; email: string; role: string };
+	user: { id: string; name?: string | null; email: string; role?: string | null };
 	session: { id: string };
-} | null;
+} | null | undefined;
 
 interface NavbarProps {
 	serverSession?: ServerSession;

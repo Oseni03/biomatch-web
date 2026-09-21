@@ -294,7 +294,7 @@ export function EmergencyRequestCard({
 
 			{stage === "closed" && (
 				<p className="rounded-xl border border-border bg-muted/50 p-3.5 text-xs text-muted-foreground">
-					You're not responding to this request. We'll notify you when another
+					You&apos;re not responding to this request. We&apos;ll notify you when another
 					one comes up.
 				</p>
 			)}
@@ -368,14 +368,14 @@ export function EmergencyRequestCard({
 									aria-expanded={withdrawOpen}
 									className="h-12 w-full rounded-full text-xs text-muted-foreground hover:text-foreground sm:w-1/3 sm:text-sm"
 								>
-									Can't Make It
+									Can&apos;t Make It
 								</Button>
 							</div>
 
 							{withdrawOpen && (
 								<div className="space-y-2 rounded-xl border border-border bg-background p-3">
 									<p className="text-xs font-medium text-muted-foreground">
-										Tell the hospital why you're withdrawing:
+										Tell the hospital why you&apos;re withdrawing:
 									</p>
 									<div className="flex flex-wrap gap-2">
 										{WITHDRAW_REASONS.map((reason) => (
