@@ -6,6 +6,7 @@ import {
     History,
     LayoutDashboard,
     Store,
+    Users,
     Wallet,
     type LucideIcon,
 } from "lucide-react";
@@ -52,6 +53,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
     admin: [
         { title: "Overview", url: "/admin", icon: LayoutDashboard, exact: true },
         { title: "Hospitals", url: "/admin/hospitals", icon: Building2 },
+        { title: "Donors", url: "/admin/donors", icon: Users },
         { title: "Merchants", url: "/admin/merchants", icon: Store },
     ],
 };

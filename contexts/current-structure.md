@@ -4,6 +4,11 @@
 > `sweepExpiredVouchers()`, `GET /api/cron/expire-vouchers` (daily),
 > forfeit copy on Rewards, `tests/voucher-expiry.test.ts` (4 passing).
 >
+> Last updated: 2026-09-22 — Issue 24 (admin donor management) implemented:
+> `listDonors` + `getDonorDetail` + `restrictDonor`/`liftDonorRestriction` in
+> `servers/admin.ts`, `/admin/donors` + `/admin/donors/[id]`, sidebar Donors
+> item, `tests/admin-donor-management.test.ts` (7 passing).
+>
 > Last updated: 2026-09-22 — Issue 22 (merchant portal) implemented: redeem
 > functions in `servers/merchants.ts` (preview, guarded-update redeem,
 > history), `/merchant` minimal portal, proxy + login wiring,

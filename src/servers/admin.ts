@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { Prisma } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { requireConsentsForUser } from "@/servers/consent";
@@ -535,4 +536,269 @@ export async function reapplyForVerification(	organizationId: string,
 		}
 		throw error;
 	}
+}
+
+const BLOOD_GROUPS = ["A_POS", "A_NEG", "B_POS", "B_NEG", "AB_POS", "AB_NEG", "O_POS", "O_NEG"] as const;
+const DONOR_VERIFICATION_STATUSES = ["unverified", "verified", "failed"] as const;
+const DONOR_ACCOUNT_STATUSES = ["active", "restricted"] as const;
+
+const listDonorsSchema = z.object({
+	search: z.string().trim().max(120).optional(),
+	bloodGroup: z.enum(BLOOD_GROUPS).optional(),
+	verificationStatus: z.enum(DONOR_VERIFICATION_STATUSES).optional(),
+	state: z.string().trim().max(60).optional(),
+	donorStatus: z.enum(DONOR_ACCOUNT_STATUSES).optional(),
+	page: z.coerce.number().int().min(1).default(1),
+	pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export interface AdminDonorListItem {
+	userId: string;
+	name: string;
+	email: string;
+	donorCode: string;
+	bloodGroup: string;
+	state: string | null;
+	verificationStatus: string;
+	donorStatus: string;
+	lastDonatedAt: Date | null;
+	createdAt: Date;
+}
+
+export interface AdminDonorListResult {
+	donors: AdminDonorListItem[];
+	total: number;
+	page: number;
+	pageSize: number;
+	totalPages: number;
+}
+
+export async function listDonors(
+	callerUserId: string,
+	rawFilters?: unknown,
+): Promise<AdminDonorListResult> {
+	await requireAdmin(callerUserId);
+	const filters = listDonorsSchema.parse(rawFilters ?? {});
+	const where: Prisma.DonorProfileWhereInput = {};
+	if (filters.bloodGroup) where.bloodGroup = filters.bloodGroup;
+	if (filters.verificationStatus) where.verificationStatus = filters.verificationStatus;
+	if (filters.donorStatus) where.donorStatus = filters.donorStatus;
+	if (filters.state) where.state = { contains: filters.state, mode: "insensitive" };
+	if (filters.search) {
+		const contains = { contains: filters.search, mode: "insensitive" as const };
+		where.OR = [
+			{ donorCode: contains },
+			{ user: { name: contains } },
+			{ user: { email: contains } },
+		];
+	}
+	const [total, rows] = await Promise.all([
+		prisma.donorProfile.count({ where }),
+		prisma.donorProfile.findMany({
+			where,
+			orderBy: { createdAt: "desc" },
+			skip: (filters.page - 1) * filters.pageSize,
+			take: filters.pageSize,
+			select: {
+				userId: true,
+				donorCode: true,
+				bloodGroup: true,
+				state: true,
+				verificationStatus: true,
+				donorStatus: true,
+				lastDonatedAt: true,
+				createdAt: true,
+				user: { select: { name: true, email: true } },
+			},
+		}),
+	]);
+	return {
+		donors: rows.map((row) => ({
+			userId: row.userId,
+			name: row.user.name ?? "",
+			email: row.user.email,
+			donorCode: row.donorCode,
+			bloodGroup: String(row.bloodGroup),
+			state: row.state,
+			verificationStatus: String(row.verificationStatus),
+			donorStatus: String(row.donorStatus),
+			lastDonatedAt: row.lastDonatedAt,
+			createdAt: row.createdAt,
+		})),
+		total,
+		page: filters.page,
+		pageSize: filters.pageSize,
+		totalPages: Math.max(1, Math.ceil(total / filters.pageSize)),
+	};
+}
+
+export interface AdminDonorDetail {
+	userId: string;
+	name: string;
+	email: string;
+	donorCode: string;
+	bloodGroup: string;
+	state: string | null;
+	lga: string | null;
+	verificationStatus: string;
+	verifiedAt: Date | null;
+	donorStatus: string;
+	restrictedReason: string | null;
+	restrictedByName: string | null;
+	restrictedAt: Date | null;
+	isAvailable: boolean;
+	lastDonatedAt: Date | null;
+	cooldownUntil: Date | null;
+	createdAt: Date;
+	donationCount: number;
+	completedDonationCount: number;
+	recentDonations: {
+		id: string;
+		status: string;
+		completedAt: Date | null;
+		hospitalName: string;
+	}[];
+}
+
+export async function getDonorDetail(
+	callerUserId: string,
+	donorUserId: string,
+): Promise<AdminDonorDetail | null> {
+	await requireAdmin(callerUserId);
+	const profile = await prisma.donorProfile.findUnique({
+		where: { userId: donorUserId },
+		select: {
+			userId: true,
+			donorCode: true,
+			bloodGroup: true,
+			state: true,
+			lga: true,
+			verificationStatus: true,
+			verifiedAt: true,
+			donorStatus: true,
+			restrictedReason: true,
+			restrictedBy: true,
+			restrictedAt: true,
+			isAvailable: true,
+			lastDonatedAt: true,
+			cooldownUntil: true,
+			createdAt: true,
+			user: { select: { name: true, email: true } },
+			donations: {
+				orderBy: { createdAt: "desc" },
+				take: 10,
+				select: {
+					id: true,
+					status: true,
+					completedAt: true,
+					organization: { select: { name: true } },
+				},
+			},
+			_count: { select: { donations: true } },
+		},
+	});
+	if (!profile) return null;
+	const completedDonationCount = await prisma.donation.count({
+		where: { donorId: donorUserId, status: "completed" },
+	});
+	const restrictedByName = profile.restrictedBy
+		? (
+				await prisma.user.findUnique({
+					where: { id: profile.restrictedBy },
+					select: { name: true },
+				})
+			)?.name ?? null
+		: null;
+	return {
+		userId: profile.userId,
+		name: profile.user.name ?? "",
+		email: profile.user.email,
+		donorCode: profile.donorCode,
+		bloodGroup: String(profile.bloodGroup),
+		state: profile.state,
+		lga: profile.lga,
+		verificationStatus: String(profile.verificationStatus),
+		verifiedAt: profile.verifiedAt,
+		donorStatus: String(profile.donorStatus),
+		restrictedReason: profile.restrictedReason,
+		restrictedByName,
+		restrictedAt: profile.restrictedAt,
+		isAvailable: profile.isAvailable,
+		lastDonatedAt: profile.lastDonatedAt,
+		cooldownUntil: profile.cooldownUntil,
+		createdAt: profile.createdAt,
+		donationCount: profile._count.donations,
+		completedDonationCount,
+		recentDonations: profile.donations.map((donation) => ({
+			id: donation.id,
+			status: String(donation.status),
+			completedAt: donation.completedAt,
+			hospitalName: donation.organization.name,
+		})),
+	};
+}
+
+const restrictDonorSchema = z.object({
+	reason: z.string().trim().min(1, "A reason is required to restrict a donor").max(500),
+});
+
+export async function restrictDonor(
+	callerUserId: string,
+	donorUserId: string,
+	rawInput: unknown,
+): Promise<void> {
+	await requireAdmin(callerUserId);
+	const input = restrictDonorSchema.parse(rawInput);
+	const profile = await prisma.donorProfile.findUnique({
+		where: { userId: donorUserId },
+		select: { userId: true },
+	});
+	if (!profile) {
+		throw new Error("Donor not found");
+	}
+	await prisma.donorProfile.update({
+		where: { userId: donorUserId },
+		data: {
+			donorStatus: "restricted",
+			restrictedReason: input.reason,
+			restrictedBy: callerUserId,
+			restrictedAt: new Date(),
+		},
+	});
+	await writeAuditLog({
+		actorId: callerUserId,
+		action: "donor.restrict",
+		entityType: "donor_profile",
+		entityId: donorUserId,
+		metadata: { reason: input.reason },
+	});
+}
+
+export async function liftDonorRestriction(
+	callerUserId: string,
+	donorUserId: string,
+): Promise<void> {
+	await requireAdmin(callerUserId);
+	const profile = await prisma.donorProfile.findUnique({
+		where: { userId: donorUserId },
+		select: { userId: true, donorStatus: true },
+	});
+	if (!profile) {
+		throw new Error("Donor not found");
+	}
+	await prisma.donorProfile.update({
+		where: { userId: donorUserId },
+		data: {
+			donorStatus: "active",
+			restrictedReason: null,
+			restrictedBy: null,
+			restrictedAt: null,
+		},
+	});
+	await writeAuditLog({
+		actorId: callerUserId,
+		action: "donor.lift_restriction",
+		entityType: "donor_profile",
+		entityId: donorUserId,
+	});
 }

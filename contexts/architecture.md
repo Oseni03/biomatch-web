@@ -115,6 +115,8 @@
 - `/admin` — Platform overview (counts + review-queue state; full metrics arrive in issue 25)
 - `/admin/hospitals` — Hospital list (status/search/pagination) + pending review queue
 - `/admin/hospitals/[id]` — Hospital detail (registration, team, application history) + approve/reject/suspend/reinstate (issue 09)
+- `/admin/donors` — Donor list (name/email/code search + blood group / verification / state / account-status filters, pagination) (issue 24)
+- `/admin/donors/[id]` — Donor detail (verification, donation counts, recent donations, restriction state) + restrict (reason required, audit logged) / lift restriction (issue 24)
 - `/admin/merchants` — Merchant list (active/deactivated filter, pagination) + create (issue 20)
 - `/admin/merchants/[id]` — Merchant detail (edit, activate/deactivate) + staff linking, enable/disable, set-password email for new accounts (issue 20)
 
