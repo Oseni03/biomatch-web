@@ -14,6 +14,7 @@ import {
 	Zap,
 	Send,
 	RotateCcw,
+	LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
@@ -32,7 +33,9 @@ interface SimulatedDonor {
 	isCompatible: boolean;
 }
 
-export const Hero: React.FC = () => {
+export const Hero: React.FC<{ portalHref?: string | null }> = ({
+	portalHref,
+}) => {
 	const navigate = useRouter();
 	const [simulationState, setSimulationState] = useState<'idle' | 'dispatching' | 'matched'>('idle');
 	const [activeTab, setActiveTab] = useState<'radar' | 'dispatch_preview'>('radar');
@@ -155,26 +158,41 @@ export const Hero: React.FC = () => {
 						transition={{ duration: 0.55, delay: 0.3, ease: EASE_SMOOTH }}
 						className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mb-5"
 					>
-						<Button
-							variant="default"
-							size="lg"
-							onClick={() => navigate.push('/auth/signup?role=hospital')}
-							className="w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-bold shadow-[0_0_28px_rgba(220,38,38,0.35)] hover:shadow-[0_0_36px_rgba(220,38,38,0.5)] transition-all flex items-center justify-center gap-2 group"
-						>
-							<Building2 className="w-4 h-4" />
-							<span>Register Hospital Desk</span>
-							<ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-						</Button>
+						{portalHref ? (
+							<Button
+								variant="default"
+								size="lg"
+								onClick={() => navigate.push(portalHref)}
+								className="w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-bold shadow-[0_0_28px_rgba(220,38,38,0.35)] hover:shadow-[0_0_36px_rgba(220,38,38,0.5)] transition-all flex items-center justify-center gap-2 group"
+							>
+								<LayoutDashboard className="w-4 h-4" />
+								<span>Go to Your Portal</span>
+								<ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+							</Button>
+						) : (
+							<>
+								<Button
+									variant="default"
+									size="lg"
+									onClick={() => navigate.push('/auth/signup?role=hospital')}
+									className="w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-bold shadow-[0_0_28px_rgba(220,38,38,0.35)] hover:shadow-[0_0_36px_rgba(220,38,38,0.5)] transition-all flex items-center justify-center gap-2 group"
+								>
+									<Building2 className="w-4 h-4" />
+									<span>Register Hospital Desk</span>
+									<ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+								</Button>
 
-						<Button
-							variant="outline"
-							size="lg"
-							onClick={() => navigate.push('/auth/signup')}
-							className="w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-bold bg-[#0d0f18]/80 hover:bg-[#151926] border-[#222738] hover:border-red-500/40 text-white transition-all flex items-center justify-center gap-2"
-						>
-							<Heart className="w-4 h-4 text-red-500 fill-red-500/20" />
-							<span>Become a Voluntary Donor</span>
-						</Button>
+								<Button
+									variant="outline"
+									size="lg"
+									onClick={() => navigate.push('/auth/signup')}
+									className="w-full sm:w-auto px-7 py-3.5 text-sm sm:text-base font-bold bg-[#0d0f18]/80 hover:bg-[#151926] border-[#222738] hover:border-red-500/40 text-white transition-all flex items-center justify-center gap-2"
+								>
+									<Heart className="w-4 h-4 text-red-500 fill-red-500/20" />
+									<span>Become a Voluntary Donor</span>
+								</Button>
+							</>
+						)}
 					</motion.div>
 
 					{/* Micro Assurance Strip */}

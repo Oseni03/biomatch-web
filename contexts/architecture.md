@@ -65,7 +65,7 @@
 ### Public Routes
 | Path | Page | Description |
 |---|---|---|
-| `/` | `app/page.tsx` | Landing page — renders Navbar → Hero → BloodShortage (`#why-it-matters`) → HowItWorks → ForDonors → ForHospitals → Safety → Pricing → FinalCTA → Footer |
+| `/` | `app/page.tsx` | Landing page — renders Navbar → Hero → BloodShortage (`#why-it-matters`) → HowItWorks → ForDonors → ForHospitals → Safety → Pricing → FinalCTA → Footer; computes `portalHref` via `getSessionRole` so signed-in users get portal CTAs instead of sign-up CTAs |
 | `/auth/login` | `app/auth/login/page.tsx` | Sign-in |
 | `/auth/signup` | `app/auth/signup/page.tsx` | Register (donor/hospital toggle; accepts `?role=donor\|hospital` to preselect the toggle) |
 | `/auth/onboarding` | `app/auth/onboarding/page.tsx` | Post-signup profile setup |
@@ -109,6 +109,7 @@
 ## Auth Flow
 
 1. **Signup** → `signUpWithProfile()` creates user via BetterAuth, creates Wallet for donors, creates Organization for hospitals
+2. **Hospital registration (thin, issue 05)** → `/auth/signup?role=hospital` renders the hospital mode: contact + hospital + address/state/LGA fields, server-side geocode, then `organization.create` through the Better Auth organization plugin. The creator becomes `owner`, `verificationStatus` stays `pending` (client input blocked by `input: false`), and the plugin hook opens exactly one pending `HospitalVerification`. Full verification form, pending-approval screen and request-creation enforcement arrive in issue 08.
 2. **Consents** → signup and invitation-signup forms require terms + privacy + data-processing acceptance (marketing optional); `acceptConsents()` records rows at the server policy version with the request IP. Acceptance is idempotent — re-submitting creates no duplicates.
 3. **Gate** → `proxy.ts` redirects authenticated users missing required consents away from `/donor`, `/hospital`, `/admin`, `/auth/onboarding` to `/auth/consent?next=…`; `requireConsentsForUser()` enforces the same gate inside `servers/user.ts` and `servers/organization.ts` (new authed endpoints must call it). Bumping `CONSENT_POLICY_VERSION` forces re-consent. Required consents can't be withdrawn (points to account deletion); marketing toggles in profile settings keep revoked rows.
 4. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name

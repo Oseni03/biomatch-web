@@ -5,7 +5,9 @@ import { Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 
-export const Pricing: React.FC = () => {
+export const Pricing: React.FC<{ portalHref?: string | null }> = ({
+    portalHref,
+}) => {
     const navigate = useRouter();
 
     return (
@@ -54,10 +56,10 @@ export const Pricing: React.FC = () => {
                         <Button
                             variant="outline"
                             size="default"
-                            onClick={() => navigate.push('/auth/signup')}
+                            onClick={() => navigate.push(portalHref ?? '/auth/signup')}
                             className="w-full"
                         >
-                            Become a Donor
+                            {portalHref ? "Go to Your Portal" : "Become a Donor"}
                         </Button>
                     </div>
 
@@ -89,10 +91,10 @@ export const Pricing: React.FC = () => {
 
                         <Button
                             variant="default"
-                            onClick={() => navigate.push('/auth/signup?role=hospital')}
+                            onClick={() => navigate.push(portalHref ?? '/auth/signup?role=hospital')}
                             className="w-full"
                         >
-                            Register Hospital
+                            {portalHref ? "Go to Your Portal" : "Register Hospital"}
                         </Button>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { getServerSession } from "@/lib/get-session";
+import { getSessionRole } from "@/servers/user";
 import { BloodShortage } from "@/components/landing/blood-shortage";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { ForDonors } from "@/components/landing/for-donors";
@@ -12,12 +13,16 @@ import { Footer } from "@/components/landing/footer";
 
 export default async function HomePage() {
 	const session = await getServerSession();
+	const role = session?.user?.id
+		? await getSessionRole(session.user.id)
+		: null;
+	const portalHref = role ? `/${role}` : null;
 	return (
 		<div className="min-h-screen bg-[#06070a] text-[#f8f9fc] flex flex-col selection:bg-red-600 selection:text-white">
-			<Navbar serverSession={session} />
+			<Navbar serverSession={session} portalHref={portalHref} />
 			<main className="flex-1">
 				{/* 1. Hero: Minimal, single visual, clear CTAs */}
-				<Hero />
+				<Hero portalHref={portalHref} />
 
 				{/* 2. BloodShortage: "Why does this matter?" */}
 				<BloodShortage />
@@ -35,10 +40,10 @@ export default async function HomePage() {
 				<Safety />
 
 				{/* 7. Pricing: "What does it cost?" */}
-				<Pricing />
+				<Pricing portalHref={portalHref} />
 
 				{/* 8. FinalCTA: "What should I do next?" */}
-				<FinalCTA />
+				<FinalCTA portalHref={portalHref} />
 			</main>
 			<Footer />
 		</div>

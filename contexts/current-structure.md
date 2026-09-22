@@ -1,6 +1,19 @@
 # BioMatch — Current File Structure
 
-> Last updated: 2026-09-21 — Issue 04 (NDPR consent gate) implemented: only the
+> Last updated: 2026-09-22 — Issue 05 (landing page) implemented: landing
+> sections already existed; added the missing hospital-registration target as a
+> hospital mode on `/auth/signup?role=hospital` (contact + hospital + address/
+> state/LGA fields, server-side geocode via new `geocodeAddressAction` in
+> `servers/location.ts`, org create through the Better Auth organization
+> plugin so verificationStatus stays pending and exactly one
+> HospitalVerification is opened, creator becomes owner), derived portal
+> routing (`getSessionRole` → `/donor|/hospital|/admin`) passed as
+> `portalHref` to Navbar/Hero/FinalCTA/Pricing so signed-in users see a portal
+> button instead of sign-up CTAs (also fixes Navbar's broken `/${role}`
+> link), and `tests/hospital-registration.test.ts` (geocode guard +
+> registration asserts incl. client-cannot-self-approve — 2 passing). Full
+> verification form, pending-approval screen and API enforcement stay in
+> issue 08. Previous state:
 > `ConsentRecord` schema existed, no enforcement. Added `src/lib/consent.ts`
 > (server policy version + pure gate helpers), `src/servers/consent.ts`
 > (session-derived `acceptConsents`/`updateMarketingConsent`/`withdrawConsent`,
@@ -251,7 +264,8 @@ src/
 
 tests/
 ├── auth-skeleton.test.ts               # Issue 03 walking-skeleton integration test
-└── consent-gate.test.ts                # Issue 04 gate/idempotency/version-bump tests
+├── consent-gate.test.ts                # Issue 04 gate/idempotency/version-bump tests
+└── hospital-registration.test.ts       # Issue 05 hospital registration asserts
 ```
 
 ## Removed (simplified out)

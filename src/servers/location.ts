@@ -1,6 +1,26 @@
 "use server";
 
-import { haversineDistanceKm } from "@/lib/geocoding";
+import { geocodeAddress, haversineDistanceKm } from "@/lib/geocoding";
+
+export interface GeocodedAddress {
+	latitude: number;
+	longitude: number;
+	formattedAddress: string;
+}
+
+export async function geocodeAddressAction(
+	address: string,
+): Promise<{ ok: true; result: GeocodedAddress } | { ok: false; error: string }> {
+	const result = await geocodeAddress(address);
+	if (!result) {
+		return {
+			ok: false,
+			error:
+				"We couldn't locate that address. Please add more detail (street, area, state).",
+		};
+	}
+	return { ok: true, result };
+}
 
 export async function scoreDonorProximity(
 	donorLatitude?: number | null,

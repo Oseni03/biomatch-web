@@ -15,11 +15,25 @@ Carry the existing marketing page into the new frontend and make sure it communi
 
 ## Acceptance criteria
 
-- [ ] Landing page is served by the new frontend and works without authentication
-- [ ] Separate, clearly labelled CTAs lead to donor sign-up and hospital registration
-- [ ] Copy reflects the PRD problem statement and the enterprise-grade feel required for the hospital audience
-- [ ] Page is responsive and dark-mode only
-- [ ] Signed-in users see a sensible route into their portal instead of sign-up CTAs
+- [x] Landing page is served by the new frontend and works without authentication
+- [x] Separate, clearly labelled CTAs lead to donor sign-up and hospital registration
+- [x] Copy reflects the PRD problem statement and the enterprise-grade feel required for the hospital audience
+- [x] Page is responsive and dark-mode only
+- [x] Signed-in users see a sensible route into their portal instead of sign-up CTAs
+
+## Implementation (recorded 2026-09-22)
+
+Landing sections already existed. Added the missing hospital-registration
+target as a hospital mode on `/auth/signup?role=hospital` (contact + hospital
++ address/state/LGA fields, server-side geocode, org create via the Better
+Auth organization plugin: creator becomes owner, status stays pending,
+exactly one `HospitalVerification` opened — verified in
+`tests/hospital-registration.test.ts`, including a client-cannot-self-approve
+assert). `page.tsx` derives `portalHref` via `getSessionRole` and passes it
+to Navbar/Hero/FinalCTA/Pricing, which render portal buttons for signed-in
+users (this also fixed Navbar's `/${role}` link, which resolved to `/user`
+for non-admins). Full verification form, pending-approval screen and
+request-creation enforcement stay in issue 08.
 
 ## Blocked by
 

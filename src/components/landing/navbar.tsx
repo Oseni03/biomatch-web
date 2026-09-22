@@ -19,9 +19,10 @@ type ServerSession = {
 
 interface NavbarProps {
 	serverSession?: ServerSession;
+	portalHref?: string | null;
 }
 
-export function Navbar({ serverSession }: NavbarProps) {
+export function Navbar({ serverSession, portalHref }: NavbarProps) {
 	const router = useRouter();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
@@ -111,7 +112,7 @@ export function Navbar({ serverSession }: NavbarProps) {
 					{session ? (
 						<div className="hidden md:flex items-center gap-3">
 							<Button variant="outline" asChild>
-								<Link href={`/${session.user.role}`}>
+								<Link href={portalHref ?? "/donor"}>
 									<LayoutDashboard className="mr-1.5 h-4 w-4" />
 									Dashboard
 								</Link>
@@ -204,7 +205,7 @@ export function Navbar({ serverSession }: NavbarProps) {
 								{session ? (
 									<>
 										<Link
-											href={`/${session.user.role}`}
+											href={portalHref ?? "/donor"}
 											onClick={() => setIsMenuOpen(false)}
 											className="block py-2 font-medium text-foreground transition-colors hover:text-brand"
 										>

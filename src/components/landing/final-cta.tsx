@@ -5,7 +5,9 @@ import { Phone } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 
-export const FinalCTA: React.FC = () => {
+export const FinalCTA: React.FC<{ portalHref?: string | null }> = ({
+    portalHref,
+}) => {
     const navigate = useRouter();
 
     return (
@@ -27,22 +29,35 @@ export const FinalCTA: React.FC = () => {
 
                 {/* Dual Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-8">
-                    <Button
-                        variant="default"
-                        size="lg"
-                        onClick={() => navigate.push('/auth/signup?role=hospital')}
-                        className="w-full sm:w-auto px-8"
-                    >
-                        Register Hospital
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={() => navigate.push('/auth/signup')}
-                        className="w-full sm:w-auto px-8"
-                    >
-                        Become a Donor
-                    </Button>
+                    {portalHref ? (
+                        <Button
+                            variant="default"
+                            size="lg"
+                            onClick={() => navigate.push(portalHref)}
+                            className="w-full sm:w-auto px-8"
+                        >
+                            Go to Your Portal
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                variant="default"
+                                size="lg"
+                                onClick={() => navigate.push('/auth/signup?role=hospital')}
+                                className="w-full sm:w-auto px-8"
+                            >
+                                Register Hospital
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() => navigate.push('/auth/signup')}
+                                className="w-full sm:w-auto px-8"
+                            >
+                                Become a Donor
+                            </Button>
+                        </>
+                    )}
                 </div>
 
                 {/* 24/7 Emergency Line */}
