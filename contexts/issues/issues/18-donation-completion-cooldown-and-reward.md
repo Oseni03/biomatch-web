@@ -30,7 +30,9 @@ Live-DB test run proved a double-credit: `tryCompleteDonation` upserted
 on ledger insert (balance 200000 vs expected 100000). Removed the direct upsert —
 the trigger is now the single balance writer. `tests/helpers.ts` gained
 `deleteLedgerForDonor` (disables the append-only trigger around test cleanup).
-Re-verification of the full slice-18 suite is pending DB availability.
+Re-verified 2026-09-22: full slice-18 suite passes 6/6 on the live DB with the
+single-writer trigger (balance now equals exactly one reward) and the
+UPDATE-first `apply_wallet_entry()` from slice 21.
 
 ## Blocked by
 

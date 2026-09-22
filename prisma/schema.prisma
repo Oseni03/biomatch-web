@@ -628,9 +628,11 @@ model VoucherRedemption {
   redeemedByUserId String?          @db.Uuid // merchant staff who confirmed; audit reference, no FK
 
   walletTransactions WalletTransaction[]
+  idempotencyKey     String? // client-generated per redemption intent; same key replays one voucher
 
   @@index([donorId, issuedAt(sort: Desc)])
   @@index([merchantId, status])
+  @@unique([donorId, idempotencyKey])
   @@map("voucher_redemptions")
 }
 

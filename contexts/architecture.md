@@ -94,7 +94,7 @@
 | `/donor/profile` | `app/donor/profile/page.tsx` | Donor profile — blood group, DOB, home pin (address/state/LGA + lat/lng), availability toggle, donor code with copy, verification badge, screening explainer (issue 06), phone/OTP verification (issue 07) |
 | `/donor/notifications` | `app/donor/notifications/page.tsx` | Notifications — alert-derived + eligibility/profile items, filters, mark-read |
 | `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
-| `/donor/rewards` | `app/donor/rewards/page.tsx` | Rewards wallet (issue 19) — balance from `DonorWallet`, ledger from `WalletTransaction`, kobo→naira via `lib/money.ts` |
+| `/donor/rewards` | `app/donor/rewards/page.tsx` | Rewards wallet (issues 19/21) — balance from `DonorWallet`, ledger from `WalletTransaction`, voucher redeem flow + voucher list (`servers/vouchers.ts`), kobo→naira via `lib/money.ts` |
 | `/donor/responses` | `app/donor/responses/page.tsx` | My Emergency Responses — active/accepted alerts |
 
 ### Protected — Hospital
@@ -206,6 +206,34 @@
   (`POST /api/webhooks/delivery`), failures visible on `/admin`, prefs card
   in the donor inbox. Triggered on match, decline-chain, accept and
   close/cancel; completion hooks in when issue 18 lands.
+
+### Donation completion, wallet & vouchers (issues 18-21)
+
+- Dual confirmation (`servers/donations.ts`): donor + hospital confirm,
+  first claim wins via a guarded `updateMany`; completion writes the match,
+  cooldown (`COOLDOWN_DAYS`), and exactly one `donation_reward` ledger row
+  (partial unique index `wt_one_reward_per_donation`). Never update
+  `DonorWallet` from app code — the trigger is the single balance writer.
+- Wallet (`servers/wallet.ts`): consent-gated balance + paginated ledger;
+  money is integer kobo in the DB, formatted by `lib/money.ts`.
+- Vouchers (`servers/vouchers.ts`): `issueVoucher()` creates the voucher
+  (unguessable `XXXX-XXXX-XXXX` code, `expiresAt` from
+  `VOUCHER_VALIDITY_DAYS`) plus the negative ledger entry in one transaction;
+  a client-generated `idempotencyKey` (`@@unique([donorId, idempotencyKey])`)
+  makes double-submits return the one voucher. `listVouchersForDonor()` feeds
+  My Vouchers; `listVouchersForAdmin()` feeds the admin report (issue 25).
+- `apply_wallet_entry()` is UPDATE-first with an INSERT +
+  `unique_violation` fallback. Never use INSERT ... ON CONFLICT DO UPDATE
+  here: Postgres validates CHECKs on the proposed row before conflict
+  detection, so every debit would die on `donor_wallets_balance_chk` even
+  with sufficient balance (found live in slice 21). The CHECK on the final
+  row is the overdraft arbiter under concurrency — app code only pre-checks
+  for a friendly message.
+- Merchants (`servers/merchants.ts`, `/admin/merchants`, issue 20): admin
+  CRUD + activate/deactivate, staff link/enable/disable, staff creation via
+  admin `createUser` + set-password email; `listActiveMerchants()` is the
+  redemption picker source (deactivated hidden), `getMerchantPortalContext()`
+  authorises slice 22.
 
 ## Core Loop (Prototype Spec)
 

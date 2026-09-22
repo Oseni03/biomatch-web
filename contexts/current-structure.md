@@ -1,5 +1,15 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 21 (donor voucher redemption) implemented:
+> `servers/vouchers.ts` (issue + idempotency replay, donor/admin lists),
+> `hooks/use-vouchers.ts` + `hooks/use-merchants.ts`, redeem flow + voucher
+> list on `/donor/rewards`, `tests/voucher-issue.test.ts` (7 passing).
+> `VoucherRedemption.idempotencyKey` added (migration
+> `20260922083100_voucher_idempotency`). Trigger rewritten to UPDATE-first
+> (migration `20260922120000_wallet_trigger_update_first`) — the old
+> INSERT..ON CONFLICT form rejected every debit because Postgres checks the
+> proposed row before conflict detection; verified live.
+>
 > Last updated: 2026-09-22 — Issue 20 (admin merchant management) implemented:
 > `servers/merchants.ts` (CRUD, activate/deactivate, staff link/enable/disable,
 > staff creation + set-password email, `listActiveMerchants`,

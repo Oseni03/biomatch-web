@@ -117,14 +117,29 @@ CREATE TRIGGER trg_wallet_immutable
   BEFORE UPDATE OR DELETE ON wallet_transactions
   FOR EACH ROW EXECUTE FUNCTION forbid_mutation();
 
--- Keep donor_wallets.balanceKobo in step with the ledger (same transaction)
+-- Keep donor_wallets.balanceKobo in step with the ledger (same transaction).
+-- UPDATE-first, never INSERT..ON CONFLICT: Postgres validates CHECKs on the
+-- proposed row before conflict detection, so an upsert rejects every negative
+-- delta (voucher debit) even when the balance covers it. A plain UPDATE
+-- evaluates the CHECK on the final balance, which is the overdraft guard.
 CREATE FUNCTION apply_wallet_entry() RETURNS trigger AS $$
 BEGIN
-  INSERT INTO donor_wallets ("donorId", "balanceKobo", "updatedAt")
-  VALUES (NEW."donorId", NEW."amountKobo", now())
-  ON CONFLICT ("donorId") DO UPDATE
-    SET "balanceKobo" = donor_wallets."balanceKobo" + EXCLUDED."balanceKobo",
-        "updatedAt"   = now();
+  UPDATE donor_wallets
+     SET "balanceKobo" = donor_wallets."balanceKobo" + NEW."amountKobo",
+         "updatedAt"   = now()
+   WHERE "donorId" = NEW."donorId";
+  IF FOUND THEN
+    RETURN NEW;
+  END IF;
+  BEGIN
+    INSERT INTO donor_wallets ("donorId", "balanceKobo", "updatedAt")
+    VALUES (NEW."donorId", NEW."amountKobo", now());
+  EXCEPTION WHEN unique_violation THEN
+    UPDATE donor_wallets
+       SET "balanceKobo" = donor_wallets."balanceKobo" + NEW."amountKobo",
+           "updatedAt"   = now()
+     WHERE "donorId" = NEW."donorId";
+  END;
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
