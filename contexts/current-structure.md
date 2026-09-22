@@ -1,5 +1,22 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 07 (phone verification OTP) implemented:
+> new `src/lib/sms.ts` (Termii sender per ADR 009 + `fake` provider with
+> in-memory outbox; `SMS_PROVIDER`/`TERMII_*` env names decided here) and
+> `src/lib/phone-validation.ts` (E.164 regex shared with the plugin
+> validator, NG local-format normalization, zod schema); better-auth
+> `phoneNumber` plugin enabled (6-digit OTP, 5-min expiry, 3 attempts, no
+> phone sign-in, verification optional) with `phoneNumberClient()`;
+> `src/servers/user.ts` gained `getPhoneVerificationState` /
+> `setPhoneNumber` (normalized save resetting `phoneNumberVerified`, unique
+> pre-check + P2002 mapping) / `requestPhoneOtp` (60s cooldown + 5/hour cap,
+> all consent-gated); new `PhoneVerification` component mounted on
+> `/donor/profile` and `/hospital/profile` (verified/unverified states,
+> SMS+WhatsApp explainer); new `tests/phone-verification.test.ts`
+> (normalization, fake outbox, full OTP round-trip incl. wrong/expired
+> rejection, change-resets, uniqueness, cooldown, hourly cap — 11 passing).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 06 (donor profile + donor code) implemented:
 > new `src/lib/donor-code.ts` (BM- + 6 unambiguous chars, format check,
 > collision-retry generator) and `src/lib/donor-profile-validation.ts` (zod:
@@ -116,7 +133,7 @@ src/
 │   │   │   └── error.tsx
 │   │   ├── profile/
 │   │   │   ├── page.tsx                #   Donor profile — server data loader
-│   │   │   ├── donor-profile-client.tsx #  Issue 06: blood group, DOB, home pin, availability, donor code + badge
+│   │   │   ├── donor-profile-client.tsx #  Issue 06 fields + donor code + issue 07 PhoneVerification
 │   │   │   ├── loading.tsx
 │   │   │   └── error.tsx
 │   │   └── history/
@@ -194,6 +211,8 @@ src/
 │   │   ├── live-status-panel.tsx       # Active card (meta grid + responding donors + funnel)
 │   │   ├── recent-activity-section.tsx # Dashboard history preview (3 latest + View All link)
 │   │   └── request-funnel-card.tsx
+│   ├── profile/                        # Shared profile settings UI
+│   │   └── phone-verification.tsx      # Issue 07: add/change number, OTP entry, verified state (donor + hospital)
 │   ├── landing/                        # Landing page sections
 │   │   ├── navbar.tsx                   # Sticky nav (EASE_SMOOTH, real section anchors)
 │   │   ├── hero.tsx                     # Live dispatch radar simulation
@@ -261,8 +280,10 @@ src/
 │   ├── get-session.ts
 │   ├── hospital-code.ts                # BIOMATCH-NNN formatter (kept, no callers yet)
 │   ├── organization-access.ts
+│   ├── phone-validation.ts             # Issue 07: E.164 regex, NG normalization, zod schema
 │   ├── prisma.ts
 │   ├── radius-expansion.ts
+│   ├── sms.ts                          # Issue 07: Termii sender + fake provider w/ test outbox
 │   └── utils.ts
 
 ├── servers/                            # Server actions (all exports have callers)
@@ -274,7 +295,7 @@ src/
 │   ├── notification.ts                 # sendEmergencyAlertEmail
 │   ├── organization.ts                 # org membership + access control
 │   ├── staff.ts                        # getInvitationPreview (invite-accept flow only)
-│   └── user.ts                         # getUserById, updateUserProfile + issue 06 donor-profile actions
+│   └── user.ts                         # getUserById, updateUserProfile + issue 06 donor-profile + issue 07 phone actions
 
 └── emails/                             # Email templates (all imported)
     ├── emergency-alert.tsx
@@ -286,7 +307,8 @@ tests/
 ├── auth-skeleton.test.ts               # Issue 03 walking-skeleton integration test
 ├── consent-gate.test.ts                # Issue 04 gate/idempotency/version-bump tests
 ├── donor-profile.test.ts               # Issue 06 donor code + profile validation/persistence tests
-└── hospital-registration.test.ts       # Issue 05 hospital registration asserts
+├── hospital-registration.test.ts       # Issue 05 hospital registration asserts
+└── phone-verification.test.ts          # Issue 07 normalization + OTP round-trip w/ fake SMS (11 passing)
 ```
 
 ## Removed (simplified out)

@@ -29,7 +29,7 @@
 
 ### Current Models
 
-**User** — Core identity. `name`, `email`, `emailVerified`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location` (string), `address`, `latitude`, `longitude`, `availability`, `isActive`, `lastDonationDate`, `deferredUntil`, `blacklistedAt`, `createdAt`, `updatedAt`. Relations: Session, Account, Wallet, EmergencyAlert (DonorAlerts), Donation, Member, Invitation.
+**User** — Core identity. `name`, `email`, `emailVerified`, `phoneNumber` (unique, E.164), `phoneNumberVerified`, `bloodGroup`, `genotype`, `role`, `updatedHealthInfo` (JSON), `location` (string), `address`, `latitude`, `longitude`, `availability`, `isActive`, `lastDonationDate`, `deferredUntil`, `blacklistedAt`, `createdAt`, `updatedAt`. Relations: Session, Account, Wallet, EmergencyAlert (DonorAlerts), Donation, Member, Invitation.
 
 **Organization** — BetterAuth org model. `name`, `slug` (unique), `logo`, `metadata`, `createdAt`, `updatedAt`. Relations: Member, Invitation, HospitalBank, EmergencyRequest.
 
@@ -66,6 +66,13 @@
 - Server actions (`servers/user.ts`): `getDonorProfile`, `updateDonorProfile`, `saveDonorProfile` (name + profile upsert, code generated once at creation), `updateLastKnownLocation` — all behind the consent gate
 - Last-known location: `useLastKnownLocation` + `LastKnownLocationUpdater` (mounted in the donor layout; only pushes when geolocation permission is already granted)
 
+### Phone Verification (issue 07)
+- SMS layer: `lib/sms.ts` — Termii sender per ADR 009, `fake` provider with in-memory outbox for tests/dev; env `SMS_PROVIDER`, `TERMII_API_KEY`, `TERMII_SENDER_ID`, `TERMII_CHANNEL`
+- Validation: `lib/phone-validation.ts` — E.164 regex (shared with the plugin validator), Nigerian local-format normalization, zod schema
+- Plugin: better-auth `phoneNumber` in `lib/auth.ts` (6-digit OTP, 5-minute expiry, 3 attempts; no phone sign-in; verification optional for app use and matching) + `phoneNumberClient()` in `lib/auth-client.ts`; `/phone-number/*` rate-limit customRules
+- Server actions (`servers/user.ts`, consent-gated): `getPhoneVerificationState`, `setPhoneNumber` (normalized save with `phoneNumberVerified: false`, uniqueness pre-check + P2002 mapping), `requestPhoneOtp` (60s resend cooldown + 5/hour cap per number)
+- UI: `components/profile/phone-verification.tsx` mounted on `/donor/profile` and `/hospital/profile`
+
 ## Routing Structure
 
 ### Public Routes
@@ -84,7 +91,7 @@
 | Path | Page | Description |
 |---|---|---|
 | `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, alerts, critical needs |
-| `/donor/profile` | `app/donor/profile/page.tsx` | Donor profile — blood group, DOB, home pin (address/state/LGA + lat/lng), availability toggle, donor code with copy, verification badge, screening explainer (issue 06) |
+| `/donor/profile` | `app/donor/profile/page.tsx` | Donor profile — blood group, DOB, home pin (address/state/LGA + lat/lng), availability toggle, donor code with copy, verification badge, screening explainer (issue 06), phone/OTP verification (issue 07) |
 | `/donor/notifications` | `app/donor/notifications/page.tsx` | Notifications — alert-derived + eligibility/profile items, filters, mark-read |
 | `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
 | `/donor/responses` | `app/donor/responses/page.tsx` | My Emergency Responses — active/accepted alerts |
@@ -96,7 +103,7 @@
 | `/hospital/history` | `app/hospital/history/page.tsx` | Emergency request history |
 | `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Full-page emergency request form (blood group, units, urgency, radius) |
 | `/hospital/notifications` | `app/hospital/notifications/page.tsx` | Dispatch notifications derived from live pending requests + alert transitions |
-| `/hospital/profile` | `app/hospital/profile/page.tsx` | Workspace profile from bank context (name, location, blood-bank status, role) |
+| `/hospital/profile` | `app/hospital/profile/page.tsx` | Workspace profile from bank context (name, location, blood-bank status, role) + phone/OTP verification (issue 07) |
 
 ### API
 | Path | File | Description |

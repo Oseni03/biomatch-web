@@ -6,7 +6,8 @@ import { phoneNumber } from "better-auth/plugins/phone-number";
 import { prisma } from "./prisma";
 import { ac, orgRoles } from "./organization-access";
 import { sendEmail } from "./email";
-// import { sendSms } from "./sms"; // new: provider chosen in issue 02
+import { sendSms } from "./sms";
+import { E164_REGEX } from "./phone-validation";
 import StaffInvitationEmail from "@/emails/staff-invitation";
 import VerificationEmail from "@/emails/verification-email";
 import ResetPasswordEmail from "@/emails/reset-password-email";
@@ -16,8 +17,6 @@ import { nextCookies } from "better-auth/next-js";
 // app, so there is no separate backend origin. BETTER_AUTH_URL stays as a fallback
 // so existing deploys that only set it keep working.
 const appUrl = process.env.APP_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
-
-const E164 = /^\+[1-9][0-9]{7,14}$/;
 
 export const auth = betterAuth({
 	baseURL: appUrl,
@@ -109,25 +108,21 @@ export const auth = betterAuth({
 			adminRoles: ["admin"],
 		}),
 
-		// // Phone is added later from profile settings and verified by SMS OTP.
-		// // Email + password stays the only sign-in method; verify with updatePhoneNumber
-		// // so the number attaches to the signed-in user.
-		// phoneNumber({
-		// 	otpLength: 6,
-		// 	expiresIn: 60 * 5,
-		// 	allowedAttempts: 3,
-		// 	phoneNumberValidator: (number) => E164.test(number),
-		// 	sendOTP: async ({ phoneNumber, code }) => {
-		// 		if (process.env.NODE_ENV !== "production") {
-		// 			console.log(`[dev] OTP for ${phoneNumber}: ${code}`);
-		// 			return;
-		// 		}
-		// 		await sendSms({
-		// 			to: phoneNumber,
-		// 			message: `Your BioMatch verification code is ${code}. It expires in 5 minutes.`,
-		// 		});
-		// 	},
-		// }),
+		// Phone is added from profile settings and verified by SMS OTP (issue 07).
+		// Email + password stays the only sign-in method; verify with updatePhoneNumber
+		// so the number attaches to the signed-in user.
+		phoneNumber({
+			otpLength: 6,
+			expiresIn: 60 * 5,
+			allowedAttempts: 3,
+			phoneNumberValidator: (number) => E164_REGEX.test(number),
+			sendOTP: async ({ phoneNumber, code }) => {
+				await sendSms({
+					to: phoneNumber,
+					message: `Your BioMatch verification code is ${code}. It expires in 5 minutes.`,
+				});
+			},
+		}),
 
 		organization({
 			ac,

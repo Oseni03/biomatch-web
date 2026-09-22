@@ -6,6 +6,7 @@ import { getHospitalSidebarContext } from "@/servers/hospital";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatusTag } from "@/components/brand/status-tag";
 import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
+import { PhoneVerification } from "@/components/profile/phone-verification";
 
 export default async function HospitalProfilePage() {
 	const session = await getServerSession();
@@ -91,6 +92,8 @@ export default async function HospitalProfilePage() {
 					</div>
 					<MarketingConsentToggle />
 				</div>
+
+				<PhoneVerification />
 
 				<div className="p-4 rounded-xl bg-muted/50 border border-border space-y-2">
 					<div className="flex items-center gap-1.5 text-foreground font-bold text-xs">

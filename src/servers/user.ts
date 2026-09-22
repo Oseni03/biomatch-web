@@ -12,6 +12,12 @@ import {
 	lastKnownLocationSchema,
 	type DonorProfileInput,
 } from "@/lib/donor-profile-validation";
+import { phoneNumberSchema } from "@/lib/phone-validation";
+import {
+	PHONE_OTP_MAX_PER_HOUR,
+	PHONE_OTP_RESEND_SECONDS,
+} from "@/lib/constants";
+import { auth } from "@/lib/auth";
 
 export async function getUserById(id: string) {
 	await requireConsentsForUser(id);
@@ -206,4 +212,85 @@ export async function getSessionRole(userId: string) {
 	if (user.role === "admin") return "admin";
 	if (user.members.length > 0) return "hospital";
 	return "donor";
+}
+
+export async function getPhoneVerificationState(userId: string) {
+	await requireConsentsForUser(userId);
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { phoneNumber: true, phoneNumberVerified: true },
+	});
+	if (!user) throw new Error("Account not found");
+	return user;
+}
+
+export async function setPhoneNumber(userId: string, rawPhone: unknown) {
+	await requireConsentsForUser(userId);
+	const parsed = phoneNumberSchema.safeParse(rawPhone);
+	if (!parsed.success) {
+		throw new Error(validationMessage(parsed.error));
+	}
+	const phoneNumber = parsed.data;
+	const taken = await prisma.user.findUnique({
+		where: { phoneNumber },
+		select: { id: true },
+	});
+	if (taken && taken.id !== userId) {
+		throw new Error("This phone number is already registered to another account");
+	}
+	try {
+		return await prisma.user.update({
+			where: { id: userId },
+			data: { phoneNumber, phoneNumberVerified: false },
+			select: { phoneNumber: true, phoneNumberVerified: true },
+		});
+	} catch (err) {
+		if (
+			err instanceof Prisma.PrismaClientKnownRequestError &&
+			err.code === "P2002"
+		) {
+			throw new Error("This phone number is already registered to another account");
+		}
+		throw err;
+	}
+}
+
+export async function requestPhoneOtp(userId: string) {
+	await requireConsentsForUser(userId);
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { phoneNumber: true },
+	});
+	if (!user) throw new Error("Account not found");
+	if (!user.phoneNumber) {
+		throw new Error("Add a phone number before requesting a code");
+	}
+	const phoneNumber = user.phoneNumber;
+	const now = new Date();
+	const [recent, sentLastHour] = await Promise.all([
+		prisma.verification.findFirst({
+			where: { identifier: phoneNumber },
+			orderBy: { createdAt: "desc" },
+			select: { createdAt: true },
+		}),
+		prisma.verification.count({
+			where: {
+				identifier: phoneNumber,
+				createdAt: { gt: new Date(now.getTime() - 60 * 60 * 1000) },
+			},
+		}),
+	]);
+	if (
+		recent &&
+		now.getTime() - recent.createdAt.getTime() < PHONE_OTP_RESEND_SECONDS * 1000
+	) {
+		throw new Error(
+			`A code was just sent. Wait ${PHONE_OTP_RESEND_SECONDS} seconds before requesting another`,
+		);
+	}
+	if (sentLastHour >= PHONE_OTP_MAX_PER_HOUR) {
+		throw new Error("Too many codes requested. Try again in an hour");
+	}
+	await auth.api.sendPhoneNumberOTP({ body: { phoneNumber } });
+	return { phoneNumber };
 }

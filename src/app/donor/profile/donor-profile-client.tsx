@@ -20,6 +20,7 @@ import { useLastKnownLocation } from "@/hooks/use-last-known-location";
 import { saveDonorProfile } from "@/servers/user";
 import { geocodeAddressAction } from "@/servers/location";
 import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
+import { PhoneVerification } from "@/components/profile/phone-verification";
 import {
 	BLOOD_GROUP_ENUMS,
 } from "@/lib/donor-profile-validation";
@@ -741,6 +742,8 @@ export function DonorProfileClient() {
 			>
 				<MarketingConsentToggle />
 			</Section>
+
+			<PhoneVerification />
 		</div>
 	);
 }
