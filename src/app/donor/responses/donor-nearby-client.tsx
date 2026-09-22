@@ -11,6 +11,7 @@ import {
 	useRequestsNearby,
 	useWithdrawMatch,
 } from "@/hooks/use-donor-requests";
+import { useConfirmDonationDonor } from "@/hooks/use-donations";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { Button } from "@/components/ui/button";
@@ -36,11 +37,12 @@ export function DonorNearbyClient() {
 	const accept = useAcceptMatch();
 	const withdraw = useWithdrawMatch();
 	const decline = useDeclineMatch();
+	const confirm = useConfirmDonationDonor();
 	const [error, setError] = useState<string | null>(null);
 
 	const requests = data?.requests ?? [];
 	const accepted = responses?.responses ?? [];
-	const acting = accept.isPending || withdraw.isPending || decline.isPending;
+	const acting = accept.isPending || withdraw.isPending || decline.isPending || confirm.isPending;
 
 	async function handleAccept(matchId: string) {
 		if (!donorId) return;
@@ -69,6 +71,16 @@ export function DonorNearbyClient() {
 			await decline.mutateAsync({ matchId, donorId });
 		} catch (caught) {
 			setError(caught instanceof Error ? caught.message : "Could not decline this request");
+		}
+	}
+
+	async function handleConfirm(matchId: string) {
+		if (!donorId) return;
+		setError(null);
+		try {
+			await confirm.mutateAsync({ matchId, donorId });
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "Could not confirm this donation");
 		}
 	}
 
@@ -107,15 +119,25 @@ export function DonorNearbyClient() {
 											{response.locationName} · please visit the hospital to donate
 										</p>
 									</div>
-									<Button
-										size="sm"
-										variant="outline"
-										className="shrink-0 rounded-xl"
-										disabled={acting}
-										onClick={() => handleWithdraw(response.matchId)}
-									>
-										{withdraw.isPending ? "Withdrawing…" : "Withdraw"}
-									</Button>
+									<div className="flex shrink-0 gap-2">
+										<Button
+											size="sm"
+											className="rounded-xl"
+											disabled={acting}
+											onClick={() => handleConfirm(response.matchId)}
+										>
+											{confirm.isPending ? "Confirming…" : "Confirm donation"}
+										</Button>
+										<Button
+											size="sm"
+											variant="outline"
+											className="rounded-xl"
+											disabled={acting}
+											onClick={() => handleWithdraw(response.matchId)}
+										>
+											{withdraw.isPending ? "Withdrawing…" : "Withdraw"}
+										</Button>
+									</div>
 								</div>
 							</li>
 						))}

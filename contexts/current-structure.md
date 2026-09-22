@@ -1,5 +1,24 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 17 (multichannel delivery) implemented:
+> `servers/delivery.ts` (per-channel rows, verified-phone gate, prefs,
+> WhatsApp→SMS fallback, cap-limited retry, callbacks, admin failures);
+> `lib/whatsapp.ts`; triggers wired into match/decline/accept/settle;
+> webhook + retry cron; admin card + donor prefs card;
+> `tests/notification-delivery.test.ts` (6 passing); suites 12–16
+> regression-green after fan-out refactor.
+>
+> Last updated: 2026-09-22 — Issue 18 (donation completion) fixed:
+> `servers/emergency.ts` stubs (`confirmDonation`, `donorConfirmDonation`,
+> `getAlertsAwaitingConfirmation`, `getDonorHistory`, `getLocalDemandStats`)
+> replaced with proper implementations delegating to `servers/donations.ts`.
+> `hooks/use-donor-history.ts` updated to use `getMyDonations` from
+> `servers/donations.ts`. `app/donor/history/page.tsx` updated to pass
+> proper filter object. Previously these functions threw "slice 18" errors
+> at runtime, breaking the hospital dashboard "Awaiting Confirmation"
+> stat card and the donor history page.
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 16 (manage requests + history) implemented:
 > `getActiveRequests`/`getRequestHistory`/`update`/`cancel`/`close` in
 > `servers/requests.ts`; `/hospital/requests` + `/history` pages with

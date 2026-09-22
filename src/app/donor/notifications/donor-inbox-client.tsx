@@ -9,6 +9,7 @@ import {
 	useNotificationInbox,
 } from "@/hooks/use-donor-requests";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
+import { NotificationPreferencesCard } from "@/components/donor/notification-preferences-card";
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
@@ -154,6 +155,8 @@ export function DonorInboxClient() {
 					Alerts show the blood type needed and the hospital name and location only.
 				</p>
 			)}
+
+			<NotificationPreferencesCard />
 		</div>
 	);
 }

@@ -9,6 +9,7 @@ import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatusTag } from "@/components/brand/status-tag";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { ConfirmDonationButton } from "@/components/hospital/confirm-donation-button";
 import { Button } from "@/components/ui/button";
 
 function matchTone(status: string): "info" | "ok" | "low" | "critical" {
@@ -119,6 +120,13 @@ export default async function HospitalRequestDetailPage({
 									)}
 								</div>
 								<StatusTag status={matchTone(match.status)}>{match.status}</StatusTag>
+								{match.status === "accepted" && (
+									<ConfirmDonationButton
+										organizationId={organizationId}
+										callerId={session.user.id}
+										matchId={match.matchId}
+									/>
+								)}
 							</li>
 						))}
 					</ul>

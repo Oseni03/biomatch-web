@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { BloodGroup } from "@generated/prisma/client";
+import { BloodGroup, RequestStatus } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatBloodGroup } from "@/lib/blood-compatibility";
 import {
@@ -13,6 +13,7 @@ import {
 import { requireConsentsForUser } from "@/servers/consent";
 import { requireApprovedHospital, requireOrgPermission } from "@/servers/organization";
 import { writeAuditLog } from "@/servers/audit";
+import { dispatchNotification } from "@/servers/delivery";
 import { findEligibleDonors } from "@/servers/matching";
 
 const BLOOD_GROUP_KEYS = Object.keys(BloodGroup) as [string, ...string[]];
@@ -240,31 +241,26 @@ export async function matchDonorsForRequest(
 			})),
 			skipDuplicates: true,
 		});
-		const matches = await tx.requestMatch.findMany({
-			where: { requestId, escalationLevel },
-			select: { id: true, donorId: true },
-		});
-		const donorIds = new Set(candidates.map((candidate) => candidate.donorId));
-		const fresh = matches.filter((match) => donorIds.has(match.donorId));
-		if (fresh.length > 0) {
-			const donors = await tx.user.findMany({
-				where: { id: { in: fresh.map((match) => match.donorId) } },
-				select: { id: true },
-			});
-			const donorSet = new Set(donors.map((donor) => donor.id));
-			await tx.notification.createMany({
-				data: fresh
-					.filter((match) => donorSet.has(match.donorId))
-					.map((match) => ({
-						userId: match.donorId,
-						type: "request.new_match",
-						title: `Urgent: ${bloodDisplay} blood needed near you`,
-						body: `${bloodDisplay} needed at ${hospitalName}. Open the app to respond.`,
-						data: { requestId, matchId: match.id },
-					})),
-			});
-		}
 	});
+	const matches = await prisma.requestMatch.findMany({
+		where: { requestId, escalationLevel },
+		select: { id: true, donorId: true },
+	});
+	const donorIds = new Set(candidates.map((candidate) => candidate.donorId));
+	const fresh = matches.filter((match) => donorIds.has(match.donorId));
+	for (const match of fresh) {
+		const created = await prisma.notification.create({
+			data: {
+				userId: match.donorId,
+				type: "request.new_match",
+				title: `Urgent: ${bloodDisplay} blood needed near you`,
+				body: `${bloodDisplay} needed at ${hospitalName}. Open the app to respond.`,
+				data: { requestId, matchId: match.id },
+			},
+			select: { id: true },
+		});
+		await dispatchNotification(created.id).catch(() => undefined);
+	}
 	return { matchedCount: candidates.length };
 }
 
@@ -441,25 +437,31 @@ export interface ManagedBloodRequest {
 	notifiedCount: number;
 }
 
-function toManagedRequest(
-	request: Omit<ManagedBloodRequest, "requestId" | "bloodGroup" | "status"> & {
-		id: string;
-		bloodGroup: unknown;
-		status: unknown;
-		_count: { matches: number };
-	},
-): ManagedBloodRequest {
+interface ManagedRequestRow {
+	id: string;
+	bloodGroup: BloodGroup;
+	unitsRequired: number;
+	unitsAccepted: number;
+	status: RequestStatus;
+	locationName: string;
+	currentRadiusKm: number;
+	createdAt: Date;
+	closedAt: Date | null;
+	_count: { matches: number };
+}
+
+function toManagedRequest(row: ManagedRequestRow): ManagedBloodRequest {
 	return {
-		requestId: request.id,
-		bloodGroup: formatBloodGroup(String(request.bloodGroup)),
-		unitsRequired: request.unitsRequired,
-		unitsAccepted: request.unitsAccepted,
-		status: String(request.status),
-		locationName: request.locationName,
-		currentRadiusKm: Number(request.currentRadiusKm),
-		createdAt: request.createdAt,
-		closedAt: request.closedAt,
-		notifiedCount: request._count.matches,
+		requestId: row.id,
+		bloodGroup: formatBloodGroup(row.bloodGroup),
+		unitsRequired: row.unitsRequired,
+		unitsAccepted: row.unitsAccepted,
+		status: row.status,
+		locationName: row.locationName,
+		currentRadiusKm: row.currentRadiusKm,
+		createdAt: row.createdAt,
+		closedAt: row.closedAt,
+		notifiedCount: row._count.matches,
 	};
 }
 
@@ -507,8 +509,7 @@ export async function getActiveRequests(
 		requests: rows.map((row) =>
 			toManagedRequest({
 				...row,
-				currentRadiusKm: row.currentRadiusKm,
-				closedAt: row.closedAt,
+				currentRadiusKm: Number(row.currentRadiusKm),
 			}),
 		),
 		total,
@@ -527,7 +528,7 @@ export async function getRequestHistory(
 	const { pageSize, skip } = pager(filters);
 	const where = {
 		organizationId,
-		status: { in: ["fulfilled", "closed", "cancelled"] as const },
+		status: { in: ["fulfilled", "closed", "cancelled"] as RequestStatus[] },
 	};
 	const [total, rows] = await Promise.all([
 		prisma.bloodRequest.count({ where }),
@@ -543,8 +544,7 @@ export async function getRequestHistory(
 		requests: rows.map((row) =>
 			toManagedRequest({
 				...row,
-				currentRadiusKm: row.currentRadiusKm,
-				closedAt: row.closedAt,
+				currentRadiusKm: Number(row.currentRadiusKm),
 			}),
 		),
 		total,
@@ -636,6 +636,8 @@ async function settleRequest(
 	});
 	const donorIds = [...new Set(pendingMatches.map((match) => match.donorId))];
 	const bloodDisplay = formatBloodGroup(String(request.bloodGroup));
+	const settleType = outcome === "closed" ? "request.closed" : "request.cancelled";
+	const settledAfter = new Date();
 	await prisma.$transaction(async (tx) => {
 		await tx.bloodRequest.update({
 			where: { id: request.id },
@@ -674,6 +676,19 @@ async function settleRequest(
 			});
 		}
 	});
+	const created = await prisma.notification.findMany({
+		where: {
+			userId: { in: donorIds },
+			type: settleType,
+			createdAt: { gte: settledAfter },
+		},
+		select: { id: true },
+	});
+	for (const notice of created) {
+		await dispatchNotification(notice.id, { channels: ["email"] }).catch(
+			() => undefined,
+		);
+	}
 	await writeAuditLog({
 		actorId: callerUserId,
 		organizationId,

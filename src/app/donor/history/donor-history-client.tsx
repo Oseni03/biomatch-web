@@ -8,6 +8,7 @@ import {
 	useDonorHistory,
 	useLocalDemandStats,
 } from "@/hooks/use-donor-history";
+import { useMyDonations } from "@/hooks/use-donations";
 import { getEligibility } from "@/lib/eligibility";
 import type { LegacyDonorSnapshot } from "@/lib/donor-types";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
@@ -21,6 +22,7 @@ export function DonorHistoryClient() {
 	const [page, setPage] = useState(1);
 	const { data: historyData, isLoading: historyLoading } =
 		useDonorHistory(page);
+	const { data: donationsData } = useMyDonations(session?.user?.id);
 	const { data: demandStats } =
 		useLocalDemandStats();
 
@@ -105,21 +107,22 @@ export function DonorHistoryClient() {
 					<h3 className="font-semibold">Donation Records</h3>
 				</div>
 				<div className="divide-y divide-border">
-					{(historyData?.records ?? []).length === 0 ? (
+					{(donationsData?.donations ?? []).length === 0 ? (
 						<p className="p-8 text-center text-sm text-muted-foreground">
 							No donations yet. Your completed donations will appear here.
 						</p>
 					) : (
-						(historyData?.records ?? []).map((record) => (
-							<div key={record.id} className="p-4 flex items-center justify-between">
+						(donationsData?.donations ?? []).map((record) => (
+							<div key={record.donationId} className="p-4 flex items-center justify-between">
 								<div>
 									<p className="text-sm font-medium">{record.hospitalName}</p>
 									<p className="text-xs text-muted-foreground">
-										{record.date} &middot; {record.bloodGroup}
+										{new Date(record.completedAt).toLocaleDateString()} &middot;{" "}
+										{record.bloodGroup} &middot; {record.locationName}
 									</p>
 								</div>
 								<span className="text-xs font-mono text-muted-foreground">
-									{record.unitsNeeded} unit{record.unitsNeeded !== 1 ? "s" : ""}
+									+{(record.rewardKobo / 100).toFixed(0)} NGN
 								</span>
 							</div>
 						))

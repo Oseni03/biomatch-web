@@ -195,6 +195,14 @@
   `settleRequest()` — expires pending matches, cancels accepted matches +
   pending donations, clears the timer, notifies matched donors so their
   Nearby list and inbox reflect the closure.
+- Multichannel delivery (issue 17): `dispatchNotification()` fans every
+  in-app notification out to SMS (Termii), WhatsApp (Meta Cloud API) and
+  email (Resend) per verified phone + `notify*` prefs, with per-channel
+  delivery rows, WhatsApp→SMS fallback, cap-limited retries
+  (`retryFailedDeliveries`), provider callbacks
+  (`POST /api/webhooks/delivery`), failures visible on `/admin`, prefs card
+  in the donor inbox. Triggered on match, decline-chain, accept and
+  close/cancel; completion hooks in when issue 18 lands.
 
 ## Core Loop (Prototype Spec)
 

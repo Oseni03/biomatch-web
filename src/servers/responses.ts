@@ -7,6 +7,7 @@ import { formatBloodGroup } from "@/lib/blood-compatibility";
 import { requireConsentsForUser } from "@/servers/consent";
 import { requireOrgPermission } from "@/servers/organization";
 import { writeAuditLog } from "@/servers/audit";
+import { dispatchNotification } from "@/servers/delivery";
 import { findEligibleDonors } from "@/servers/matching";
 
 export interface AcceptResult {
@@ -87,7 +88,7 @@ export async function declineMatch(
 		const candidates = await findEligibleDonors(match.requestId, MATCH_MAX_RADIUS_KM);
 		const next = candidates[0];
 		if (!next) {
-			return { declined, notifiedDonor: false };
+			return { declined, notifiedDonor: false, chainedNoticeId: null };
 		}
 		try {
 			const chained = await tx.requestMatch.create({
@@ -99,7 +100,7 @@ export async function declineMatch(
 					escalationLevel: match.request.escalationLevel,
 				},
 			});
-			await tx.notification.create({
+			const chainedNotice = await tx.notification.create({
 				data: {
 					userId: next.donorId,
 					type: "request.matched",
@@ -107,18 +108,23 @@ export async function declineMatch(
 					body: `${match.request.locationName} needs blood. A nearby donor declined, you are the next-closest match.`,
 					data: { requestId: match.requestId, matchId: chained.id },
 				},
+				select: { id: true },
 			});
+			return { declined, notifiedDonor: true, chainedNoticeId: chainedNotice.id };
 		} catch (caught) {
 			if (
 				caught instanceof Prisma.PrismaClientKnownRequestError &&
 				caught.code === "P2002"
 			) {
-				return { declined, notifiedDonor: false };
+				return { declined, notifiedDonor: false, chainedNoticeId: null };
 			}
 			throw caught;
 		}
-		return { declined, notifiedDonor: true };
 	});
+
+	if (outcome.chainedNoticeId) {
+		await dispatchNotification(outcome.chainedNoticeId).catch(() => undefined);
+	}
 
 	await writeAuditLog({
 		actorId: donorUserId,
@@ -174,7 +180,7 @@ async function assertDonorEligible(donorId: string): Promise<void> {
 	}
 }
 
-async function notifyHospitalStaff(
+export async function notifyHospitalStaff(
 	organizationId: string,
 	requestId: string,
 	matchId: string,
@@ -199,15 +205,19 @@ async function notifyHospitalStaff(
 		}
 	}
 	if (recipients.size === 0) return;
-	await prisma.notification.createMany({
-		data: [...recipients].map((userId) => ({
-			userId,
-			type,
-			title,
-			body,
-			data: { requestId, matchId },
-		})),
-	});
+	for (const userId of recipients) {
+		const created = await prisma.notification.create({
+			data: {
+				userId,
+				type,
+				title,
+				body,
+				data: { requestId, matchId },
+			},
+			select: { id: true },
+		});
+		await dispatchNotification(created.id).catch(() => undefined);
+	}
 }
 
 async function markMatchFilled(
@@ -448,7 +458,7 @@ export async function getMyResponses(
 	const pageSize = Math.min(50, Math.max(1, filters?.pageSize ?? 10));
 	const where: Prisma.RequestMatchWhereInput = {
 		donorId: donorUserId,
-		status: { in: ["accepted", "completed"] },
+		status: { in: ["accepted"] },
 	};
 	const [total, rows] = await Promise.all([
 		prisma.requestMatch.count({ where }),

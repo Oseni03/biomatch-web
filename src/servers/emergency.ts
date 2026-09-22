@@ -4,6 +4,8 @@ import type {
 	DonationRecord,
 	DonorAlertWithRequest,
 } from "@/lib/donor-types";
+import { prisma } from "@/lib/prisma";
+import { confirmDonationByDonor, confirmDonationByHospital, getMyDonations } from "@/servers/donations";
 
 export interface PendingAlertItem {
 	id: string;
@@ -163,35 +165,80 @@ export async function updateAlertStatus(
 }
 
 export async function confirmDonation(
-	_alertId: string,
-	_organizationId: string,
-): Promise<never> {
-	throw new Error("Donation confirmation arrives in slice 18");
+	alertId: string,
+	organizationId: string,
+	callerUserId: string,
+): Promise<{ completed: boolean }> {
+	return confirmDonationByHospital(organizationId, callerUserId, alertId);
 }
 
 export async function donorConfirmDonation(
-	_alertId: string,
-	_donorId: string,
+	alertId: string,
+	donorId: string,
 ): Promise<{ completed: boolean }> {
-	throw new Error("Donation confirmation arrives in slice 18");
+	return confirmDonationByDonor(alertId, donorId);
 }
 
 export async function getAlertsAwaitingConfirmation(
-	_organizationId: string,
-): Promise<never[]> {
-	return [];
+	organizationId: string,
+): Promise<Array<{ id: string; matchId: string; donorId: string; donorName: string; bloodGroup: string }>> {
+	const donations = await prisma.donation.findMany({
+		where: {
+			organizationId,
+			donorConfirmedAt: { not: null },
+			hospitalConfirmedAt: null,
+		},
+		select: {
+			id: true,
+			matchId: true,
+			donorId: true,
+			donor: { select: { user: { select: { name: true } }, bloodGroup: true } },
+		},
+	});
+	return donations.map((d) => ({
+		id: d.id,
+		matchId: d.matchId,
+		donorId: d.donorId,
+		donorName: d.donor.user.name ?? "Unknown",
+		bloodGroup: String(d.donor.bloodGroup).replace("_", " "),
+	}));
 }
 
 export async function getDonorHistory(
-	_userId: string,
-	page = 1,
-	pageSize = 10,
-): Promise<DonorHistoryResult> {
-	return { records: [], total: 0, page, pageSize, totalPages: 0 };
+	userId: string,
+	filters?: { page?: number; pageSize?: number },
+) {
+	const result = await getMyDonations(userId, filters);
+	return {
+		records: result.donations.map((d) => ({
+			donationId: d.donationId,
+			matchId: d.matchId,
+			requestId: d.requestId,
+			completedAt: d.completedAt,
+			request: {
+				bloodGroup: d.bloodGroup,
+				locationName: d.locationName,
+				organization: { name: d.hospitalName },
+			},
+		})),
+		total: result.total,
+		page: filters?.page ?? 1,
+		pageSize: filters?.pageSize ?? 10,
+		totalPages: Math.ceil(result.total / (filters?.pageSize ?? 10)),
+	};
 }
 
 export async function getLocalDemandStats(
-	_userId: string,
-): Promise<LocalDemandStats> {
-	return { monthlyDemand: 0, nearbyRequests: 0 };
+	userId: string,
+) {
+	const [, orgRequests] = await Promise.all([
+		getMyDonations(userId, { page: 1, pageSize: 1 }),
+		prisma.bloodRequest.count({
+			where: { status: "active" },
+		}),
+	]);
+	return {
+		monthlyDemand: orgRequests,
+		nearbyRequests: 0,
+	};
 }

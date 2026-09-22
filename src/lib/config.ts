@@ -24,3 +24,7 @@ export const REWARD_CREDIT_KOBO = readInt("REWARD_CREDIT_KOBO", 100_000);
 
 // Voucher validity from issue date (issue 21).
 export const VOUCHER_VALIDITY_DAYS = readInt("VOUCHER_VALIDITY_DAYS", 90);
+
+// External-channel delivery attempts per notification channel (issue 17):
+// the initial attempt plus retries of failed rows before giving up.
+export const DELIVERY_MAX_ATTEMPTS = readInt("DELIVERY_MAX_ATTEMPTS", 3);

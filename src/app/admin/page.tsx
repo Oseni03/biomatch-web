@@ -6,6 +6,7 @@ import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Button } from "@/components/ui/button";
 import { getAdminOverviewCounts } from "@/servers/admin";
+import { DeliveryFailuresCard } from "@/components/admin/delivery-failures-card";
 
 export default async function AdminOverviewPage() {
 	const session = await getServerSession();
@@ -67,6 +68,8 @@ export default async function AdminOverviewPage() {
 					<Link href="/admin/hospitals">Open hospital management</Link>
 				</Button>
 			</div>
+
+			<DeliveryFailuresCard />
 		</div>
 	);
 }

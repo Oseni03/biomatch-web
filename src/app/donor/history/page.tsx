@@ -22,7 +22,7 @@ export default async function DonorHistoryPage() {
 		}),
 		queryClient.prefetchQuery({
 			queryKey: ["donor-history", userId, 1],
-			queryFn: () => getDonorHistory(userId, 1),
+			queryFn: () => getDonorHistory(userId, { page: 1 }),
 		}),
 		queryClient.prefetchQuery({
 			queryKey: ["local-demand-stats", userId],
