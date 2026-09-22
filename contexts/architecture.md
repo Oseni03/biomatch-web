@@ -115,6 +115,8 @@
 - `/admin` — Platform overview (counts + review-queue state; full metrics arrive in issue 25)
 - `/admin/hospitals` — Hospital list (status/search/pagination) + pending review queue
 - `/admin/hospitals/[id]` — Hospital detail (registration, team, application history) + approve/reject/suspend/reinstate (issue 09)
+- `/admin/merchants` — Merchant list (active/deactivated filter, pagination) + create (issue 20)
+- `/admin/merchants/[id]` — Merchant detail (edit, activate/deactivate) + staff linking, enable/disable, set-password email for new accounts (issue 20)
 
 ### Admin & audit (issue 09)
 - Founder admin is created by `prisma/seed.ts` (`FOUNDER_ADMIN_EMAIL`/`FOUNDER_ADMIN_PASSWORD`); every admin server action starts with `requireAdmin()`, and `/admin` routes are gated by the proxy plus the admin layout.

@@ -1,5 +1,15 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 20 (admin merchant management) implemented:
+> `servers/merchants.ts` (CRUD, activate/deactivate, staff link/enable/disable,
+> staff creation + set-password email, `listActiveMerchants`,
+> `getMerchantPortalContext`); `/admin/merchants` + `/admin/merchants/[id]`;
+> sidebar Merchants item; `tests/merchant-management.test.ts` (5 passing).
+> Also fixed while verifying: wallet double-credit in `servers/donations.ts`
+> (direct upsert + `trg_wallet_apply` both incremented — trigger is now the
+> single writer) and append-only cleanup in `tests/helpers.ts`
+> (`deleteLedgerForDonor` disables the immutability trigger around deletes).
+>
 > Last updated: 2026-09-22 — Issue 19 (rewards wallet screen) implemented:
 > `servers/wallet.ts` (`getWalletBalance`, `getWalletLedger`, paginated);
 > `lib/money.ts` (`formatKoboToNaira`); `hooks/use-wallet.ts`;

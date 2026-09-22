@@ -5,6 +5,7 @@ import {
     HeartHandshake,
     History,
     LayoutDashboard,
+    Store,
     Wallet,
     type LucideIcon,
 } from "lucide-react";
@@ -51,6 +52,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
     admin: [
         { title: "Overview", url: "/admin", icon: LayoutDashboard, exact: true },
         { title: "Hospitals", url: "/admin/hospitals", icon: Building2 },
+        { title: "Merchants", url: "/admin/merchants", icon: Store },
     ],
 };
 
