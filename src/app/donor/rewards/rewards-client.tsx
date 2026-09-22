@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, Gift, Loader2, Ticket, Wallet } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { VOUCHER_VALIDITY_DAYS } from "@/lib/config";
 import { formatKoboToNaira } from "@/lib/money";
 import { useWalletBalance, useWalletLedger } from "@/hooks/use-wallet";
 import { useIssueVoucher, useMyVouchers } from "@/hooks/use-vouchers";
@@ -195,6 +196,10 @@ export function RewardsClient() {
 
 			<div className="rounded-2xl border border-border bg-card p-6">
 				<h2 className="text-base font-bold text-foreground">My vouchers</h2>
+				<p className="mt-1 text-sm text-muted-foreground">
+					Vouchers expire {VOUCHER_VALIDITY_DAYS} days after issue. Expired
+					vouchers are forfeited — they cannot be refunded or reused.
+				</p>
 				{vouchersLoading ? (
 					<div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
 						<Loader2 className="h-4 w-4 animate-spin" /> Loading vouchers…

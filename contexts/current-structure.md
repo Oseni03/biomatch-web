@@ -1,5 +1,9 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 23 (expiry forfeit + sweep) implemented:
+> `sweepExpiredVouchers()`, `GET /api/cron/expire-vouchers` (daily),
+> forfeit copy on Rewards, `tests/voucher-expiry.test.ts` (4 passing).
+>
 > Last updated: 2026-09-22 — Issue 22 (merchant portal) implemented: redeem
 > functions in `servers/merchants.ts` (preview, guarded-update redeem,
 > history), `/merchant` minimal portal, proxy + login wiring,

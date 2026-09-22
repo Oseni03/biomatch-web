@@ -15,10 +15,23 @@ Decide what happens to vouchers that expire unused (refund the donor to their wa
 
 ## Acceptance criteria
 
-- [ ] Decision recorded (refund vs forfeit) and reflected in the Rewards screen copy
-- [ ] Sweep marks issued vouchers past expiry as expired and is idempotent
-- [ ] If refunding, exactly one reversal credit per expired voucher is written (tested)
-- [ ] Donor sees expired status in their voucher list
+- [x] Decision recorded (refund vs forfeit) and reflected in the Rewards screen copy
+- [x] Sweep marks issued vouchers past expiry as expired and is idempotent
+- [x] If refunding, exactly one reversal credit per expired voucher is written (tested)
+- [x] Donor sees expired status in their voucher list
+
+Decision (2026-09-22, user): FORFEIT. Unused vouchers past expiry lose their
+value; no refund is written, so the "exactly one reversal" criterion is
+vacuously satisfied — the forfeit test asserts balance and ledger are
+untouched by the sweep.
+
+Implemented 2026-09-22: `sweepExpiredVouchers()` in `servers/vouchers.ts`
+(issued + past-expiry -> expired; re-runs match nothing), `GET
+/api/cron/expire-vouchers` (bearer `CRON_SECRET`, same pattern as the other
+crons), daily 02:00 schedule in `vercel.json`, forfeit explainer on the Rewards
+screen (validity days from config), `tests/voucher-expiry.test.ts` (4 passing:
+selective expiry + idempotent re-run, forfeit leaves balance/ledger untouched,
+cron auth 401/401/200).
 
 ## Blocked by
 

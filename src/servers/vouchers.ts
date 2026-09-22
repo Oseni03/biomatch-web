@@ -349,3 +349,15 @@ export async function listVouchersForAdmin(
 		totalPages: Math.max(1, Math.ceil(total / filters.pageSize)),
 	};
 }
+
+// Expiry policy: FORFEIT (decided 2026-09-22, recorded in
+// contexts/issues/issues/23-voucher-expiry-policy-and-sweep.md). Unused
+// vouchers past expiry lose their value; no refund is written. The sweep only
+// flips issued -> expired, so re-running it is a no-op.
+export async function sweepExpiredVouchers(now = new Date()): Promise<{ expiredCount: number }> {
+	const result = await prisma.voucherRedemption.updateMany({
+		where: { status: "issued", expiresAt: { lte: now } },
+		data: { status: "expired" },
+	});
+	return { expiredCount: result.count };
+}

@@ -222,6 +222,9 @@
   a client-generated `idempotencyKey` (`@@unique([donorId, idempotencyKey])`)
   makes double-submits return the one voucher. `listVouchersForDonor()` feeds
   My Vouchers; `listVouchersForAdmin()` feeds the admin report (issue 25).
+  Expiry policy is FORFEIT (issue 23): `sweepExpiredVouchers()` flips
+  past-due issued vouchers to expired (idempotent; no refund written),
+  run daily by `GET /api/cron/expire-vouchers` (bearer `CRON_SECRET`).
 - `apply_wallet_entry()` is UPDATE-first with an INSERT +
   `unique_violation` fallback. Never use INSERT ... ON CONFLICT DO UPDATE
   here: Postgres validates CHECKs on the proposed row before conflict
