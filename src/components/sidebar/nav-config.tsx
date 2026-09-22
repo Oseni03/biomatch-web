@@ -5,6 +5,7 @@ import {
     HeartHandshake,
     History,
     LayoutDashboard,
+    Wallet,
     type LucideIcon,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
             countKey: "alerts",
         },
         { title: "Donation History", url: "/donor/history", icon: History },
+        { title: "Rewards", url: "/donor/rewards", icon: Wallet },
         { title: "My Responses", url: "/donor/responses", icon: HeartHandshake },
         {
             title: "Notifications",

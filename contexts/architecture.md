@@ -94,6 +94,7 @@
 | `/donor/profile` | `app/donor/profile/page.tsx` | Donor profile — blood group, DOB, home pin (address/state/LGA + lat/lng), availability toggle, donor code with copy, verification badge, screening explainer (issue 06), phone/OTP verification (issue 07) |
 | `/donor/notifications` | `app/donor/notifications/page.tsx` | Notifications — alert-derived + eligibility/profile items, filters, mark-read |
 | `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
+| `/donor/rewards` | `app/donor/rewards/page.tsx` | Rewards wallet (issue 19) — balance from `DonorWallet`, ledger from `WalletTransaction`, kobo→naira via `lib/money.ts` |
 | `/donor/responses` | `app/donor/responses/page.tsx` | My Emergency Responses — active/accepted alerts |
 
 ### Protected — Hospital

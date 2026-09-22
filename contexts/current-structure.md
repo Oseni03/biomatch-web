@@ -1,5 +1,13 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 19 (rewards wallet screen) implemented:
+> `servers/wallet.ts` (`getWalletBalance`, `getWalletLedger`, paginated);
+> `lib/money.ts` (`formatKoboToNaira`); `hooks/use-wallet.ts`;
+> `/donor/rewards` page + client with empty state; sidebar Rewards item;
+> `tests/rewards-wallet.test.ts` (formatting green; DB tests blocked, Neon
+> unreachable). Suspected double-credit: `donations.ts` upserts wallet AND
+> `trg_wallet_apply` increments on insert — verify on live DB.
+>
 > Last updated: 2026-09-22 — Issue 17 (multichannel delivery) implemented:
 > `servers/delivery.ts` (per-channel rows, verified-phone gate, prefs,
 > WhatsApp→SMS fallback, cap-limited retry, callbacks, admin failures);
