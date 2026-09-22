@@ -188,6 +188,13 @@
   widens by step to max, matches new-only donors, resets or clears the
   timer. `GET /api/cron/escalate` (bearer `CRON_SECRET`), every 10 min via
   `vercel.json`.
+- Request management (issue 16): `getActiveRequests()` /
+  `getRequestHistory()` feed `/hospital/requests` and
+  `/hospital/requests/history`. `updateBloodRequest()` (active-only, never
+  below accepted), `cancelBloodRequest()` / `closeBloodRequest()` via
+  `settleRequest()` — expires pending matches, cancels accepted matches +
+  pending donations, clears the timer, notifies matched donors so their
+  Nearby list and inbox reflect the closure.
 
 ## Core Loop (Prototype Spec)
 

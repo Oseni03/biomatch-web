@@ -1,5 +1,12 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 16 (manage requests + history) implemented:
+> `getActiveRequests`/`getRequestHistory`/`update`/`cancel`/`close` in
+> `servers/requests.ts`; `/hospital/requests` + `/history` pages with
+> edit dialog and empty states; sidebar item; `tests/request-manage.test.ts`
+> (5 passing).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 15 (timed escalation) implemented:
 > `escalateDueRequests()` in `servers/requests.ts` (guarded claim, step
 > widen to max, timer reset/clear); `GET /api/cron/escalate` + `vercel.json`

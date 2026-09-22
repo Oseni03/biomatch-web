@@ -1,4 +1,4 @@
-import { AlertTriangle, Bell, Building2, ClipboardCheck, History, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Bell, Building2, ClipboardCheck, ClipboardList, History, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
 
 export interface HospitalNavItem {
     id: string;
@@ -31,6 +31,13 @@ export const HOSPITAL_NAV_ITEMS: HospitalNavItem[] = [
         url: "/hospital/emergency",
         icon: AlertTriangle,
         description: "Broadcast to compatible donors",
+    },
+    {
+        id: "active_requests",
+        title: "Active Requests",
+        url: "/hospital/requests",
+        icon: ClipboardList,
+        description: "Manage open requests",
     },
     {
         id: "request_history",

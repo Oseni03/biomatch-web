@@ -12,6 +12,7 @@ import {
 } from "@/lib/config";
 import { requireConsentsForUser } from "@/servers/consent";
 import { requireApprovedHospital, requireOrgPermission } from "@/servers/organization";
+import { writeAuditLog } from "@/servers/audit";
 import { findEligibleDonors } from "@/servers/matching";
 
 const BLOOD_GROUP_KEYS = Object.keys(BloodGroup) as [string, ...string[]];
@@ -425,4 +426,277 @@ export async function getBloodRequestSummary(
 		acceptedCount: countBy("accepted"),
 		declinedCount: countBy("declined"),
 	};
+}
+
+export interface ManagedBloodRequest {
+	requestId: string;
+	bloodGroup: string;
+	unitsRequired: number;
+	unitsAccepted: number;
+	status: string;
+	locationName: string;
+	currentRadiusKm: number;
+	createdAt: Date;
+	closedAt: Date | null;
+	notifiedCount: number;
+}
+
+function toManagedRequest(
+	request: Omit<ManagedBloodRequest, "requestId" | "bloodGroup" | "status"> & {
+		id: string;
+		bloodGroup: unknown;
+		status: unknown;
+		_count: { matches: number };
+	},
+): ManagedBloodRequest {
+	return {
+		requestId: request.id,
+		bloodGroup: formatBloodGroup(String(request.bloodGroup)),
+		unitsRequired: request.unitsRequired,
+		unitsAccepted: request.unitsAccepted,
+		status: String(request.status),
+		locationName: request.locationName,
+		currentRadiusKm: Number(request.currentRadiusKm),
+		createdAt: request.createdAt,
+		closedAt: request.closedAt,
+		notifiedCount: request._count.matches,
+	};
+}
+
+const managedSelect = {
+	id: true,
+	bloodGroup: true,
+	unitsRequired: true,
+	unitsAccepted: true,
+	status: true,
+	locationName: true,
+	currentRadiusKm: true,
+	createdAt: true,
+	closedAt: true,
+	_count: { select: { matches: true } },
+} as const;
+
+function pager(filters?: { page?: number; pageSize?: number }) {
+	const page = Math.max(1, filters?.page ?? 1);
+	const pageSize = Math.min(50, Math.max(1, filters?.pageSize ?? 10));
+	return { page, pageSize, skip: (page - 1) * pageSize };
+}
+
+export async function getActiveRequests(
+	organizationId: string,
+	callerUserId: string,
+	filters?: { page?: number; pageSize?: number },
+): Promise<{ requests: ManagedBloodRequest[]; total: number }> {
+	await requireConsentsForUser(callerUserId);
+	await requireOrgPermission(organizationId, callerUserId, {
+		bloodRequest: ["read"],
+	});
+	const { pageSize, skip } = pager(filters);
+	const where = { organizationId, status: "active" as const };
+	const [total, rows] = await Promise.all([
+		prisma.bloodRequest.count({ where }),
+		prisma.bloodRequest.findMany({
+			where,
+			orderBy: { createdAt: "desc" },
+			skip,
+			take: pageSize,
+			select: managedSelect,
+		}),
+	]);
+	return {
+		requests: rows.map((row) =>
+			toManagedRequest({
+				...row,
+				currentRadiusKm: row.currentRadiusKm,
+				closedAt: row.closedAt,
+			}),
+		),
+		total,
+	};
+}
+
+export async function getRequestHistory(
+	organizationId: string,
+	callerUserId: string,
+	filters?: { page?: number; pageSize?: number },
+): Promise<{ requests: ManagedBloodRequest[]; total: number }> {
+	await requireConsentsForUser(callerUserId);
+	await requireOrgPermission(organizationId, callerUserId, {
+		history: ["read"],
+	});
+	const { pageSize, skip } = pager(filters);
+	const where = {
+		organizationId,
+		status: { in: ["fulfilled", "closed", "cancelled"] as const },
+	};
+	const [total, rows] = await Promise.all([
+		prisma.bloodRequest.count({ where }),
+		prisma.bloodRequest.findMany({
+			where,
+			orderBy: { createdAt: "desc" },
+			skip,
+			take: pageSize,
+			select: managedSelect,
+		}),
+	]);
+	return {
+		requests: rows.map((row) =>
+			toManagedRequest({
+				...row,
+				currentRadiusKm: row.currentRadiusKm,
+				closedAt: row.closedAt,
+			}),
+		),
+		total,
+	};
+}
+
+const updateRequestSchema = z.object({
+	unitsRequired: z.coerce.number().int().min(1).max(100).optional(),
+	locationName: z.string().trim().min(1).max(200).optional(),
+	internalReference: z.string().trim().max(120).nullable().optional(),
+});
+
+export async function updateBloodRequest(
+	organizationId: string,
+	callerUserId: string,
+	requestId: string,
+	rawInput: unknown,
+): Promise<{ requestId: string }> {
+	await requireConsentsForUser(callerUserId);
+	await requireOrgPermission(organizationId, callerUserId, {
+		bloodRequest: ["update"],
+	});
+	const input = updateRequestSchema.parse(rawInput);
+	const request = await prisma.bloodRequest.findFirst({
+		where: { id: requestId, organizationId },
+		select: { id: true, status: true, unitsAccepted: true },
+	});
+	if (!request) {
+		throw new Error("Blood request not found");
+	}
+	if (String(request.status) !== "active") {
+		throw new Error("Only open requests can be edited");
+	}
+	if (
+		input.unitsRequired !== undefined &&
+		input.unitsRequired < request.unitsAccepted
+	) {
+		throw new Error(
+			`Cannot lower units below the ${request.unitsAccepted} already accepted`,
+		);
+	}
+	await prisma.bloodRequest.update({
+		where: { id: request.id },
+		data: {
+			...(input.unitsRequired === undefined ? {} : { unitsRequired: input.unitsRequired }),
+			...(input.locationName === undefined ? {} : { locationName: input.locationName }),
+			...(input.internalReference === undefined
+				? {}
+				: { internalReference: input.internalReference }),
+		},
+	});
+	await writeAuditLog({
+		actorId: callerUserId,
+		organizationId,
+		action: "request.updated",
+		entityType: "blood_request",
+		entityId: request.id,
+		metadata: { requestId: request.id, ...input },
+	});
+	return { requestId: request.id };
+}
+
+async function settleRequest(
+	organizationId: string,
+	callerUserId: string,
+	requestId: string,
+	outcome: "closed" | "cancelled",
+): Promise<{ requestId: string; status: string }> {
+	await requireConsentsForUser(callerUserId);
+	await requireOrgPermission(organizationId, callerUserId, {
+		bloodRequest: ["close"],
+	});
+	const request = await prisma.bloodRequest.findFirst({
+		where: { id: requestId, organizationId },
+		select: { id: true, status: true, bloodGroup: true, locationName: true },
+	});
+	if (!request) {
+		throw new Error("Blood request not found");
+	}
+	if (String(request.status) !== "active") {
+		throw new Error("Only open requests can be closed");
+	}
+	const pendingMatches = await prisma.requestMatch.findMany({
+		where: {
+			requestId: request.id,
+			status: { in: ["notified", "filled", "accepted"] },
+		},
+		select: { id: true, donorId: true, status: true },
+	});
+	const donorIds = [...new Set(pendingMatches.map((match) => match.donorId))];
+	const bloodDisplay = formatBloodGroup(String(request.bloodGroup));
+	await prisma.$transaction(async (tx) => {
+		await tx.bloodRequest.update({
+			where: { id: request.id },
+			data: { status: outcome, closedAt: new Date(), nextEscalationAt: null },
+		});
+		await tx.requestMatch.updateMany({
+			where: {
+				requestId: request.id,
+				status: { in: ["notified", "filled"] },
+			},
+			data: { status: "expired", respondedAt: new Date() },
+		});
+		await tx.requestMatch.updateMany({
+			where: { requestId: request.id, status: "accepted" },
+			data: { status: "cancelled", respondedAt: new Date() },
+		});
+		await tx.donation.updateMany({
+			where: { requestId: request.id, status: "pending" },
+			data: { status: "cancelled" },
+		});
+		if (donorIds.length > 0) {
+			await tx.notification.createMany({
+				data: donorIds.map((donorId) => ({
+					userId: donorId,
+					type: outcome === "closed" ? "request.closed" : "request.cancelled",
+					title:
+						outcome === "closed"
+							? `${bloodDisplay} request closed`
+							: `${bloodDisplay} request cancelled`,
+					body:
+						outcome === "closed"
+							? `${request.locationName} has closed this request. Thank you for being ready to help.`
+							: `${request.locationName} has cancelled this request. You no longer need to come in for it.`,
+					data: { requestId: request.id },
+				})),
+			});
+		}
+	});
+	await writeAuditLog({
+		actorId: callerUserId,
+		organizationId,
+		action: outcome === "closed" ? "request.closed" : "request.cancelled",
+		entityType: "blood_request",
+		entityId: request.id,
+		metadata: { requestId: request.id, notifiedDonors: donorIds.length },
+	});
+	return { requestId: request.id, status: outcome };
+}
+
+export async function closeBloodRequest(
+	organizationId: string,
+	callerUserId: string,
+	requestId: string,
+): Promise<{ requestId: string; status: string }> {
+	return settleRequest(organizationId, callerUserId, requestId, "closed");
+}
+
+export async function cancelBloodRequest(
+	organizationId: string,
+	callerUserId: string,
+	requestId: string,
+): Promise<{ requestId: string; status: string }> {
+	return settleRequest(organizationId, callerUserId, requestId, "cancelled");
 }
