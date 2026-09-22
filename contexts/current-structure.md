@@ -1,5 +1,15 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 10 (hospital team + RBAC) implemented:
+> `requireOrgPermission()` union check over built-in + custom roles
+> (`authorizeOrgAction` delegates; `getActiveOrganizationId` honours the
+> session's active org); new `src/servers/team.ts` (manager gate, members,
+> email invites wired to the accept flow, custom-role CRUD, suspend/reinstate
+> with role restore, last-owner protection, org switching); `/hospital/team`
+> page + sidebar `Team & Roles` nav + multi-hospital `OrganizationSwitcher`;
+> `tests/hospital-team.test.ts` (7 passing).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 09 (admin hospital approval) implemented:
 > `prisma/seed.ts` creates the founder admin from env (idempotent, consents
 > recorded); new `src/servers/admin.ts` (`requireAdmin`, hospital list/queue/

@@ -24,6 +24,7 @@ import { SidebarUserMenu, type SidebarUser } from "./sidebar-user-menu";
 import { BloodBankStatusCard, type BloodBankStatus } from "./blood-bank-status";
 import { HospitalSupportDialog } from "./hospital-support-dialog";
 import { HospitalWorkspaceCard } from "./hospital-workspace-card";
+import { OrganizationSwitcher } from "./organization-switcher";
 import { HOSPITAL_NAV_ITEMS } from "./hospital-nav-config";
 
 const NAV_BUTTON_CLASS = [
@@ -36,6 +37,8 @@ const NAV_BUTTON_CLASS = [
 
 export interface HospitalSidebarProps {
     user: SidebarUser;
+    /** Enables the multi-hospital switcher when the user belongs to several hospitals. */
+    userId?: string;
     hospitalName: string;
     hospitalLocation: string;
     hospitalAccredited?: boolean;
@@ -44,10 +47,12 @@ export interface HospitalSidebarProps {
     hasUnreadNotifications?: boolean;
     bloodBankStatus?: BloodBankStatus;
     bloodBankMessage?: string;
+    organizationId?: string;
 }
 
 export function HospitalSidebar({
     user,
+    userId,
     hospitalName,
     hospitalLocation,
     hospitalAccredited = true,
@@ -56,6 +61,7 @@ export function HospitalSidebar({
     hasUnreadNotifications = false,
     bloodBankStatus = "operational",
     bloodBankMessage = "Operational & ready",
+    organizationId,
 }: HospitalSidebarProps) {
     const { setOpenMobile } = useSidebar();
     const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -191,6 +197,12 @@ export function HospitalSidebar({
                         location={hospitalLocation}
                         isAccredited={hospitalAccredited}
                     />
+                    {userId && (
+                        <OrganizationSwitcher
+                            userId={userId}
+                            currentOrganizationId={organizationId}
+                        />
+                    )}
                     <SidebarUserMenu
                         role="hospital"
                         user={user}

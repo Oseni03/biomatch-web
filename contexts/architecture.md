@@ -116,11 +116,26 @@
 - `/admin/hospitals/[id]` — Hospital detail (registration, team, application history) + approve/reject/suspend/reinstate (issue 09)
 
 ### Admin & audit (issue 09)
-
 - Founder admin is created by `prisma/seed.ts` (`FOUNDER_ADMIN_EMAIL`/`FOUNDER_ADMIN_PASSWORD`); every admin server action starts with `requireAdmin()`, and `/admin` routes are gated by the proxy plus the admin layout.
 - Approval/rejection is one Prisma transaction (application row + `organization.verificationStatus` + `audit_logs` row) followed by an approval/rejection email; rejection requires a reason. Suspend/reinstate are approved-only/suspended-only transitions, audit logged.
 - Rejected hospitals reapply from the portal (`reapplyForVerification`, owner/admin only); the `hv_one_pending_key` partial unique index guarantees a single open application.
 - `servers/audit.ts` exposes `writeAuditLog()` reused by all later slices.
+
+### Hospital team & RBAC (issue 10)
+
+- Permission catalog (`bloodRequest: create/read/update/close`,
+  `donor: read/confirmDonation/recordScreening`, `history: read`) lives in
+  `lib/organization-access.ts` (`domainPermissions`); built-in
+  Owner/Admin/Member roles plus per-hospital custom roles (`organizationRole`).
+- `requireOrgPermission()` (`servers/organization.ts`) is the reusable
+  server-side check for all later slices — union over the caller's roles,
+  custom roles validated through Better Auth access control, suspended denied.
+- Org administration (invites, role changes, removals, custom roles) requires
+  built-in owner/admin (`requireOrgManager`); last-owner demote/suspend/remove
+  blocked; suspend stores the previous role for reinstatement.
+- `/hospital/team` manages members, pending invitations and custom roles;
+  multi-hospital users switch via the sidebar `OrganizationSwitcher`
+  (session `activeOrganizationId`, honoured by `getActiveOrganizationId`).
 
 ## Core Loop (Prototype Spec)
 

@@ -1,11 +1,34 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { orgRoles } from "@/lib/organization-access";
+import { ac, orgRoles } from "@/lib/organization-access";
 import { requireConsentsForUser } from "@/servers/consent";
 
 export async function getActiveOrganizationId(userId: string): Promise<string> {
 	await requireConsentsForUser(userId);
+	const preferred = await prisma.session.findFirst({
+		where: {
+			userId,
+			activeOrganizationId: { not: null },
+			expiresAt: { gt: new Date() },
+		},
+		orderBy: { updatedAt: "desc" },
+		select: { activeOrganizationId: true },
+	});
+	if (preferred?.activeOrganizationId) {
+		const membership = await prisma.member.findUnique({
+			where: {
+				organizationId_userId: {
+					organizationId: preferred.activeOrganizationId,
+					userId,
+				},
+			},
+			select: { id: true },
+		});
+		if (membership) {
+			return preferred.activeOrganizationId;
+		}
+	}
 	const membership = await prisma.member.findFirst({
 		where: { userId },
 		select: { organizationId: true },
@@ -58,16 +81,70 @@ export async function authorizeOrgAction(
 	callerUserId: string,
 	permission: Record<string, string[]>,
 ) {
+	await requireOrgPermission(organizationId, callerUserId, permission);
+}
+
+async function roleNameAuthorizes(
+	organizationId: string,
+	roleName: string,
+	permission: Record<string, string[]>,
+): Promise<boolean> {
+	const builtin = orgRoles[roleName as keyof typeof orgRoles];
+	if (builtin) {
+		return builtin.authorize(permission).success;
+	}
+	if (roleName === "suspended") {
+		return false;
+	}
+	const custom = await prisma.organizationRole.findFirst({
+		where: { organizationId, role: roleName },
+		select: { permission: true },
+	});
+	if (!custom) {
+		return false;
+	}
+	let statements: unknown;
+	try {
+		statements = JSON.parse(custom.permission);
+	} catch {
+		return false;
+	}
+	try {
+		const role = ac.newRole(
+			statements as Parameters<typeof ac.newRole>[0],
+		);
+		return role.authorize(permission).success;
+	} catch {
+		return false;
+	}
+}
+
+// Reusable server-side permission check (issue 10). Resolves every role on
+// the caller's membership — built-in Owner/Admin/Member plus the hospital's
+// custom roles — and passes when any of them grants the permission.
+export async function requireOrgPermission(
+	organizationId: string,
+	callerUserId: string,
+	permission: Record<string, string[]>,
+): Promise<void> {
 	await requireConsentsForUser(callerUserId);
-	const roleName = await getActiveOrganizationRole(organizationId, callerUserId);
-	const role = orgRoles[roleName as keyof typeof orgRoles];
-	if (!role) {
-		throw new Error(`Unknown organization role "${roleName}"`);
+	const membership = await prisma.member.findUnique({
+		where: { organizationId_userId: { organizationId, userId: callerUserId } },
+		select: { role: true },
+	});
+	if (!membership) {
+		throw new Error("Caller is not a member of this organization");
 	}
-	const result = role.authorize(permission);
-	if (!result.success) {
-		throw new Error(result.error ?? "Not authorized");
+	const roleNames = membership.role
+		.split(",")
+		.map((role) => role.trim())
+		.filter(Boolean);
+	for (const roleName of roleNames) {
+		if (await roleNameAuthorizes(organizationId, roleName, permission)) {
+			return;
+		}
 	}
+	throw new Error("Not authorized");
 }
 
 export async function getOrganizationVerificationStatus(

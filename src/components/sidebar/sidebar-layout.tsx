@@ -54,6 +54,8 @@ interface SidebarLayoutProps {
     hospitalLocation?: string;
     bloodBankStatus?: BloodBankStatus;
     bloodBankMessage?: string;
+    /** Hospital-only: enables the multi-hospital switcher. */
+    hospitalUserId?: string;
 }
 
 export function SidebarLayout({
@@ -67,6 +69,7 @@ export function SidebarLayout({
     hospitalLocation,
     bloodBankStatus,
     bloodBankMessage,
+    hospitalUserId,
 }: SidebarLayoutProps) {
     const { data: session } = authClient.useSession();
     const pathname = usePathname();
@@ -93,6 +96,7 @@ export function SidebarLayout({
             {role === "hospital" ? (
                 <HospitalSidebar
                     user={user}
+                    userId={hospitalUserId}
                     hospitalName={hospitalName || FALLBACK_NAME.hospital}
                     hospitalLocation={hospitalLocation ?? ""}
                     activeUrl={activeUrl}
@@ -102,6 +106,7 @@ export function SidebarLayout({
                     }
                     bloodBankStatus={bloodBankStatus}
                     bloodBankMessage={bloodBankMessage}
+                    organizationId={organizationId}
                 />
             ) : (
                 <AppSidebar

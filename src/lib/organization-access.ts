@@ -19,6 +19,16 @@ export const statement = {
 	history: ["read"],
 } as const;
 
+// Domain catalog for custom hospital roles (issue 10). Team UI and server
+// validation import this — keep it identical to the domain part of `statement`.
+export const domainPermissions = {
+	bloodRequest: ["create", "read", "update", "close"],
+	donor: ["read", "confirmDonation", "recordScreening"],
+	history: ["read"],
+} as const;
+
+export type DomainResource = keyof typeof domainPermissions;
+
 export const ac = createAccessControl(statement);
 
 const domainAll = {

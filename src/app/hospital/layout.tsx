@@ -22,6 +22,7 @@ export default async function HospitalSectionLayout({ children }: { children: Re
       hospitalLocation={context?.hospitalLocation}
       bloodBankStatus={context?.bloodBankStatus}
       bloodBankMessage={context?.bloodBankMessage}
+      hospitalUserId={session?.user?.id}
     >
       {children}
     </SidebarLayout>
