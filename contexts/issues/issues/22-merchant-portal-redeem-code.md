@@ -15,13 +15,25 @@ Merchant staff sign in and land in a minimal portal, authorised by their active 
 
 ## Acceptance criteria
 
-- [ ] Only active staff of a merchant can access the portal and only for their merchant
-- [ ] Valid codes redeem exactly once; a second attempt fails (tested with concurrent requests)
-- [ ] Expired, used, unknown and other-merchant codes all give the same generic failure
-- [ ] Redeeming records who redeemed and when; audit logged
-- [ ] Redemption history lists the merchant's redemptions
-- [ ] Merchant staff pass the same consent gate as other users
-- [ ] Empty states for every new screen are designed and implemented (required by the PRD) (no redemptions yet)
+- [x] Only active staff of a merchant can access the portal and only for their merchant
+- [x] Valid codes redeem exactly once; a second attempt fails (tested with concurrent requests)
+- [x] Expired, used, unknown and other-merchant codes all give the same generic failure
+- [x] Redeeming records who redeemed and when; audit logged
+- [x] Redemption history lists the merchant's redemptions
+- [x] Merchant staff pass the same consent gate as other users
+- [x] Empty states for every new screen are designed and implemented (required by the PRD) (no redemptions yet)
+
+Implemented 2026-09-22: portal functions in `servers/merchants.ts`
+(`previewVoucherCode`, `redeemVoucherCode`, `listMerchantRedemptions`;
+`getMerchantPortalContext` from slice 20 reused for the gate), `/merchant`
+route with a minimal no-sidebar portal (redeem check-then-confirm + history +
+access-denied + empty states), proxy consent-gate + matcher, login redirects
+active staff to `/merchant`, `tests/merchant-portal.test.ts` (8 passing:
+preview, exactly-once incl. concurrent claim via guarded `updateMany`,
+identical generic message across expired/used/unknown/other-merchant for both
+preview and redeem, non-staff get the same message, link/merchant toggles,
+history with donor code + staff name, consent gate). Fixed while verifying:
+`voucher.redeem` audit `entityId` must be the voucher UUID, not the code.
 
 ## Blocked by
 

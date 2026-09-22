@@ -1,5 +1,11 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 22 (merchant portal) implemented: redeem
+> functions in `servers/merchants.ts` (preview, guarded-update redeem,
+> history), `/merchant` minimal portal, proxy + login wiring,
+> `tests/merchant-portal.test.ts` (8 passing). Fixed audit `entityId` to the
+> voucher UUID.
+>
 > Last updated: 2026-09-22 — Issue 21 (donor voucher redemption) implemented:
 > `servers/vouchers.ts` (issue + idempotency replay, donor/admin lists),
 > `hooks/use-vouchers.ts` + `hooks/use-merchants.ts`, redeem flow + voucher

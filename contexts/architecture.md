@@ -234,6 +234,15 @@
   admin `createUser` + set-password email; `listActiveMerchants()` is the
   redemption picker source (deactivated hidden), `getMerchantPortalContext()`
   authorises slice 22.
+- Merchant portal (`/merchant`, issue 22): minimal no-sidebar pages for
+  active staff only (proxy consent-gated; page renders access-denied without
+  a link; login sends linked staff straight to `/merchant`). Cashier checks
+  a code (preview: amount + expiry) then confirms; redeeming is one guarded
+  `updateMany` (issued + unexpired + own merchant) so concurrent claims let
+  exactly one through. Expired/used/unknown/other-merchant codes — and
+  non-staff callers — all get one generic message; redemption records
+  staff + time and audit logs; history shows code, amount, donor code and
+  who redeemed.
 
 ## Core Loop (Prototype Spec)
 

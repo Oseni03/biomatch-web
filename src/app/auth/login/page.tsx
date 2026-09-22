@@ -13,6 +13,7 @@ import { Wordmark } from "@/components/brand/wordmark";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
 import { AUTH_STATS } from "@/components/auth/auth-constants";
 import { authClient } from "@/lib/auth-client";
+import { getMerchantPortalContext } from "@/servers/merchants";
 
 function LoginContent() {
 	const router = useRouter();
@@ -63,6 +64,11 @@ function LoginContent() {
 			router.push("/admin");
 		} else if (callbackUrl && callbackUrl.startsWith("/")) {
 			router.push(callbackUrl);
+		} else if (
+			data?.user?.id &&
+			(await getMerchantPortalContext(data.user.id).catch(() => null))
+		) {
+			router.push("/merchant");
 		} else {
 			router.push("/donor");
 		}

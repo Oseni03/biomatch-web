@@ -336,3 +336,223 @@ export async function getMerchantPortalContext(
 	if (!link) return null;
 	return { merchantId: link.merchantId, merchantName: link.merchant.name };
 }
+
+export const VOUCHER_REDEEM_FAILED_MESSAGE =
+	"This code cannot be redeemed. Check the code and try again.";
+
+const voucherCodeSchema = z
+	.string()
+	.trim()
+	.transform((value) => value.replace(/\s+/g, "").toUpperCase())
+	.refine((value) => /^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(value), {
+		message: VOUCHER_REDEEM_FAILED_MESSAGE,
+	});
+
+async function getActiveStaffMerchantIds(staffUserId: string): Promise<string[]> {
+	const links = await prisma.merchantStaff.findMany({
+		where: { userId: staffUserId, isActive: true, merchant: { isActive: true } },
+		select: { merchantId: true },
+	});
+	return links.map((link) => link.merchantId);
+}
+
+export interface VoucherPreview {
+	code: string;
+	amountKobo: number;
+	merchantName: string;
+	expiresAt: Date;
+}
+
+export async function previewVoucherCode(
+	staffUserId: string,
+	rawCode: unknown,
+): Promise<VoucherPreview> {
+	await requireConsentsForUser(staffUserId);
+	const parsed = voucherCodeSchema.safeParse(rawCode);
+	if (!parsed.success) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	const voucher = await prisma.voucherRedemption.findUnique({
+		where: { code: parsed.data },
+		select: {
+			code: true,
+			amountKobo: true,
+			status: true,
+			expiresAt: true,
+			merchantId: true,
+			merchant: { select: { name: true, isActive: true } },
+		},
+	});
+	if (
+		!voucher ||
+		!voucher.merchant.isActive ||
+		String(voucher.status) !== "issued" ||
+		voucher.expiresAt.getTime() <= Date.now()
+	) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	const staffMerchantIds = await getActiveStaffMerchantIds(staffUserId);
+	if (!staffMerchantIds.includes(voucher.merchantId)) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	return {
+		code: voucher.code,
+		amountKobo: Number(voucher.amountKobo),
+		merchantName: voucher.merchant.name,
+		expiresAt: voucher.expiresAt,
+	};
+}
+
+export interface RedeemedVoucher {
+	code: string;
+	amountKobo: number;
+	merchantName: string;
+	redeemedAt: Date;
+}
+
+export async function redeemVoucherCode(
+	staffUserId: string,
+	rawCode: unknown,
+): Promise<RedeemedVoucher> {
+	await requireConsentsForUser(staffUserId);
+	const parsed = voucherCodeSchema.safeParse(rawCode);
+	if (!parsed.success) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	const staffMerchantIds = await getActiveStaffMerchantIds(staffUserId);
+	if (staffMerchantIds.length === 0) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	const now = new Date();
+	const claimed = await prisma.voucherRedemption.updateMany({
+		where: {
+			code: parsed.data,
+			merchantId: { in: staffMerchantIds },
+			status: "issued",
+			expiresAt: { gt: now },
+		},
+		data: { status: "redeemed", redeemedAt: now, redeemedByUserId: staffUserId },
+	});
+	if (claimed.count === 0) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	const redeemed = await prisma.voucherRedemption.findUnique({
+		where: { code: parsed.data },
+		select: {
+			id: true,
+			code: true,
+			amountKobo: true,
+			redeemedAt: true,
+			merchant: { select: { id: true, name: true } },
+		},
+	});
+	if (!redeemed || !redeemed.redeemedAt) {
+		throw new Error(VOUCHER_REDEEM_FAILED_MESSAGE);
+	}
+	await writeAuditLog({
+		actorId: staffUserId,
+		action: "voucher.redeem",
+		entityType: "voucher_redemption",
+		entityId: redeemed.id,
+		metadata: {
+			merchantId: redeemed.merchant.id,
+			amountKobo: Number(redeemed.amountKobo),
+		},
+	});
+	return {
+		code: redeemed.code,
+		amountKobo: Number(redeemed.amountKobo),
+		merchantName: redeemed.merchant.name,
+		redeemedAt: redeemed.redeemedAt,
+	};
+}
+
+export interface MerchantRedemptionItem {
+	id: string;
+	code: string;
+	amountKobo: number;
+	status: string;
+	issuedAt: Date;
+	expiresAt: Date;
+	redeemedAt: Date | null;
+	redeemedByName: string | null;
+	donorCode: string;
+}
+
+export interface MerchantRedemptionResult {
+	redemptions: MerchantRedemptionItem[];
+	total: number;
+	page: number;
+	pageSize: number;
+	totalPages: number;
+}
+
+export async function listMerchantRedemptions(
+	staffUserId: string,
+	rawFilters?: unknown,
+): Promise<MerchantRedemptionResult> {
+	await requireConsentsForUser(staffUserId);
+	const filters = z
+		.object({
+			merchantId: z.string().uuid().optional(),
+			page: z.coerce.number().int().min(1).default(1),
+			pageSize: z.coerce.number().int().min(1).max(100).default(20),
+		})
+		.parse(rawFilters ?? {});
+	const staffMerchantIds = await getActiveStaffMerchantIds(staffUserId);
+	const scoped = filters.merchantId
+		? staffMerchantIds.filter((id) => id === filters.merchantId)
+		: staffMerchantIds;
+	if (scoped.length === 0) {
+		return { redemptions: [], total: 0, page: filters.page, pageSize: filters.pageSize, totalPages: 1 };
+	}
+	const where = { merchantId: { in: scoped } };
+	const [total, rows] = await Promise.all([
+		prisma.voucherRedemption.count({ where }),
+		prisma.voucherRedemption.findMany({
+			where,
+			orderBy: { issuedAt: "desc" },
+			skip: (filters.page - 1) * filters.pageSize,
+			take: filters.pageSize,
+			select: {
+				id: true,
+				code: true,
+				amountKobo: true,
+				status: true,
+				issuedAt: true,
+				expiresAt: true,
+				redeemedAt: true,
+				redeemedByUserId: true,
+				donor: { select: { donorCode: true } },
+			},
+		}),
+	]);
+	const staffIds = [...new Set(rows.map((row) => row.redeemedByUserId).filter(Boolean))] as string[];
+	const staffUsers =
+		staffIds.length > 0
+			? await prisma.user.findMany({
+					where: { id: { in: staffIds } },
+					select: { id: true, name: true },
+				})
+			: [];
+	const staffNames = new Map(staffUsers.map((user) => [user.id, user.name]));
+	return {
+		redemptions: rows.map((row) => ({
+			id: row.id,
+			code: row.code,
+			amountKobo: Number(row.amountKobo),
+			status: String(row.status),
+			issuedAt: row.issuedAt,
+			expiresAt: row.expiresAt,
+			redeemedAt: row.redeemedAt,
+			redeemedByName: row.redeemedByUserId
+				? (staffNames.get(row.redeemedByUserId) ?? null)
+				: null,
+			donorCode: row.donor.donorCode,
+		})),
+		total,
+		page: filters.page,
+		pageSize: filters.pageSize,
+		totalPages: Math.max(1, Math.ceil(total / filters.pageSize)),
+	};
+}

@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { hasSatisfiedConsents } from "@/servers/consent";
 import { getSessionRole } from "@/servers/user";
 
-const CONSENT_GATED_PREFIXES = ["/donor", "/hospital", "/admin", "/auth/onboarding"];
+const CONSENT_GATED_PREFIXES = ["/donor", "/hospital", "/admin", "/merchant", "/auth/onboarding"];
 
 function needsConsentGate(pathname: string): boolean {
 	return CONSENT_GATED_PREFIXES.some(
@@ -71,12 +71,13 @@ export async function proxy(request: NextRequest) {
 	}
 }
 
-export const config = {
+	export const config = {
 	matcher: [
 		"/",
 		"/auth/:path*",
 		"/donor/:path*",
 		"/admin/:path*",
 		"/hospital/:path*",
+		"/merchant/:path*",
 	],
 };
