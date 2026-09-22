@@ -4,6 +4,7 @@ import {
 	getRequestsNearby,
 	markNotificationRead,
 } from "@/servers/requests";
+import { acceptMatch, getMyResponses, withdrawMatch } from "@/servers/responses";
 
 export function useRequestsNearby(
 	donorId?: string,
@@ -39,5 +40,37 @@ export function useMarkNotificationRead(donorId?: string) {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["notification-inbox"] });
 		},
+	});
+}
+
+export function useMyResponses(donorId?: string) {
+	return useQuery({
+		queryKey: ["my-responses", donorId],
+		queryFn: () => getMyResponses(donorId!),
+		enabled: !!donorId,
+	});
+}
+
+function invalidateDonorKeys(queryClient: ReturnType<typeof useQueryClient>) {
+	queryClient.invalidateQueries({ queryKey: ["requests-nearby"] });
+	queryClient.invalidateQueries({ queryKey: ["my-responses"] });
+	queryClient.invalidateQueries({ queryKey: ["notification-inbox"] });
+}
+
+export function useAcceptMatch() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ matchId, donorId }: { matchId: string; donorId: string }) =>
+			acceptMatch(matchId, donorId),
+		onSuccess: () => invalidateDonorKeys(queryClient),
+	});
+}
+
+export function useWithdrawMatch() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ matchId, donorId }: { matchId: string; donorId: string }) =>
+			withdrawMatch(matchId, donorId),
+		onSuccess: () => invalidateDonorKeys(queryClient),
 	});
 }

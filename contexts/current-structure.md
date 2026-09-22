@@ -1,5 +1,12 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 13 (accept cap + donor view) implemented:
+> `servers/responses.ts` (atomic accept, withdraw-reopen, donor view);
+> donor Accept/Withdraw UI + accepted section; `/hospital/requests/[id]`
+> detail with Donor View; `tests/request-responses.test.ts` (6 passing incl.
+> 3-way concurrency race).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 12 (create request + match) implemented:
 > `lib/config.ts` tunables; `servers/matching.ts` eligibility SQL;
 > `servers/requests.ts` (create/match/nearby/inbox/summary); hospital forms

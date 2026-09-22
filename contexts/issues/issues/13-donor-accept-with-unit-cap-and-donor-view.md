@@ -17,14 +17,35 @@ Accepting also creates a pending donation record used by the completion slice.
 
 ## Acceptance criteria
 
-- [ ] Accept succeeds only for matched, eligible donors (verified, unrestricted, out of cooldown); server enforced
-- [ ] Concurrency test: many simultaneous accepts never exceed units required
-- [ ] When units are met the request moves to fulfilled and other matches become filled with a clear donor-facing message
-- [ ] Withdrawing an accepted match decrements accepted units and reopens the request
-- [ ] Hospital receives an in-app notification when a donor accepts
-- [ ] Donor View lists matched donors with response status; contact details are limited to what the hospital needs and only after acceptance
-- [ ] A pending donation record is created on acceptance
-- [ ] Empty states for every new screen are designed and implemented (required by the PRD) (no responses yet)
+- [x] Accept succeeds only for matched, eligible donors (verified, unrestricted, out of cooldown); server enforced
+- [x] Concurrency test: many simultaneous accepts never exceed units required
+- [x] When units are met the request moves to fulfilled and other matches become filled with a clear donor-facing message
+- [x] Withdrawing an accepted match decrements accepted units and reopens the request
+- [x] Hospital receives an in-app notification when a donor accepts
+- [x] Donor View lists matched donors with response status; contact details are limited to what the hospital needs and only after acceptance
+- [x] A pending donation record is created on acceptance
+- [x] Empty states for every new screen are designed and implemented (required by the PRD) (no responses yet)
+
+## Implementation (2026-09-22)
+
+- `src/servers/responses.ts`: `acceptMatch()` — eligibility re-check, then the
+  atomic counter UPDATE (wins only while unitsAccepted < unitsRequired);
+  winners get match=accepted + pending `Donation` + hospital notification,
+  losers get match=filled + `request.filled` notification. Repeat accepts and
+  late arrivals return the filled/accepted outcome instead of throwing.
+  `withdrawMatch()` decrements, deletes the never-happened donation, reopens
+  to active and flips filled matches back to notified (no re-notification).
+  `getMyResponses()` and `getRequestDonorView()` (contact — name, code, phone —
+  only for accepted/completed; waiting donors anonymous).
+- Hospital staff notification goes to the creator plus owner/admin members.
+- UI: Accept buttons on Requests Nearby, accepted-donations section with
+  Withdraw, `/hospital/requests/[id]` detail (summary cards + Donor View with
+  no-responses empty state).
+- `tests/request-responses.test.ts` (6 passing): accept → counter/donation/
+  notification; 3-way concurrent race caps at units with no overfill;
+  withdraw reopens; ineligible/unmatched rejected; donor-view contact gating.
+- Bug found by the race: early-exit paths threw instead of returning `filled`;
+  fixed so donors always get the donor-facing outcome.
 
 ## Blocked by
 

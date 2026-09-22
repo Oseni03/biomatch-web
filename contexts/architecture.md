@@ -165,6 +165,20 @@
   read/unread (`/donor/notifications`); sidebar badge counts live nearby
   requests. Donor payloads are key-tested to exclude internal fields.
 
+### Accept, withdraw & Donor View (issue 13)
+
+- `acceptMatch()` (`servers/responses.ts`) re-checks eligibility, then runs
+  the atomic counter UPDATE — simultaneous accepts never overfill; winners
+  become accepted with a pending `Donation` + hospital notification, losers
+  become filled with a donor-facing message. Repeat/late accepts return the
+  outcome instead of throwing.
+- `withdrawMatch()` decrements, removes the pending donation, reopens to
+  active and flips filled matches back to notified without re-notifying.
+- Hospital Donor View (`/hospital/requests/[id]`, `getRequestDonorView`):
+  response statuses for all matches, contact (name, code, phone) only after
+  acceptance. Donors accept/withdraw from Requests Nearby (`useAcceptMatch`,
+  `useWithdrawMatch`, `getMyResponses`).
+
 ## Core Loop (Prototype Spec)
 
 1. **Hospital creates emergency request** → `createEmergencyRequest()` in `servers/emergency.ts`

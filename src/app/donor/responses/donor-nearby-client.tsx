@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Building2, MapPin } from "lucide-react";
+import { Building2, CheckCircle2, MapPin } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { useRequestsNearby } from "@/hooks/use-donor-requests";
+import {
+	useAcceptMatch,
+	useMyResponses,
+	useRequestsNearby,
+	useWithdrawMatch,
+} from "@/hooks/use-donor-requests";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { Button } from "@/components/ui/button";
@@ -26,8 +31,34 @@ export function DonorNearbyClient() {
 	const donorId = session?.user?.id;
 	const [page, setPage] = useState(1);
 	const { data, isLoading } = useRequestsNearby(donorId, { page, pageSize: 10 });
+	const { data: responses } = useMyResponses(donorId);
+	const accept = useAcceptMatch();
+	const withdraw = useWithdrawMatch();
+	const [error, setError] = useState<string | null>(null);
 
 	const requests = data?.requests ?? [];
+	const accepted = responses?.responses ?? [];
+	const acting = accept.isPending || withdraw.isPending;
+
+	async function handleAccept(matchId: string) {
+		if (!donorId) return;
+		setError(null);
+		try {
+			await accept.mutateAsync({ matchId, donorId });
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "Could not accept this request");
+		}
+	}
+
+	async function handleWithdraw(matchId: string) {
+		if (!donorId) return;
+		setError(null);
+		try {
+			await withdraw.mutateAsync({ matchId, donorId });
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "Could not withdraw");
+		}
+	}
 
 	return (
 		<div className="space-y-8">
@@ -35,6 +66,50 @@ export function DonorNearbyClient() {
 				title="Requests nearby"
 				subtitle="Hospitals near you that need your blood type right now."
 			/>
+
+			{error && (
+				<p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs font-semibold text-destructive">
+					{error}
+				</p>
+			)}
+
+			{accepted.length > 0 && (
+				<section className="space-y-3">
+					<h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+						<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+						Your accepted donations ({accepted.length})
+					</h2>
+					<ul className="space-y-3">
+						{accepted.map((response) => (
+							<li
+								key={response.matchId}
+								className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4"
+							>
+								<div className="flex items-start gap-3">
+									<BloodTypeBadge bloodGroup={response.bloodGroup} />
+									<div className="min-w-0 flex-1">
+										<p className="text-sm font-bold text-foreground">
+											{response.bloodGroup} for {response.hospitalName}
+										</p>
+										<p className="mt-0.5 text-xs text-muted-foreground">
+											{response.locationName} · please visit the hospital to donate
+										</p>
+									</div>
+									<Button
+										size="sm"
+										variant="outline"
+										className="shrink-0 rounded-xl"
+										disabled={acting}
+										onClick={() => handleWithdraw(response.matchId)}
+									>
+										{withdraw.isPending ? "Withdrawing…" : "Withdraw"}
+									</Button>
+								</div>
+							</li>
+						))}
+					</ul>
+				</section>
+			)}
 
 			{isLoading ? (
 				<div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
@@ -79,6 +154,14 @@ export function DonorNearbyClient() {
 										needed · alerted {formatRelative(request.notifiedAt)}
 									</p>
 								</div>
+								<Button
+									size="sm"
+									className="shrink-0 rounded-xl"
+									disabled={acting}
+									onClick={() => handleAccept(request.matchId)}
+								>
+									{accept.isPending ? "Accepting…" : "Accept"}
+								</Button>
 							</div>
 						</li>
 					))}
