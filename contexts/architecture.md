@@ -148,6 +148,23 @@
 - `/hospital/screening` is the staff screening screen; the donor profile shows
   the live verification status.
 
+### Blood requests & matching (issue 12)
+
+- Tunables live in `lib/config.ts` (radii, escalation window, location
+  freshness, cooldown, reward, voucher validity).
+- `createBloodRequest()` (`servers/requests.ts`): consent + approval +
+  `bloodRequest:create`; blood group, units, hospital-defaulted location;
+  optional hospital-private internal reference (never sent to donors); all
+  requests urgent, no tiers. Hospital emergency form + dashboard dialog call it.
+- `findEligibleDonors()` (`servers/matching.ts`): compatibility, verified,
+  active, available, cooldown, ban, radius; fresh last-known location else home
+  pin; phone verification ignored. Re-runs only add newly eligible donors.
+- `matchDonorsForRequest()` writes one match row per donor plus a simultaneous
+  in-app notification (blood type, hospital name/location only).
+- Donors: Requests Nearby (`/donor/responses`) and Notification Inbox with
+  read/unread (`/donor/notifications`); sidebar badge counts live nearby
+  requests. Donor payloads are key-tested to exclude internal fields.
+
 ## Core Loop (Prototype Spec)
 
 1. **Hospital creates emergency request** → `createEmergencyRequest()` in `servers/emergency.ts`

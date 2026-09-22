@@ -22,10 +22,11 @@ export function getCompatibleDonorGroups(bloodGroup: string): string[] {
 	return COMPATIBLE_DONORS[bloodGroup] ?? [];
 }
 
-// Accepts either the DB enum form ("A_PLUS") or an already-formatted
-// display string ("A+") so callers can pass either without pre-checking.
+// Accepts the DB enum form ("A_POS"), the legacy prototype form ("A_PLUS")
+// or an already-formatted display string ("A+") so callers can pass either
+// without pre-checking.
 export function formatBloodGroup(bloodGroup: string): string {
 	if (!bloodGroup.includes("_")) return bloodGroup;
 	const [type, sign] = bloodGroup.split("_");
-	return `${type}${sign === "PLUS" ? "+" : "-"}`;
+	return `${type}${sign === "PLUS" || sign === "POS" ? "+" : "-"}`;
 }

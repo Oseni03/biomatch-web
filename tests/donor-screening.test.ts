@@ -12,6 +12,7 @@ import {
 	lookupDonorByCode,
 	recordScreening,
 } from "@/servers/screening";
+import { deleteOrganizationCompletely, deleteUsersCompletely } from "./helpers";
 
 const stamp = Date.now();
 const password = "HospitalTest123!";
@@ -207,13 +208,7 @@ describe("Issue 11 donor screening by donor code", () => {
 	});
 
 	after(async () => {
-		if (organizationId) {
-			await prisma.organization.delete({ where: { id: organizationId } }).catch(() => {});
-		}
-		for (const id of [adminId, ownerId, staffId, donorId]) {
-			if (id) {
-				await prisma.user.delete({ where: { id } }).catch(() => {});
-			}
-		}
+		await deleteOrganizationCompletely(organizationId);
+		await deleteUsersCompletely([adminId, ownerId, staffId, donorId]);
 	});
 });

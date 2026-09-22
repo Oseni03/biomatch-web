@@ -2,7 +2,9 @@ import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createEmergencyRequest } from "@/servers/emergency";
+import { recordConsentsForUser } from "@/servers/consent";
+import { createBloodRequest } from "@/servers/requests";
+import { deleteOrganizationCompletely, deleteUsersCompletely } from "./helpers";
 import {
 	getOrganizationVerificationStatus,
 	requireApprovedHospital,
@@ -37,6 +39,7 @@ describe("Issue 08 hospital verification and pending state", () => {
 	it("strips privileged fields: status stays pending, partner false, approvedAt null", async () => {
 		const contact = await signUpHospitalContact();
 		userId = contact.userId;
+		await recordConsentsForUser(userId, {});
 
 		const createArg = {
 			body: {
@@ -99,11 +102,9 @@ describe("Issue 08 hospital verification and pending state", () => {
 			/awaiting approval/,
 		);
 		await assert.rejects(
-			createEmergencyRequest({
-				organizationId,
+			createBloodRequest(organizationId, userId, {
 				bloodGroup: "O_POS",
-				unitsNeeded: 2,
-				urgencyLevel: "critical",
+				unitsRequired: 2,
 			}),
 			/awaiting approval/,
 		);
@@ -115,15 +116,13 @@ describe("Issue 08 hospital verification and pending state", () => {
 			data: { verificationStatus: "approved", approvedAt: new Date() },
 		});
 		await requireApprovedHospital(organizationId);
-		await assert.rejects(
-			createEmergencyRequest({
-				organizationId,
-				bloodGroup: "O_POS",
-				unitsNeeded: 2,
-				urgencyLevel: "critical",
-			}),
-			/slice 12/,
-		);
+		const created = await createBloodRequest(organizationId, userId, {
+			bloodGroup: "O_POS",
+			unitsRequired: 2,
+		});
+		assert.ok(created.requestId);
+		assert.equal(created.matchedDonorCount, 0);
+		await prisma.bloodRequest.delete({ where: { id: created.requestId } });
 
 		await prisma.organization.update({
 			where: { id: organizationId },
@@ -136,11 +135,7 @@ describe("Issue 08 hospital verification and pending state", () => {
 	});
 
 	after(async () => {
-		if (organizationId) {
-			await prisma.organization.delete({ where: { id: organizationId } });
-		}
-		if (userId) {
-			await prisma.user.delete({ where: { id: userId } });
-		}
+		await deleteOrganizationCompletely(organizationId);
+		await deleteUsersCompletely([userId]);
 	});
 });

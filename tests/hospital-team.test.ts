@@ -22,6 +22,7 @@ import {
 	suspendMember,
 	switchActiveOrganization,
 } from "@/servers/team";
+import { deleteOrganizationCompletely, deleteUsersCompletely } from "./helpers";
 
 const stamp = Date.now();
 const password = "HospitalTest123!";
@@ -236,21 +237,11 @@ describe("Issue 10 hospital team and RBAC", () => {
 
 		await prisma.organization.delete({ where: { id: secondOrgId } }).catch(() => {});
 		secondOrgId = "";
-		await prisma.user.delete({ where: { id: owner2.userId } }).catch(() => {});
+		await deleteUsersCompletely([owner2.userId]);
 	});
 
 	after(async () => {
-		if (secondOrgId) {
-			await prisma.organization.delete({ where: { id: secondOrgId } }).catch(() => {});
-		}
-		if (organizationId) {
-			await prisma.organization.delete({ where: { id: organizationId } }).catch(() => {});
-		}
-		if (ownerId) {
-			await prisma.user.delete({ where: { id: ownerId } }).catch(() => {});
-		}
-		if (memberId) {
-			await prisma.user.delete({ where: { id: memberId } }).catch(() => {});
-		}
-	});
+		await deleteOrganizationCompletely(secondOrgId);
+		await deleteOrganizationCompletely(organizationId);
+		await deleteUsersCompletely([ownerId, memberId]);	});
 });

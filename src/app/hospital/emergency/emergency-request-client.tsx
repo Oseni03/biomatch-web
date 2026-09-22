@@ -3,15 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-	AlertTriangle,
 	Send,
 	Loader2,
 	CheckCircle2,
 	Minus,
 	Plus,
 	Droplet,
+	AlertTriangle,
 } from "lucide-react";
-import { createEmergencyRequest } from "@/servers/emergency";
+import { authClient } from "@/lib/auth-client";
+import { createBloodRequest } from "@/servers/requests";
+import { formatBloodGroup } from "@/lib/blood-compatibility";
+import { MATCH_START_RADIUS_KM } from "@/lib/config";
 import {
 	Card,
 	CardContent,
@@ -27,15 +30,15 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const BLOOD_GROUPS = [
-	{ value: "A_PLUS", label: "A+" },
-	{ value: "A_MINUS", label: "A-" },
-	{ value: "B_PLUS", label: "B+" },
-	{ value: "B_MINUS", label: "B-" },
-	{ value: "AB_PLUS", label: "AB+" },
-	{ value: "AB_MINUS", label: "AB-" },
-	{ value: "O_PLUS", label: "O+" },
-	{ value: "O_MINUS", label: "O-" },
-] as const;
+	"A_POS",
+	"A_NEG",
+	"B_POS",
+	"B_NEG",
+	"AB_POS",
+	"AB_NEG",
+	"O_POS",
+	"O_NEG",
+];
 
 interface EmergencyRequestClientProps {
 	organizationId: string;
@@ -45,13 +48,12 @@ export function EmergencyRequestClient({
 	organizationId,
 }: EmergencyRequestClientProps) {
 	const router = useRouter();
+	const { data: session } = authClient.useSession();
+	const callerUserId = session?.user?.id ?? "";
 
 	const [bloodGroup, setBloodGroup] = useState("");
 	const [unitsNeeded, setUnitsNeeded] = useState(1);
-	const [urgencyLevel, setUrgencyLevel] = useState<"standard" | "critical">(
-		"standard",
-	);
-	const [searchRadius, setSearchRadius] = useState(15);
+	const [internalReference, setInternalReference] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [result, setResult] = useState<{
 		matchedDonorCount: number;
@@ -73,20 +75,18 @@ export function EmergencyRequestClient({
 		setResult(null);
 
 		try {
-			const res = await createEmergencyRequest({
-				organizationId,
+			const res = await createBloodRequest(organizationId, callerUserId, {
 				bloodGroup,
-				unitsNeeded,
-				urgencyLevel,
-				searchRadius,
+				unitsRequired: unitsNeeded,
+				internalReference: internalReference.trim() || undefined,
 			});
 			setResult({
 				matchedDonorCount: res.matchedDonorCount,
 				hospitalName: res.hospitalName,
 			});
 			toast.success("Emergency request created");
-		} catch {
-			toast.error("Failed to create emergency request");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to create emergency request");
 		} finally {
 			setSubmitting(false);
 		}
@@ -122,7 +122,7 @@ export function EmergencyRequestClient({
 									setResult(null);
 									setBloodGroup("");
 									setUnitsNeeded(1);
-									setUrgencyLevel("standard");
+									setInternalReference("");
 								}}
 								variant="outline"
 							>
@@ -147,7 +147,8 @@ export function EmergencyRequestClient({
 								Request Details
 							</CardTitle>
 							<CardDescription>
-								Specify the blood type and quantity needed
+								All requests are urgent — compatible donors near the hospital
+								are notified immediately.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-6">
@@ -156,14 +157,14 @@ export function EmergencyRequestClient({
 									Blood Group Needed
 								</label>
 								<div className="grid grid-cols-4 gap-2">
-									{BLOOD_GROUPS.map((bg) => {
-										const selected = bloodGroup === bg.value;
+									{BLOOD_GROUPS.map((value) => {
+										const selected = bloodGroup === value;
 										return (
 											<button
-												key={bg.value}
+												key={value}
 												type="button"
 												onClick={() =>
-													setBloodGroup(bg.value)
+													setBloodGroup(value)
 												}
 												className={cn(
 													"flex flex-col items-center gap-1.5 rounded-xl border p-3 transition",
@@ -173,7 +174,7 @@ export function EmergencyRequestClient({
 												)}
 											>
 												<BloodTypeBadge
-													bloodGroup={bg.value}
+													bloodGroup={value}
 													size="sm"
 													variant={
 														selected
@@ -241,81 +242,41 @@ export function EmergencyRequestClient({
 							</div>
 
 							<div>
-								<label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-									Urgency Level
+								<label
+									htmlFor="internal-reference"
+									className="mb-1.5 block text-xs font-medium text-muted-foreground"
+								>
+									Internal reference (optional, hospital-only)
 								</label>
-								<div className="grid grid-cols-2 gap-3">
-									<button
-										type="button"
-										onClick={() =>
-											setUrgencyLevel("standard")
-										}
-										className={cn(
-											"rounded-xl border p-4 text-left transition",
-											urgencyLevel === "standard"
-												? "border-status-low/40 bg-status-low-bg shadow-sm"
-												: "border-border bg-card hover:border-status-low/30 hover:bg-status-low-bg/40",
-										)}
-									>
-										<span className="text-sm font-semibold text-foreground">
-											Standard
-										</span>
-										<p className="text-xs text-muted-foreground mt-0.5">
-											Schedule within 24 hours
-										</p>
-									</button>
-									<button
-										type="button"
-										onClick={() =>
-											setUrgencyLevel("critical")
-										}
-										className={cn(
-											"rounded-xl border p-4 text-left transition",
-											urgencyLevel === "critical"
-												? "border-brand/40 bg-brand-light shadow-sm"
-												: "border-border bg-card hover:border-brand/30 hover:bg-brand-light/40",
-										)}
-									>
-										<span className="flex items-center gap-1.5 text-sm font-semibold text-brand">
-											<AlertTriangle className="h-4 w-4" />
-											Critical
-										</span>
-										<p className="text-xs text-muted-foreground mt-0.5">
-											Immediate response needed
-										</p>
-									</button>
-								</div>
+								<Input
+									id="internal-reference"
+									value={internalReference}
+									onChange={(e) => setInternalReference(e.target.value)}
+									placeholder="e.g. Ward B bed 12"
+									maxLength={120}
+									className="rounded-xl"
+								/>
+								<p className="mt-1.5 text-[11px] text-muted-foreground">
+									Never shown to donors. Patient identity is never
+									collected.
+								</p>
 							</div>
 
-							<div>
-								<div className="flex justify-between items-center text-xs text-muted-foreground mb-1.5">
-									<span>Search Radius</span>
-									<span className="font-semibold text-foreground">
-										{searchRadius} km
-									</span>
-								</div>
-								<input
-									type="range"
-									min={5}
-									max={50}
-									step={5}
-									value={searchRadius}
-									onChange={(e) =>
-										setSearchRadius(Number(e.target.value))
-									}
-									className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-brand"
-								/>
-								<div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-									<span>5 km</span>
-									<span>50 km</span>
-								</div>
+							<div className="flex items-start gap-2 rounded-xl border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+								<AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+								<p>
+									Donors within {MATCH_START_RADIUS_KM} km are notified
+									at once{bloodGroup ? ` for ${formatBloodGroup(bloodGroup)}` : ""}.
+									The search widens automatically if more units are still
+									needed.
+								</p>
 							</div>
 						</CardContent>
 					</Card>
 
 					<Button
 						type="submit"
-						disabled={submitting}
+						disabled={submitting || !callerUserId}
 						className="w-full py-6 text-base rounded-2xl"
 					>
 						{submitting ? (

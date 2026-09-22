@@ -1,5 +1,14 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 12 (create request + match) implemented:
+> `lib/config.ts` tunables; `servers/matching.ts` eligibility SQL;
+> `servers/requests.ts` (create/match/nearby/inbox/summary); hospital forms
+> rewritten (no urgency tiers/radius slider, internal reference); new donor
+> inbox + nearby screens (old-model clients deleted); `formatBloodGroup`
+> fixed for `A_POS` keys; `tests/helpers.ts` ordered cleanup;
+> `tests/blood-requests.test.ts` (7 passing, 13-donor pool).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 11 (donor screening) implemented: new
 > `src/servers/screening.ts` (rate-limited code lookup, pass/fail recording,
 > recent list), `setScreeningPartner()` + admin `PartnerToggle`,

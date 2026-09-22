@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
-import { useDonorAlerts } from "@/hooks/use-emergency-requests";
+import { useRequestsNearby } from "@/hooks/use-donor-requests";
 import { useDonorDashboard } from "@/hooks/use-donor-dashboard";
 import { getEligibility, ELIGIBILITY_MONTHS } from "@/lib/eligibility";
 import { BloodDropIcon } from "@/components/brand/blood-drop-icon";
@@ -26,8 +26,6 @@ import { EligibilityCard, type EligibilityView } from "./eligibility-card";
 import { HOME_URL, NAV_ITEMS, type Role } from "./nav-config";
 import { SidebarUserMenu, type SidebarUser } from "./sidebar-user-menu";
 
-const ACTIVE_ALERT_STATUSES = new Set<string>(["alerted", "accepted", "en_route"]);
-
 // Muted by default; the active item becomes a light pill with a red outline and red accents.
 const NAV_BUTTON_CLASS = [
     "h-10 gap-3 rounded-xl border border-transparent px-3 text-sm font-semibold",
@@ -38,10 +36,10 @@ const NAV_BUTTON_CLASS = [
     "data-[active=true]:shadow-sm data-[active=true]:hover:bg-white data-[active=true]:hover:text-neutral-900",
 ].join(" ");
 
-/** Live count of alerts a donor still needs to act on. Always 0 for hospitals. */
+/** Live count of nearby requests a donor still needs to act on. Always 0 for hospitals. */
 function useActiveAlertCount(role: Role, userId?: string) {
-    const { data } = useDonorAlerts(role === "donor" ? userId : undefined);
-    return (data?.alerts ?? []).filter((alert) => (ACTIVE_ALERT_STATUSES as readonly string[]).includes(alert.status)).length;
+    const { data } = useRequestsNearby(role === "donor" ? userId : undefined);
+    return data?.total ?? 0;
 }
 
 type DonorEligibilityUser = {

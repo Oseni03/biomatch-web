@@ -4,7 +4,6 @@ import type {
 	DonationRecord,
 	DonorAlertWithRequest,
 } from "@/lib/donor-types";
-import { requireApprovedHospital } from "@/servers/organization";
 
 export interface PendingAlertItem {
 	id: string;
@@ -99,17 +98,6 @@ export interface ExpandRadiusResult {
 
 export async function markAlertOpened(_alertId: string): Promise<void> {
 	return;
-}
-
-export async function createEmergencyRequest(_data: {
-	organizationId: string;
-	bloodGroup: string;
-	unitsNeeded: number;
-	urgencyLevel: "standard" | "critical";
-	searchRadius?: number;
-}): Promise<{ matchedDonorCount: number }> {
-	await requireApprovedHospital(_data.organizationId);
-	throw new Error("Emergency requests arrive in slice 12");
 }
 
 export async function getAlertsForDonor(

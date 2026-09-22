@@ -15,6 +15,7 @@ import {
 	suspendHospital,
 } from "@/servers/admin";
 import { requireApprovedHospital } from "@/servers/organization";
+import { deleteOrganizationCompletely, deleteUsersCompletely } from "./helpers";
 
 const stamp = Date.now();
 const ownerEmail = `hospital-owner-09-${stamp}@example.com`;
@@ -198,17 +199,7 @@ describe("Issue 09 admin hospital approval", () => {
 	});
 
 	after(async () => {
-		if (organizationId) {
-			await prisma.organization.delete({ where: { id: organizationId } }).catch(() => {});
-		}
-		if (ownerId) {
-			await prisma.user.delete({ where: { id: ownerId } }).catch(() => {});
-		}
-		if (secondOwnerId) {
-			await prisma.user.delete({ where: { id: secondOwnerId } }).catch(() => {});
-		}
-		if (adminId) {
-			await prisma.user.delete({ where: { id: adminId } }).catch(() => {});
-		}
+		await deleteOrganizationCompletely(organizationId);
+		await deleteUsersCompletely([ownerId, secondOwnerId, adminId]);
 	});
 });
