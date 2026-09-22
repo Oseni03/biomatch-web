@@ -95,6 +95,7 @@ describe("Issue 19 rewards wallet screen", () => {
 				description: "First reward",
 			},
 		});
+		await prisma.walletTransaction.create({
 			data: {
 				donorId,
 				entryType: "donation_reward",

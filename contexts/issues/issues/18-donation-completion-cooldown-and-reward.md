@@ -23,6 +23,15 @@ After the donation happens, the donor and the hospital each confirm completion i
 - [ ] Donation History screen for donors lists all donations (kept indefinitely); hospital History reflects the outcome
 - [ ] Empty states for every new screen are designed and implemented (required by the PRD) (no donations yet)
 
+## Follow-up fix (2026-09-22)
+
+Live-DB test run proved a double-credit: `tryCompleteDonation` upserted
+`donorWallet` directly AND the `trg_wallet_apply` trigger incremented the balance
+on ledger insert (balance 200000 vs expected 100000). Removed the direct upsert —
+the trigger is now the single balance writer. `tests/helpers.ts` gained
+`deleteLedgerForDonor` (disables the append-only trigger around test cleanup).
+Re-verification of the full slice-18 suite is pending DB availability.
+
 ## Blocked by
 
 - [13 Donor accepts with acceptances capped at units needed, plus hospital Donor View](13-donor-accept-with-unit-cap-and-donor-view.md)

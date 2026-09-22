@@ -19,8 +19,22 @@ export async function deleteOrganizationCompletely(
 		.catch(() => {});
 }
 
+export async function deleteLedgerForDonor(userId: string): Promise<void> {
+	await prisma.$executeRawUnsafe(
+		'ALTER TABLE "wallet_transactions" DISABLE TRIGGER trg_wallet_immutable',
+	);
+	try {
+		await prisma.walletTransaction.deleteMany({ where: { donorId: userId } });
+		await prisma.donorWallet.deleteMany({ where: { donorId: userId } });
+	} finally {
+		await prisma.$executeRawUnsafe(
+			'ALTER TABLE "wallet_transactions" ENABLE TRIGGER trg_wallet_immutable',
+		);
+	}
+}
+
 export async function deleteUserCompletely(userId: string): Promise<void> {
-	await prisma.walletTransaction.deleteMany({ where: { donorId: userId } });
+	await deleteLedgerForDonor(userId);
 	await prisma.voucherRedemption.deleteMany({ where: { donorId: userId } });
 	await prisma.donation.deleteMany({ where: { donorId: userId } });
 	await prisma.requestMatch.deleteMany({ where: { donorId: userId } });

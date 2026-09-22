@@ -67,11 +67,8 @@ async function tryCompleteDonation(donationId: string): Promise<{ completed: boo
 			where: { userId: donation.donorId },
 			data: { lastDonatedAt: now, cooldownUntil },
 		});
-		await tx.donorWallet.upsert({
-			where: { donorId: donation.donorId },
-			update: { balanceKobo: { increment: REWARD_CREDIT_KOBO } },
-			create: { donorId: donation.donorId, balanceKobo: REWARD_CREDIT_KOBO },
-		});
+		// Balance is maintained by the trg_wallet_apply trigger on insert.
+		// Never touch donorWallet here or the reward credits twice.
 		try {
 			await tx.walletTransaction.create({
 				data: {
