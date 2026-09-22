@@ -1,5 +1,11 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 14 (decline chains next-closest) implemented:
+> `declineMatch()` in `servers/responses.ts` (respondedAt + single chained
+> match/notification up to max radius, unique-constraint dedup safety);
+> Decline button on nearby cards; `tests/decline-chain.test.ts` (5 passing).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 13 (accept cap + donor view) implemented:
 > `servers/responses.ts` (atomic accept, withdraw-reopen, donor view);
 > donor Accept/Withdraw UI + accepted section; `/hospital/requests/[id]`

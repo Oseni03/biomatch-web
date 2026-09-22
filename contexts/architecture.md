@@ -176,8 +176,13 @@
   active and flips filled matches back to notified without re-notifying.
 - Hospital Donor View (`/hospital/requests/[id]`, `getRequestDonorView`):
   response statuses for all matches, contact (name, code, phone) only after
-  acceptance. Donors accept/withdraw from Requests Nearby (`useAcceptMatch`,
-  `useWithdrawMatch`, `getMyResponses`).
+  acceptance. Donors accept/withdraw/decline from Requests Nearby
+  (`useAcceptMatch`, `useWithdrawMatch`, `useDeclineMatch`,
+  `getMyResponses`).
+- `declineMatch()` chains exactly one replacement — the closest eligible
+  unnotified donor up to the max radius — in the same transaction;
+  already-matched exclusion plus the unique constraint guarantee
+  never-notify-twice, and an empty pool resolves cleanly.
 
 ## Core Loop (Prototype Spec)
 

@@ -4,7 +4,7 @@ import {
 	getRequestsNearby,
 	markNotificationRead,
 } from "@/servers/requests";
-import { acceptMatch, getMyResponses, withdrawMatch } from "@/servers/responses";
+import { acceptMatch, declineMatch, getMyResponses, withdrawMatch } from "@/servers/responses";
 
 export function useRequestsNearby(
 	donorId?: string,
@@ -71,6 +71,15 @@ export function useWithdrawMatch() {
 	return useMutation({
 		mutationFn: ({ matchId, donorId }: { matchId: string; donorId: string }) =>
 			withdrawMatch(matchId, donorId),
+		onSuccess: () => invalidateDonorKeys(queryClient),
+	});
+}
+
+export function useDeclineMatch() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ matchId, donorId }: { matchId: string; donorId: string }) =>
+			declineMatch(matchId, donorId),
 		onSuccess: () => invalidateDonorKeys(queryClient),
 	});
 }

@@ -6,6 +6,7 @@ import { Building2, CheckCircle2, MapPin } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import {
 	useAcceptMatch,
+	useDeclineMatch,
 	useMyResponses,
 	useRequestsNearby,
 	useWithdrawMatch,
@@ -34,11 +35,12 @@ export function DonorNearbyClient() {
 	const { data: responses } = useMyResponses(donorId);
 	const accept = useAcceptMatch();
 	const withdraw = useWithdrawMatch();
+	const decline = useDeclineMatch();
 	const [error, setError] = useState<string | null>(null);
 
 	const requests = data?.requests ?? [];
 	const accepted = responses?.responses ?? [];
-	const acting = accept.isPending || withdraw.isPending;
+	const acting = accept.isPending || withdraw.isPending || decline.isPending;
 
 	async function handleAccept(matchId: string) {
 		if (!donorId) return;
@@ -57,6 +59,16 @@ export function DonorNearbyClient() {
 			await withdraw.mutateAsync({ matchId, donorId });
 		} catch (caught) {
 			setError(caught instanceof Error ? caught.message : "Could not withdraw");
+		}
+	}
+
+	async function handleDecline(matchId: string) {
+		if (!donorId) return;
+		setError(null);
+		try {
+			await decline.mutateAsync({ matchId, donorId });
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "Could not decline this request");
 		}
 	}
 
@@ -154,14 +166,25 @@ export function DonorNearbyClient() {
 										needed · alerted {formatRelative(request.notifiedAt)}
 									</p>
 								</div>
-								<Button
-									size="sm"
-									className="shrink-0 rounded-xl"
-									disabled={acting}
-									onClick={() => handleAccept(request.matchId)}
-								>
-									{accept.isPending ? "Accepting…" : "Accept"}
-								</Button>
+								<div className="flex shrink-0 gap-2">
+									<Button
+										size="sm"
+										variant="outline"
+										className="rounded-xl"
+										disabled={acting}
+										onClick={() => handleDecline(request.matchId)}
+									>
+										{decline.isPending ? "Declining…" : "Decline"}
+									</Button>
+									<Button
+										size="sm"
+										className="rounded-xl"
+										disabled={acting}
+										onClick={() => handleAccept(request.matchId)}
+									>
+										{accept.isPending ? "Accepting…" : "Accept"}
+									</Button>
+								</div>
 							</div>
 						</li>
 					))}

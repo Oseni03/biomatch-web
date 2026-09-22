@@ -2,10 +2,12 @@
 
 import { Prisma } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { MATCH_MAX_RADIUS_KM } from "@/lib/config";
 import { formatBloodGroup } from "@/lib/blood-compatibility";
 import { requireConsentsForUser } from "@/servers/consent";
 import { requireOrgPermission } from "@/servers/organization";
 import { writeAuditLog } from "@/servers/audit";
+import { findEligibleDonors } from "@/servers/matching";
 
 export interface AcceptResult {
 	matchId: string;
@@ -24,6 +26,115 @@ export interface DonorResponse {
 	distanceKm: number;
 	unitsRequired: number;
 	respondedAt: Date | null;
+}
+
+export interface DeclineResult {
+	matchId: string;
+	status: "declined";
+	respondedAt: Date;
+	notifiedDonor: boolean;
+}
+
+// Decline chains exactly one replacement: the closest eligible donor not yet
+// matched to this request, searched up to the configured maximum radius. The
+// @@unique([requestId, donorId]) constraint backs the never-notify-twice
+// guarantee — a lost race surfaces as P2002 and resolves to notifiedDonor
+// false instead of a duplicate row. Re-declining returns the stored outcome
+// without chaining again.
+export async function declineMatch(
+	matchId: string,
+	donorUserId: string,
+): Promise<DeclineResult> {
+	await requireConsentsForUser(donorUserId);
+	const match = await prisma.requestMatch.findUnique({
+		where: { id: matchId },
+		include: {
+			request: {
+				select: {
+					id: true,
+					status: true,
+					organizationId: true,
+					escalationLevel: true,
+					bloodGroup: true,
+					locationName: true,
+				},
+			},
+		},
+	});
+	if (!match || match.donorId !== donorUserId) {
+		throw new Error("Match not found");
+	}
+	if (String(match.status) === "declined") {
+		return {
+			matchId: match.id,
+			status: "declined",
+			respondedAt: match.respondedAt ?? match.notifiedAt,
+			notifiedDonor: false,
+		};
+	}
+	if (String(match.status) !== "notified") {
+		throw new Error("This match can no longer be declined");
+	}
+	if (String(match.request.status) !== "active") {
+		throw new Error("This request is no longer open");
+	}
+
+	const outcome = await prisma.$transaction(async (tx) => {
+		const declined = await tx.requestMatch.update({
+			where: { id: matchId },
+			data: { status: "declined", respondedAt: new Date() },
+		});
+		const candidates = await findEligibleDonors(match.requestId, MATCH_MAX_RADIUS_KM);
+		const next = candidates[0];
+		if (!next) {
+			return { declined, notifiedDonor: false };
+		}
+		try {
+			const chained = await tx.requestMatch.create({
+				data: {
+					requestId: match.requestId,
+					donorId: next.donorId,
+					status: "notified",
+					distanceKm: next.distanceKm,
+					escalationLevel: match.request.escalationLevel,
+				},
+			});
+			await tx.notification.create({
+				data: {
+					userId: next.donorId,
+					type: "request.matched",
+					title: `Urgent: ${formatBloodGroup(match.request.bloodGroup)} needed nearby`,
+					body: `${match.request.locationName} needs blood. A nearby donor declined, you are the next-closest match.`,
+					data: { requestId: match.requestId, matchId: chained.id },
+				},
+			});
+		} catch (caught) {
+			if (
+				caught instanceof Prisma.PrismaClientKnownRequestError &&
+				caught.code === "P2002"
+			) {
+				return { declined, notifiedDonor: false };
+			}
+			throw caught;
+		}
+		return { declined, notifiedDonor: true };
+	});
+
+	await writeAuditLog({
+		actorId: donorUserId,
+		organizationId: match.request.organizationId,
+		action: "request_match.declined",
+		entityType: "request_match",
+		entityId: match.id,
+		metadata: { requestId: match.requestId, notifiedDonor: outcome.notifiedDonor },
+	});
+
+	return {
+		matchId: match.id,
+		status: "declined",
+		respondedAt: outcome.declined.respondedAt ?? new Date(),
+		notifiedDonor: outcome.notifiedDonor,
+	};
 }
 
 export interface DonorViewMatch {
@@ -335,9 +446,9 @@ export async function getMyResponses(
 	await requireConsentsForUser(donorUserId);
 	const page = Math.max(1, filters?.page ?? 1);
 	const pageSize = Math.min(50, Math.max(1, filters?.pageSize ?? 10));
-	const where = {
+	const where: Prisma.RequestMatchWhereInput = {
 		donorId: donorUserId,
-		status: { in: ["accepted", "completed"] as const },
+		status: { in: ["accepted", "completed"] },
 	};
 	const [total, rows] = await Promise.all([
 		prisma.requestMatch.count({ where }),
@@ -431,10 +542,10 @@ export async function getRequestDonorView(
 			donor:
 				String(match.status) === "accepted" || String(match.status) === "completed"
 					? {
-							name: match.donor.user.name,
-							donorCode: match.donor.donorCode,
-							phoneNumber: match.donor.user.phoneNumber,
-						}
+						name: match.donor.user.name,
+						donorCode: match.donor.donorCode,
+						phoneNumber: match.donor.user.phoneNumber,
+					}
 					: null,
 		})),
 	};
