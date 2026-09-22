@@ -137,6 +137,17 @@
   multi-hospital users switch via the sidebar `OrganizationSwitcher`
   (session `activeOrganizationId`, honoured by `getActiveOrganizationId`).
 
+### Donor screening (issue 11)
+
+- Admin toggles `isScreeningPartner` on approved hospitals only
+  (`setScreeningPartner`, audit logged; `PartnerToggle` on the hospital detail).
+- Partner staff with `donor:recordScreening` look donors up by code
+  (rate-limited, generic not-found) and record passed/failed + notes
+  (`servers/screening.ts`); the `sync_donor_verification` trigger syncs
+  latest-wins status and rejects non-partner writes at the database level.
+- `/hospital/screening` is the staff screening screen; the donor profile shows
+  the live verification status.
+
 ## Core Loop (Prototype Spec)
 
 1. **Hospital creates emergency request** → `createEmergencyRequest()` in `servers/emergency.ts`

@@ -7,6 +7,7 @@ import { StatusTag } from "@/components/brand/status-tag";
 import { Button } from "@/components/ui/button";
 import { getHospitalDetail } from "@/servers/admin";
 import { HospitalReviewActions } from "./review-actions";
+import { PartnerToggle } from "./partner-toggle";
 
 function statusTone(status: string): "info" | "ok" | "low" | "critical" {
 	switch (status) {
@@ -88,6 +89,12 @@ export default async function AdminHospitalDetailPage({
 					verificationStatus={detail.verificationStatus}
 				/>
 			</div>
+
+			<PartnerToggle
+				organizationId={detail.id}
+				initialIsPartner={detail.isScreeningPartner}
+				canToggle={detail.verificationStatus === "approved"}
+			/>
 
 			<div className="rounded-2xl border border-border bg-card p-6">
 				<h2 className="flex items-center gap-2 text-base font-bold text-foreground">

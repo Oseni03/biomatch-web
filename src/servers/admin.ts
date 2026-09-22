@@ -463,8 +463,46 @@ export async function reinstateHospital(
 	return { organizationId: updated.id, verificationStatus: updated.verificationStatus };
 }
 
-export async function reapplyForVerification(
-	organizationId: string,
+const partnerSchema = z.object({
+	organizationId: z.string().uuid(),
+	isScreeningPartner: z.boolean(),
+});
+
+export async function setScreeningPartner(
+	callerUserId: string,
+	rawInput: unknown,
+): Promise<{ organizationId: string; isScreeningPartner: boolean }> {
+	await requireAdmin(callerUserId);
+	const input = partnerSchema.parse(rawInput);
+	const organization = await prisma.organization.findUnique({
+		where: { id: input.organizationId },
+		select: { verificationStatus: true },
+	});
+	if (!organization) {
+		throw new Error("Hospital not found");
+	}
+	if (input.isScreeningPartner && organization.verificationStatus !== "approved") {
+		throw new Error("Only an approved hospital can become a screening partner");
+	}
+	const updated = await prisma.organization.update({
+		where: { id: input.organizationId },
+		data: { isScreeningPartner: input.isScreeningPartner },
+	});
+	await writeAuditLog({
+		actorId: callerUserId,
+		organizationId: input.organizationId,
+		action: "hospital.screening_partner",
+		entityType: "organization",
+		entityId: input.organizationId,
+		metadata: { isScreeningPartner: input.isScreeningPartner },
+	});
+	return {
+		organizationId: updated.id,
+		isScreeningPartner: updated.isScreeningPartner,
+	};
+}
+
+export async function reapplyForVerification(	organizationId: string,
 	callerUserId: string,
 ): Promise<{ applicationId: string }> {
 	await requireConsentsForUser(callerUserId);

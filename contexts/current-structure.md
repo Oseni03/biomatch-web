@@ -1,5 +1,12 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 11 (donor screening) implemented: new
+> `src/servers/screening.ts` (rate-limited code lookup, pass/fail recording,
+> recent list), `setScreeningPartner()` + admin `PartnerToggle`,
+> `/hospital/screening` page + sidebar nav, `tests/donor-screening.test.ts`
+> (7 passing, incl. trigger-level partner enforcement and latest-wins).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 10 (hospital team + RBAC) implemented:
 > `requireOrgPermission()` union check over built-in + custom roles
 > (`authorizeOrgAction` delegates; `getActiveOrganizationId` honours the
