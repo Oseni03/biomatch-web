@@ -28,6 +28,7 @@ export default async function EmergencyRequestPage() {
 						| undefined) ?? "none"
 				}
 				hospitalName={verification?.hospitalName ?? ""}
+				organizationId={verification?.organizationId}
 			/>
 		);
 	}

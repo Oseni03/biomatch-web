@@ -110,6 +110,18 @@
 |---|---|---|
 | `/api/auth/[...all]` | `app/api/auth/[...all]/route.ts` | BetterAuth catch-all |
 
+### Protected — Admin (`role=admin`)
+- `/admin` — Platform overview (counts + review-queue state; full metrics arrive in issue 25)
+- `/admin/hospitals` — Hospital list (status/search/pagination) + pending review queue
+- `/admin/hospitals/[id]` — Hospital detail (registration, team, application history) + approve/reject/suspend/reinstate (issue 09)
+
+### Admin & audit (issue 09)
+
+- Founder admin is created by `prisma/seed.ts` (`FOUNDER_ADMIN_EMAIL`/`FOUNDER_ADMIN_PASSWORD`); every admin server action starts with `requireAdmin()`, and `/admin` routes are gated by the proxy plus the admin layout.
+- Approval/rejection is one Prisma transaction (application row + `organization.verificationStatus` + `audit_logs` row) followed by an approval/rejection email; rejection requires a reason. Suspend/reinstate are approved-only/suspended-only transitions, audit logged.
+- Rejected hospitals reapply from the portal (`reapplyForVerification`, owner/admin only); the `hv_one_pending_key` partial unique index guarantees a single open application.
+- `servers/audit.ts` exposes `writeAuditLog()` reused by all later slices.
+
 ## Core Loop (Prototype Spec)
 
 1. **Hospital creates emergency request** → `createEmergencyRequest()` in `servers/emergency.ts`

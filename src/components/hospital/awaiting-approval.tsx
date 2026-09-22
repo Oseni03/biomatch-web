@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatusTag } from "@/components/brand/status-tag";
 import { cn } from "@/lib/utils";
+import { ReapplyButton } from "./reapply-button";
 
 const COPY: Record<string, { title: string; body: string; next: string[] }> = {
 	pending: {
@@ -17,10 +18,10 @@ const COPY: Record<string, { title: string; body: string; next: string[] }> = {
 	},
 	rejected: {
 		title: "Application not approved",
-		body: "This hospital application was not approved, so emergency dispatch is disabled on this workspace. Your details were kept for the reapply review.",
+		body: "This hospital application was not approved, so emergency dispatch is disabled on this workspace. Correct the details below and reapply — a fresh application goes back to the review queue.",
 		next: [
 			"Check that your registration number and official email are correct",
-			"A reapply flow will be available here soon",
+			"Reapply from this screen; only one pending application is kept",
 			"Contact support if you believe this is a mistake",
 		],
 	},
@@ -37,9 +38,11 @@ const COPY: Record<string, { title: string; body: string; next: string[] }> = {
 export function AwaitingApproval({
 	status,
 	hospitalName,
+	organizationId,
 }: {
 	status: "pending" | "rejected" | "suspended" | "none";
 	hospitalName: string;
+	organizationId?: string;
 }) {
 	if (status === "none") {
 		return (
@@ -117,6 +120,10 @@ export function AwaitingApproval({
 						))}
 					</ul>
 				</div>
+
+				{status === "rejected" && organizationId && (
+					<ReapplyButton organizationId={organizationId} />
+				)}
 			</div>
 		</div>
 	);

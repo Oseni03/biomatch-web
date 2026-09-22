@@ -1,13 +1,14 @@
 import {
     AlertTriangle,
     Bell,
+    Building2,
     HeartHandshake,
     History,
     LayoutDashboard,
     type LucideIcon,
 } from "lucide-react";
 
-export type Role = "donor" | "hospital";
+export type Role = "donor" | "hospital" | "admin";
 
 export interface NavItem {
     title: string;
@@ -45,26 +46,34 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
         { title: "Emergency Request", url: "/hospital/emergency", icon: AlertTriangle },
         { title: "Request History", url: "/hospital/history", icon: History },
     ],
+    admin: [
+        { title: "Overview", url: "/admin", icon: LayoutDashboard, exact: true },
+        { title: "Hospitals", url: "/admin/hospitals", icon: Building2 },
+    ],
 };
 
 export const SECTION_LABELS: Record<Role, string> = {
     donor: "Donor",
     hospital: "Hospital",
+    admin: "Admin",
 };
 
 export const HOME_URL: Record<Role, string> = {
     donor: "/donor",
     hospital: "/hospital",
+    admin: "/admin",
 };
 
 export const PROFILE_URL: Record<Role, string> = {
     donor: "/donor/profile",
     hospital: "/hospital/profile",
+    admin: "/admin/account",
 };
 
 export const FALLBACK_NAME: Record<Role, string> = {
     donor: "BioMATCH User",
     hospital: "Hospital Account",
+    admin: "Platform Admin",
 };
 
 function isWithin(pathname: string, url: string) {

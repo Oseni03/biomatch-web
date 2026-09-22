@@ -28,6 +28,7 @@ export default async function HospitalBroadcastsPage() {
 						| undefined) ?? "none"
 				}
 				hospitalName={verification?.hospitalName ?? ""}
+				organizationId={verification?.organizationId}
 			/>
 		);
 	}

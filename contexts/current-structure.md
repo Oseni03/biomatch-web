@@ -1,5 +1,16 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 09 (admin hospital approval) implemented:
+> `prisma/seed.ts` creates the founder admin from env (idempotent, consents
+> recorded); new `src/servers/admin.ts` (`requireAdmin`, hospital list/queue/
+> detail, transactional approve/reject + emails, suspend/reinstate, portal
+> reapply) and `src/servers/audit.ts` (`writeAuditLog`); new `/admin` routes
+> (overview, hospitals list + queue, `[id]` detail + review actions) with
+> loading/error boundaries and empty states; sidebar `Role` gains `admin`;
+> rejected hospitals get a portal `ReapplyButton`; new approval/rejection
+> email templates; `tests/admin-approval.test.ts` (7 passing).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 08 (hospital registration + pending state) implemented:
 > `src/servers/organization.ts` gained `getOrganizationVerificationStatus` /
 > `requireApprovedHospital` (server-side "awaiting approval" gate);
