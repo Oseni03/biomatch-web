@@ -69,3 +69,27 @@ export async function authorizeOrgAction(
 		throw new Error(result.error ?? "Not authorized");
 	}
 }
+
+export async function getOrganizationVerificationStatus(
+	organizationId: string,
+): Promise<string> {
+	const organization = await prisma.organization.findUnique({
+		where: { id: organizationId },
+		select: { verificationStatus: true },
+	});
+	if (!organization) {
+		throw new Error("Hospital not found");
+	}
+	return organization.verificationStatus;
+}
+
+export async function requireApprovedHospital(
+	organizationId: string,
+): Promise<void> {
+	const status = await getOrganizationVerificationStatus(organizationId);
+	if (status !== "approved") {
+		throw new Error(
+			"This hospital is awaiting approval and cannot create emergency requests yet",
+		);
+	}
+}

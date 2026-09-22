@@ -23,6 +23,7 @@ interface AuthInputProps {
 	leftIcon?: ReactNode;
 	disabled?: boolean;
 	autoComplete?: InputHTMLAttributes<HTMLInputElement>["autoComplete"];
+	inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
 	className?: string;
 }
 
@@ -40,6 +41,7 @@ export function AuthInput({
 	leftIcon,
 	disabled,
 	autoComplete,
+	inputMode,
 	className,
 }: AuthInputProps) {
 	const inputId =
@@ -81,6 +83,7 @@ export function AuthInput({
 					placeholder={placeholder}
 					disabled={disabled}
 					autoComplete={autoComplete}
+					inputMode={inputMode}
 					aria-invalid={hasError}
 					aria-describedby={
 						hasError

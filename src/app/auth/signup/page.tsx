@@ -45,10 +45,13 @@ function SignupContent() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [hospitalName, setHospitalName] = useState("");
+	const [registrationNumber, setRegistrationNumber] = useState("");
 	const [phone, setPhone] = useState("");
 	const [address, setAddress] = useState("");
 	const [state, setStateValue] = useState("");
 	const [lga, setLga] = useState("");
+	const [latitude, setLatitude] = useState("");
+	const [longitude, setLongitude] = useState("");
 	const [consents, setConsents] = useState<ConsentChoices>(
 		EMPTY_CONSENT_CHOICES,
 	);
@@ -61,6 +64,8 @@ function SignupContent() {
 				routerPush={router.push}
 				hospitalName={hospitalName}
 				setHospitalName={setHospitalName}
+				registrationNumber={registrationNumber}
+				setRegistrationNumber={setRegistrationNumber}
 				name={name}
 				setName={setName}
 				email={email}
@@ -75,6 +80,10 @@ function SignupContent() {
 				setStateValue={setStateValue}
 				lga={lga}
 				setLga={setLga}
+				latitude={latitude}
+				setLatitude={setLatitude}
+				longitude={longitude}
+				setLongitude={setLongitude}
 				consents={consents}
 				setConsents={setConsents}
 				error={error}
@@ -227,6 +236,8 @@ type HospitalFormProps = {
 	routerPush: (href: string) => void;
 	hospitalName: string;
 	setHospitalName: (v: string) => void;
+	registrationNumber: string;
+	setRegistrationNumber: (v: string) => void;
 	name: string;
 	setName: (v: string) => void;
 	email: string;
@@ -241,6 +252,10 @@ type HospitalFormProps = {
 	setStateValue: (v: string) => void;
 	lga: string;
 	setLga: (v: string) => void;
+	latitude: string;
+	setLatitude: (v: string) => void;
+	longitude: string;
+	setLongitude: (v: string) => void;
 	consents: ConsentChoices;
 	setConsents: (v: ConsentChoices) => void;
 	error: string;
@@ -253,6 +268,8 @@ function HospitalSignupForm({
 	routerPush,
 	hospitalName,
 	setHospitalName,
+	registrationNumber,
+	setRegistrationNumber,
 	name,
 	setName,
 	email,
@@ -267,6 +284,10 @@ function HospitalSignupForm({
 	setStateValue,
 	lga,
 	setLga,
+	latitude,
+	setLatitude,
+	longitude,
+	setLongitude,
 	consents,
 	setConsents,
 	error,
@@ -274,12 +295,36 @@ function HospitalSignupForm({
 	isLoading,
 	setIsLoading,
 }: HospitalFormProps) {
+	const [isGeocoding, setIsGeocoding] = useState(false);
+	const pinSet = latitude.trim() !== "" && longitude.trim() !== "";
+
+	const handleFindPin = async () => {
+		setError("");
+		if (!address.trim() || !state.trim()) {
+			setError("Enter the hospital address and state first");
+			return;
+		}
+		setIsGeocoding(true);
+		const query = [address.trim(), lga.trim(), state.trim(), "Nigeria"]
+			.filter(Boolean)
+			.join(", ");
+		const geocoded = await geocodeAddressAction(query);
+		setIsGeocoding(false);
+		if (!geocoded.ok) {
+			setError(geocoded.error);
+			return;
+		}
+		setLatitude(String(geocoded.result.latitude));
+		setLongitude(String(geocoded.result.longitude));
+	};
+
 	const handleHospitalSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
 
 		if (
 			!hospitalName.trim() ||
+			!registrationNumber.trim() ||
 			!name.trim() ||
 			!email.trim() ||
 			!password ||
@@ -302,12 +347,23 @@ function HospitalSignupForm({
 
 		setIsLoading(true);
 
-		const query = [address.trim(), lga.trim(), state.trim(), "Nigeria"]
-			.filter(Boolean)
-			.join(", ");
-		const geocoded = await geocodeAddressAction(query);
-		if (!geocoded.ok) {
-			setError(geocoded.error);
+		let lat = Number(latitude);
+		let lng = Number(longitude);
+		if (!pinSet) {
+			const query = [address.trim(), lga.trim(), state.trim(), "Nigeria"]
+				.filter(Boolean)
+				.join(", ");
+			const geocoded = await geocodeAddressAction(query);
+			if (!geocoded.ok) {
+				setError(geocoded.error);
+				setIsLoading(false);
+				return;
+			}
+			lat = geocoded.result.latitude;
+			lng = geocoded.result.longitude;
+		}
+		if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+			setError("The location pin is invalid — find the pin from the address again");
 			setIsLoading(false);
 			return;
 		}
@@ -326,12 +382,13 @@ function HospitalSignupForm({
 		const organizationDetails = {
 			name: hospitalName.trim(),
 			officialEmail: email.trim(),
+			registrationNumber: registrationNumber.trim(),
 			phone: phone.trim() || undefined,
 			address: address.trim(),
 			state: state.trim(),
 			lga: lga.trim() || undefined,
-			latitude: geocoded.result.latitude,
-			longitude: geocoded.result.longitude,
+			latitude: lat,
+			longitude: lng,
 		};
 		let created = await authClient.organization.create({
 			...organizationDetails,
@@ -410,6 +467,15 @@ function HospitalSignupForm({
 					autoComplete="organization"
 				/>
 				<AuthInput
+					id="signup-hospital-reg-number"
+					label="Registration Number"
+					requiredIndicator
+					value={registrationNumber}
+					onChange={(e) => setRegistrationNumber(e.target.value)}
+					placeholder="e.g. CAC/RC-123456"
+					autoComplete="off"
+				/>
+				<AuthInput
 					id="signup-contact-name"
 					label="Contact Person"
 					requiredIndicator
@@ -477,6 +543,50 @@ function HospitalSignupForm({
 						autoComplete="address-level2"
 					/>
 				</div>
+				<div className="grid grid-cols-2 gap-4">
+					<AuthInput
+						id="signup-hospital-latitude"
+						label="Latitude"
+						value={latitude}
+						onChange={(e) => setLatitude(e.target.value)}
+						placeholder="e.g. 6.5244"
+						inputMode="decimal"
+					/>
+					<AuthInput
+						id="signup-hospital-longitude"
+						label="Longitude"
+						value={longitude}
+						onChange={(e) => setLongitude(e.target.value)}
+						placeholder="e.g. 3.3792"
+						inputMode="decimal"
+					/>
+				</div>
+				<Button
+					type="button"
+					variant="outline"
+					onClick={handleFindPin}
+					disabled={isGeocoding}
+					className="w-full rounded-2xl"
+				>
+					<MapPin className="h-4 w-4" />
+					{isGeocoding ? "Finding pin..." : "Find location pin from address"}
+				</Button>
+				{pinSet ? (
+					<p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+						<MapPin className="h-3.5 w-3.5" />
+						Location pin set at {latitude.trim()}, {longitude.trim()}
+					</p>
+				) : (
+					<div className="rounded-xl border border-dashed border-border bg-muted/50 px-4 py-4 text-center">
+						<p className="text-sm font-semibold text-foreground">
+							No location pin yet
+						</p>
+						<p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
+							Find the pin from your address above, or enter
+							coordinates manually. Dispatch matching needs a pin.
+						</p>
+					</div>
+				)}
 				<ConsentChoicesFields
 					value={consents}
 					onChange={setConsents}

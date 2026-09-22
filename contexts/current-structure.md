@@ -1,5 +1,24 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 08 (hospital registration + pending state) implemented:
+> `src/servers/organization.ts` gained `getOrganizationVerificationStatus` /
+> `requireApprovedHospital` (server-side "awaiting approval" gate);
+> `src/servers/emergency.ts` `createEmergencyRequest` calls the gate first
+> (request creation itself still arrives in slice 12);
+> `src/servers/hospital.ts` now reads the real organization row
+> (`getHospitalSidebarContext` status-mapped, new
+> `getHospitalVerificationState`) and the dead `createHospitalBank` stub was
+> removed; new `src/components/hospital/awaiting-approval.tsx`
+> (pending/rejected/suspended/no-org states with next-steps + empty states)
+> rendered by `/hospital` dashboard and `/hospital/emergency` for unapproved
+> workspaces; `/auth/signup?role=hospital` collects required registration
+> number plus an explicit location pin (editable lat/lng, find-from-address,
+> pin-set/no-pin states, range validation); new
+> `tests/hospital-verification.test.ts` (privileged-field stripping, one-pending
+> enforcement incl. DB unique rejection, pending blocked / approved allowed /
+> rejected blocked — 4 passing).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 07 (phone verification OTP) implemented:
 > new `src/lib/sms.ts` (Termii sender per ADR 009 + `fake` provider with
 > in-memory outbox; `SMS_PROVIDER`/`TERMII_*` env names decided here) and
@@ -206,6 +225,7 @@ src/
 │   │   ├── profile-incomplete-banner.tsx # Links to /donor/profile
 │   │   └── urgent-request-card.tsx      #   Dashboard hero: urgent match + CTA / confirmed-mission state
 │   ├── hospital/
+│   │   ├── awaiting-approval.tsx   # Issue 08: pending/rejected/suspended/no-org states
 │   │   ├── emergency-request-form.tsx  # Create-request dialog (blood grid, units, urgency, radius)
 │   │   ├── emergency-history.tsx
 │   │   ├── live-status-panel.tsx       # Active card (meta grid + responding donors + funnel)
@@ -289,11 +309,11 @@ src/
 ├── servers/                            # Server actions (all exports have callers)
 │   ├── auth.ts                         # signUpWithProfile, acceptInvitationSignUp
 │   ├── consent.ts                      # NDPR consent log + gate (issue 04)
-│   ├── emergency.ts                    # dispatch funnel + matching + confirmation + history
-│   ├── hospital.ts                     # createHospitalBank, getHospitalSidebarContext
+│   ├── emergency.ts                    # dispatch funnel + matching + confirmation + history (create gated by requireApprovedHospital, issue 08)
+│   ├── hospital.ts                     # real sidebar context + verification state from organization (issue 08)
 │   ├── location.ts                     # scoreDonorProximity
 │   ├── notification.ts                 # sendEmergencyAlertEmail
-│   ├── organization.ts                 # org membership + access control
+│   ├── organization.ts                 # org membership + access control + approval gate (issue 08)
 │   ├── staff.ts                        # getInvitationPreview (invite-accept flow only)
 │   └── user.ts                         # getUserById, updateUserProfile + issue 06 donor-profile + issue 07 phone actions
 
@@ -308,6 +328,7 @@ tests/
 ├── consent-gate.test.ts                # Issue 04 gate/idempotency/version-bump tests
 ├── donor-profile.test.ts               # Issue 06 donor code + profile validation/persistence tests
 ├── hospital-registration.test.ts       # Issue 05 hospital registration asserts
+├── hospital-verification.test.ts       # Issue 08 privileged fields + one-pending + approval gate (4 passing)
 └── phone-verification.test.ts          # Issue 07 normalization + OTP round-trip w/ fake SMS (11 passing)
 ```
 

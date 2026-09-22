@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/get-session";
 import { getActiveOrganizationId } from "@/servers/organization";
-import { getHospitalSidebarContext } from "@/servers/hospital";
+import { getHospitalSidebarContext, getHospitalVerificationState } from "@/servers/hospital";
+import { AwaitingApproval } from "@/components/hospital/awaiting-approval";
 import { HospitalBroadcastsClient } from "./hospital-broadcasts-client";
 
 export default async function HospitalBroadcastsPage() {
@@ -10,16 +11,36 @@ export default async function HospitalBroadcastsPage() {
 		redirect("/auth/login");
 	}
 
-	const organizationId = await getActiveOrganizationId(session.user.id);
-	const context = await getHospitalSidebarContext(organizationId).catch(
+	const organizationId = await getActiveOrganizationId(session.user.id).catch(
 		() => undefined,
 	);
+	const verification = organizationId
+		? await getHospitalVerificationState(organizationId).catch(() => undefined)
+		: undefined;
+	if (!verification || verification.verificationStatus !== "approved") {
+		return (
+			<AwaitingApproval
+				status={
+					(verification?.verificationStatus as
+						| "pending"
+						| "rejected"
+						| "suspended"
+						| undefined) ?? "none"
+				}
+				hospitalName={verification?.hospitalName ?? ""}
+			/>
+		);
+	}
+
+	const context = await getHospitalSidebarContext(
+		verification.organizationId,
+	).catch(() => undefined);
 	const hospitalName =
 		context?.hospitalName || session.user.name || "Hospital Account";
 
 	return (
 		<HospitalBroadcastsClient
-			organizationId={organizationId}
+			organizationId={verification.organizationId}
 			hospitalName={hospitalName}
 		/>
 	);

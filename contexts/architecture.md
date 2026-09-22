@@ -99,9 +99,9 @@
 ### Protected — Hospital
 | Path | Page | Description |
 |---|---|---|
-| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — time-aware greeting, summary strip, expandable active requests, recent-activity preview, create-request dialog |
+| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — time-aware greeting, summary strip, expandable active requests, recent-activity preview, create-request dialog; renders `AwaitingApproval` until the hospital is approved (issue 08) |
 | `/hospital/history` | `app/hospital/history/page.tsx` | Emergency request history |
-| `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Full-page emergency request form (blood group, units, urgency, radius) |
+| `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Full-page emergency request form (blood group, units, urgency, radius); renders `AwaitingApproval` until the hospital is approved (issue 08) |
 | `/hospital/notifications` | `app/hospital/notifications/page.tsx` | Dispatch notifications derived from live pending requests + alert transitions |
 | `/hospital/profile` | `app/hospital/profile/page.tsx` | Workspace profile from bank context (name, location, blood-bank status, role) + phone/OTP verification (issue 07) |
 
@@ -123,7 +123,7 @@
 ## Auth Flow
 
 1. **Signup** → `signUpWithProfile()` creates user via BetterAuth, creates Wallet for donors, creates Organization for hospitals
-2. **Hospital registration (thin, issue 05)** → `/auth/signup?role=hospital` renders the hospital mode: contact + hospital + address/state/LGA fields, server-side geocode, then `organization.create` through the Better Auth organization plugin. The creator becomes `owner`, `verificationStatus` stays `pending` (client input blocked by `input: false`), and the plugin hook opens exactly one pending `HospitalVerification`. Full verification form, pending-approval screen and request-creation enforcement arrive in issue 08.
+2. **Hospital registration + verification (issues 05/08)** → `/auth/signup?role=hospital` collects hospital name, registration number, official email, contact, phone, address/state/LGA and an explicit location pin (lat/lng with find-from-address + empty state), then `organization.create` through the Better Auth organization plugin. The creator becomes `owner`; `verificationStatus`/`isScreeningPartner`/`approvedAt` stay server-controlled (`input: false`, tested) and the plugin hook opens exactly one pending `HospitalVerification` (second pending blocked by `hv_one_pending_key`). Until approved, dashboard + emergency pages render `AwaitingApproval` (pending/rejected/suspended/no-org states) and `requireApprovedHospital()` rejects request creation on the server. Approval itself arrives in issue 09.
 2. **Consents** → signup and invitation-signup forms require terms + privacy + data-processing acceptance (marketing optional); `acceptConsents()` records rows at the server policy version with the request IP. Acceptance is idempotent — re-submitting creates no duplicates.
 3. **Gate** → `proxy.ts` redirects authenticated users missing required consents away from `/donor`, `/hospital`, `/admin`, `/auth/onboarding` to `/auth/consent?next=…`; `requireConsentsForUser()` enforces the same gate inside `servers/user.ts` and `servers/organization.ts` (new authed endpoints must call it). Bumping `CONSENT_POLICY_VERSION` forces re-consent. Required consents can't be withdrawn (points to account deletion); marketing toggles in profile settings keep revoked rows.
 4. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name

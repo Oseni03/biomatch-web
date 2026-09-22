@@ -15,13 +15,37 @@ A hospital registers with organisation details and its official (hospitality) em
 
 ## Acceptance criteria
 
-- [ ] Registration form collects name, registration number, official email, phone, address, state, LGA and location pin
-- [ ] Verification status and screening-partner flag cannot be supplied by the client at registration (tested)
-- [ ] Exactly one pending verification application exists per hospital
-- [ ] The registering user becomes an Owner member of the new organisation
-- [ ] Pending hospitals see an awaiting-approval screen; attempts to create a request via the API are rejected
-- [ ] Rejected and suspended states render a clear message (reapply flow arrives in slice 09)
-- [ ] Empty states for every new screen are designed and implemented (required by the PRD)
+- [x] Registration form collects name, registration number, official email, phone, address, state, LGA and location pin
+- [x] Verification status and screening-partner flag cannot be supplied by the client at registration (tested)
+- [x] Exactly one pending verification application exists per hospital
+- [x] The registering user becomes an Owner member of the new organisation
+- [x] Pending hospitals see an awaiting-approval screen; attempts to create a request via the API are rejected
+- [x] Rejected and suspended states render a clear message (reapply flow arrives in slice 09)
+- [x] Empty states for every new screen are designed and implemented (required by the PRD)
+
+## Implementation (2026-09-22)
+
+- `src/servers/organization.ts`: `getOrganizationVerificationStatus` +
+  `requireApprovedHospital` (throws "awaiting approval" unless approved).
+- `src/servers/emergency.ts`: `createEmergencyRequest` calls the gate first,
+  so pending hospitals are rejected on the server even though request creation
+  itself arrives in slice 12.
+- `src/servers/hospital.ts`: real `getHospitalSidebarContext` from the
+  organization row (status-mapped blood-bank state); new
+  `getHospitalVerificationState`; removed the dead `createHospitalBank` stub
+  (registration goes through the organization plugin).
+- `src/components/hospital/awaiting-approval.tsx`: pending / rejected /
+  suspended / no-organization states with what-happens-next and empty states;
+  rendered by `/hospital` dashboard and `/hospital/emergency` for unapproved
+  workspaces (profile stays accessible for settings).
+- `/auth/signup?role=hospital`: added required registration number and an
+  explicit location pin (editable lat/lng, find-from-address, pin-set and
+  no-pin empty states); submit geocodes when no pin is set and validates ranges.
+- `tests/hospital-verification.test.ts` (4 passing): privileged fields
+  (`verificationStatus`, `isScreeningPartner`, `approvedAt`) stripped at
+  creation; exactly one pending application + DB rejects a second (`hv_one_pending_key`);
+  pending blocked from `requireApprovedHospital` and `createEmergencyRequest`;
+  gate passes once approved, rejects again when rejected.
 
 ## Blocked by
 
