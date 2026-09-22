@@ -296,7 +296,7 @@ src/
 │   │   ├── (dashboard)/                #   Route group — hospital dashboard
 │   │   │   ├── layout.tsx              #     Dashboard layout
 │   │   │   ├── page.tsx                #     Dashboard overview
-│   │   │   ├── hospital-broadcasts-client.tsx # Dashboard (greeting + summary strip + active cards + recent activity)
+│   │   │   ├── hospital-broadcasts-client.tsx # Dashboard (greeting + metrics strip + active cards + recent activity + recent donations)
 │   │   │   ├── loading.tsx
 │   │   │   └── error.tsx
 │   │   └── history/
@@ -316,6 +316,9 @@ src/
 │   │       ├── page.tsx                #   Workspace profile (bank context + member role)
 │   │       ├── loading.tsx
 │   │       └── error.tsx
+│   │   └── settings/
+│   │       ├── page.tsx                #   Account settings (issue 26: profile edit, prefs, password, sessions)
+│   │       └── hospital-settings-client.tsx
 │   ├── globals.css                     # Tailwind directives + theme variables
 │   ├── layout.tsx                      # Root layout: Geist font, ThemeProvider, QueryClientProvider, Toaster
 │   └── page.tsx                        # Landing page
@@ -361,6 +364,8 @@ src/
 │   │   ├── emergency-history.tsx
 │   │   ├── live-status-panel.tsx       # Active card (meta grid + responding donors + funnel)
 │   │   ├── recent-activity-section.tsx # Dashboard history preview (3 latest + View All link)
+│   │   ├── dashboard-metrics-strip.tsx # Issue 26: metrics StatCards (30s refetch, skeleton + retry)
+│   │   ├── recent-donations-section.tsx # Issue 26: latest-6 donations preview + empty state
 │   │   └── request-funnel-card.tsx
 │   ├── profile/                        # Shared profile settings UI
 │   │   └── phone-verification.tsx      # Issue 07: add/change number, OTP entry, verified state (donor + hospital)
@@ -410,6 +415,7 @@ src/
 │   ├── use-donor-history.ts
 │   ├── use-emergency-mission-tracker.ts
 │   ├── use-emergency-requests.ts
+│   ├── use-hospital-dashboard.ts        # Issue 26: metrics (30s refetch), org profile read/update
 │   ├── use-last-known-location.ts        # Issue 06: push geolocation when permission granted
 │   └── use-mobile.ts
 

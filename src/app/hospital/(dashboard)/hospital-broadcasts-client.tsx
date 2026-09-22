@@ -5,6 +5,8 @@ import { Droplet } from "lucide-react";
 import { EmergencyRequestForm } from "@/components/hospital/emergency-request-form";
 import { LiveStatusPanel } from "@/components/hospital/live-status-panel";
 import { RecentActivitySection } from "@/components/hospital/recent-activity-section";
+import { DashboardMetricsStrip } from "@/components/hospital/dashboard-metrics-strip";
+import { RecentDonationsSection } from "@/components/hospital/recent-donations-section";
 import {
 	usePendingEmergencyRequests,
 } from "@/hooks/use-emergency-requests";
@@ -39,6 +41,8 @@ export function HospitalBroadcastsClient({
 				subtitle="Connect with nearby screened blood donors during emergencies."
 				action={<EmergencyRequestForm organizationId={organizationId} />}
 			/>
+
+			<DashboardMetricsStrip organizationId={organizationId} />
 
 			<section className="space-y-4">
 				<div className="flex items-center justify-between">
@@ -81,6 +85,8 @@ export function HospitalBroadcastsClient({
 			)}
 
 			<RecentActivitySection organizationId={organizationId} />
+
+			<RecentDonationsSection organizationId={organizationId} />
 		</div>
 	);
 }

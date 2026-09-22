@@ -5,6 +5,7 @@ import {
     HeartHandshake,
     History,
     LayoutDashboard,
+    Settings,
     Store,
     Users,
     Wallet,
@@ -49,6 +50,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
         { title: "Dashboard", url: "/hospital", icon: LayoutDashboard, exact: true },
         { title: "Emergency Request", url: "/hospital/emergency", icon: AlertTriangle },
         { title: "Request History", url: "/hospital/history", icon: History },
+        { title: "Account Settings", url: "/hospital/settings", icon: Settings },
     ],
     admin: [
         { title: "Overview", url: "/admin", icon: LayoutDashboard, exact: true },

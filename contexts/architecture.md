@@ -100,11 +100,12 @@
 ### Protected — Hospital
 | Path | Page | Description |
 |---|---|---|
-| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — time-aware greeting, summary strip, expandable active requests, recent-activity preview, create-request dialog; renders `AwaitingApproval` until the hospital is approved (issue 08) |
+| `/hospital` | `app/hospital/(dashboard)/page.tsx` | Dashboard — time-aware greeting, metrics strip (active requests, units outstanding/accepted, completed donations from `getHospitalDashboardMetrics`, 30s refetch), expandable active requests, recent-activity + recent-donations previews, create-request dialog; renders `AwaitingApproval` until the hospital is approved (issue 08) |
 | `/hospital/history` | `app/hospital/history/page.tsx` | Emergency request history |
 | `/hospital/emergency` | `app/hospital/emergency/page.tsx` | Full-page emergency request form (blood group, units, urgency, radius); renders `AwaitingApproval` until the hospital is approved (issue 08) |
 | `/hospital/notifications` | `app/hospital/notifications/page.tsx` | Dispatch notifications derived from live pending requests + alert transitions |
 | `/hospital/profile` | `app/hospital/profile/page.tsx` | Workspace profile from bank context (name, location, blood-bank status, role) + phone/OTP verification (issue 07) |
+| `/hospital/settings` | `app/hospital/settings/page.tsx` | Account settings (issue 26): workspace profile edit gated on `organization:update` (`updateOrganizationProfile`, coordinates untouched), per-channel notification prefs (reused donor card, respected by delivery per issue 17), password change + other-session revoke via better-auth client |
 
 ### API
 | Path | File | Description |
