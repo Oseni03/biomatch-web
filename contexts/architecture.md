@@ -60,6 +60,12 @@
 ### Shared Domain Constants (`lib/constants.ts`)
 - `ELIGIBILITY_MONTHS = 3`, `POINTS_PER_DONATION = 100`, `CRITICAL_THRESHOLD = 5`
 
+### Donor Profile (issue 06)
+- Donor code: `lib/donor-code.ts` — `BM-` + 6 chars from `0123456789ABCDEFGHJKMNPQRSTVWXYZ` (no I, L, O, U), regex `^BM-[0-9A-HJKMNP-TV-Z]{6}$` mirrors the `dp_donor_code_chk` CHECK; collision retry on the unique constraint
+- Validation: `lib/donor-profile-validation.ts` (zod) — blood-group enum, past DOB, paired lat/lng range-checked
+- Server actions (`servers/user.ts`): `getDonorProfile`, `updateDonorProfile`, `saveDonorProfile` (name + profile upsert, code generated once at creation), `updateLastKnownLocation` — all behind the consent gate
+- Last-known location: `useLastKnownLocation` + `LastKnownLocationUpdater` (mounted in the donor layout; only pushes when geolocation permission is already granted)
+
 ## Routing Structure
 
 ### Public Routes
@@ -78,6 +84,7 @@
 | Path | Page | Description |
 |---|---|---|
 | `/donor` | `app/donor/page.tsx` | Dashboard — eligibility, alerts, critical needs |
+| `/donor/profile` | `app/donor/profile/page.tsx` | Donor profile — blood group, DOB, home pin (address/state/LGA + lat/lng), availability toggle, donor code with copy, verification badge, screening explainer (issue 06) |
 | `/donor/notifications` | `app/donor/notifications/page.tsx` | Notifications — alert-derived + eligibility/profile items, filters, mark-read |
 | `/donor/history` | `app/donor/history/page.tsx` | Donation history & impact |
 | `/donor/responses` | `app/donor/responses/page.tsx` | My Emergency Responses — active/accepted alerts |

@@ -1,5 +1,21 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 06 (donor profile + donor code) implemented:
+> new `src/lib/donor-code.ts` (BM- + 6 unambiguous chars, format check,
+> collision-retry generator) and `src/lib/donor-profile-validation.ts` (zod:
+> blood group, past DOB, paired range-checked lat/lng, last-known location);
+> `src/servers/user.ts` gained `getDonorProfile` / `updateDonorProfile` /
+> `saveDonorProfile` (name + profile upsert, code generated once at creation
+> with P2002 retry) / `updateLastKnownLocation` (all consent-gated);
+> `/donor/profile` client rebuilt on the real `DonorProfile` fields (blood
+> group, DOB, address/state/LGA, home pin with use-my-location +
+> find-from-address, availability switch, donor-code card with copy,
+> verification badge, unverified screening explainer, no-code/no-pin empty
+> states); new `useLastKnownLocation` hook + `LastKnownLocationUpdater`
+> mounted in the donor layout (pushes only with granted permission);
+> `hasIncompleteProfile` repointed at `DonorProfile` fields; new
+> `tests/donor-profile.test.ts` (14 passing). Previous state:
+>
 > Last updated: 2026-09-22 — Issue 05 (landing page) implemented: landing
 > sections already existed; added the missing hospital-registration target as a
 > hospital mode on `/auth/signup?role=hospital` (contact + hospital + address/
@@ -100,7 +116,7 @@ src/
 │   │   │   └── error.tsx
 │   │   ├── profile/
 │   │   │   ├── page.tsx                #   Donor profile — server data loader
-│   │   │   ├── donor-profile-client.tsx #  Prefilled update form (personal, donation, health) + completion progress
+│   │   │   ├── donor-profile-client.tsx #  Issue 06: blood group, DOB, home pin, availability, donor code + badge
 │   │   │   ├── loading.tsx
 │   │   │   └── error.tsx
 │   │   └── history/
@@ -169,6 +185,7 @@ src/
 │   │   ├── dashboard-urgent.tsx        # Urgent Request Near You hero
 │   │   ├── declined-alert-row.tsx
 │   │   ├── emergency-alerts-feed.tsx
+│   │   ├── last-known-location-updater.tsx # Issue 06: location push on app open (donor layout)
 │   │   ├── profile-incomplete-banner.tsx # Links to /donor/profile
 │   │   └── urgent-request-card.tsx      #   Dashboard hero: urgent match + CTA / confirmed-mission state
 │   ├── hospital/
@@ -223,6 +240,7 @@ src/
 │   ├── use-donor-history.ts
 │   ├── use-emergency-mission-tracker.ts
 │   ├── use-emergency-requests.ts
+│   ├── use-last-known-location.ts        # Issue 06: push geolocation when permission granted
 │   └── use-mobile.ts
 
 ├── lib/                                # Utilities
@@ -232,7 +250,9 @@ src/
 │   ├── blood-compatibility.ts
 │   ├── consent.ts                      # NDPR policy version + gate helpers (issue 04)
 │   ├── constants.ts
+│   ├── donor-code.ts                   # Issue 06: BM- + 6 unambiguous chars, collision retry
 │   ├── donor-dashboard.ts              # Profile-completeness, request mapping, greeting/date helpers
+│   ├── donor-profile-validation.ts     # Issue 06: zod profile + last-known-location schemas
 │   ├── donor-types.ts
 │   ├── eligibility.ts
 │   ├── email.ts                        # Resend wrapper
@@ -254,7 +274,7 @@ src/
 │   ├── notification.ts                 # sendEmergencyAlertEmail
 │   ├── organization.ts                 # org membership + access control
 │   ├── staff.ts                        # getInvitationPreview (invite-accept flow only)
-│   └── user.ts                         # getUserById, updateUserProfile
+│   └── user.ts                         # getUserById, updateUserProfile + issue 06 donor-profile actions
 
 └── emails/                             # Email templates (all imported)
     ├── emergency-alert.tsx
@@ -265,6 +285,7 @@ src/
 tests/
 ├── auth-skeleton.test.ts               # Issue 03 walking-skeleton integration test
 ├── consent-gate.test.ts                # Issue 04 gate/idempotency/version-bump tests
+├── donor-profile.test.ts               # Issue 06 donor code + profile validation/persistence tests
 └── hospital-registration.test.ts       # Issue 05 hospital registration asserts
 ```
 

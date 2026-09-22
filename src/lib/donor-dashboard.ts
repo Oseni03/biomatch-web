@@ -6,35 +6,35 @@ import type {
 	EmergencyMatchRequest,
 } from "@/lib/donor-types";
 
-const REQUIRED_HEALTH_KEYS = [
-	"height_cm",
-	"weight_kg",
-	"blood_pressure",
-	"resting_heart_rate",
-] as const;
-
 function hasText(value: unknown): boolean {
 	return typeof value === "string" && value.trim().length > 0;
 }
 
-function hasHealthMetrics(health: Record<string, unknown>): boolean {
-	return REQUIRED_HEALTH_KEYS.every((key) => {
-		const value = health[key];
-		return typeof value === "string"
-			? value.trim().length > 0
-			: value != null && String(value).trim().length > 0;
-	});
+interface DonorProfileCompleteness {
+	name?: string | null;
+	donorProfile?: {
+		bloodGroup?: string | null;
+		dateOfBirth?: string | Date | null;
+		state?: string | null;
+		homeLatitude?: number | null;
+		homeLongitude?: number | null;
+	} | null;
 }
 
 export function hasIncompleteProfile(user: unknown): boolean {
 	if (!user || typeof user !== "object") return true;
-	const profile = user as Record<string, unknown>;
+	const profile = user as DonorProfileCompleteness;
+	const donor = profile.donorProfile;
+	if (!donor) return true;
 	return !(
 		hasText(profile.name) &&
-		profile.bloodGroup &&
-		hasText(profile.location) &&
-		profile.availability &&
-		hasHealthMetrics((profile.updatedHealthInfo ?? {}) as Record<string, unknown>)
+		donor.bloodGroup &&
+		donor.dateOfBirth &&
+		hasText(donor.state) &&
+		donor.homeLatitude !== null &&
+		donor.homeLatitude !== undefined &&
+		donor.homeLongitude !== null &&
+		donor.homeLongitude !== undefined
 	);
 }
 
