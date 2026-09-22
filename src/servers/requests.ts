@@ -5,7 +5,9 @@ import { BloodGroup } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatBloodGroup } from "@/lib/blood-compatibility";
 import {
+	MATCH_ESCALATION_STEP_KM,
 	MATCH_ESCALATION_WINDOW_MINUTES,
+	MATCH_MAX_RADIUS_KM,
 	MATCH_START_RADIUS_KM,
 } from "@/lib/config";
 import { requireConsentsForUser } from "@/servers/consent";
@@ -136,10 +138,73 @@ export async function createBloodRequest(
 	};
 }
 
+// Timed escalation (issue 15, job approach per ADR decision 005: scheduled
+// cron polling, no queue). Finds active, still-unfilled requests past their
+// escalation time, widens the radius by one step up to the maximum, and
+// matches only newly eligible donors (the matcher excludes already-matched).
+// Idempotent and concurrency-safe: the guarded updateMany claims each request
+// so repeated or overlapping runs escalate it exactly once. At the maximum
+// radius the timer is cleared instead of reset — there is nowhere left to go.
+// The clock is injectable so tests control timing.
+export async function escalateDueRequests(
+	now: Date = new Date(),
+): Promise<{ escalated: number; matched: number }> {
+	const due = await prisma.bloodRequest.findMany({
+		where: { status: "active", nextEscalationAt: { lte: now } },
+		select: {
+			id: true,
+			currentRadiusKm: true,
+			escalationLevel: true,
+			unitsRequired: true,
+			unitsAccepted: true,
+		},
+	});
+	let escalated = 0;
+	let matched = 0;
+	for (const request of due) {
+		if (request.unitsAccepted >= request.unitsRequired) {
+			continue;
+		}
+		const current = Number(request.currentRadiusKm);
+		const next = Math.min(current + MATCH_ESCALATION_STEP_KM, MATCH_MAX_RADIUS_KM);
+		const alreadyMax = next <= current;
+		const reachedMax = next >= MATCH_MAX_RADIUS_KM;
+		const claimed = await prisma.bloodRequest.updateMany({
+			where: {
+				id: request.id,
+				status: "active",
+				nextEscalationAt: { lte: now },
+				unitsAccepted: { lt: request.unitsRequired },
+			},
+			data: {
+				currentRadiusKm: next,
+				escalationLevel: alreadyMax
+					? request.escalationLevel
+					: request.escalationLevel + 1,
+				nextEscalationAt:
+					alreadyMax || reachedMax
+						? null
+						: new Date(now.getTime() + MATCH_ESCALATION_WINDOW_MINUTES * 60 * 1000),
+			},
+		});
+		if (claimed.count === 0) {
+			continue;
+		}
+		escalated += 1;
+		if (!alreadyMax) {
+			const result = await matchDonorsForRequest(
+				request.id,
+				next,
+				request.escalationLevel + 1,
+			);
+			matched += result.matchedCount;
+		}
+	}
+	return { escalated, matched };
+}
 // Matches every newly eligible donor for a request and notifies them all at
 // once with an in-app notification. Idempotent: donors already matched are
-// excluded by the eligibility query, so re-running only adds new donors
-// (radius escalation in slice 15 reuses this).
+// excluded by the eligibility query, so re-running only adds new donors.
 export async function matchDonorsForRequest(
 	requestId: string,
 	radiusKm: number,

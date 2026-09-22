@@ -1,5 +1,12 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-22 — Issue 15 (timed escalation) implemented:
+> `escalateDueRequests()` in `servers/requests.ts` (guarded claim, step
+> widen to max, timer reset/clear); `GET /api/cron/escalate` + `vercel.json`
+> 10-min schedule; `tests/request-escalation.test.ts` (6 passing incl.
+> concurrent double-run).
+> Previous state:
+>
 > Last updated: 2026-09-22 — Issue 14 (decline chains next-closest) implemented:
 > `declineMatch()` in `servers/responses.ts` (respondedAt + single chained
 > match/notification up to max radius, unique-constraint dedup safety);

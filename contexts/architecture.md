@@ -183,6 +183,11 @@
   unnotified donor up to the max radius — in the same transaction;
   already-matched exclusion plus the unique constraint guarantee
   never-notify-twice, and an empty pool resolves cleanly.
+- Timed escalation (issue 15, ADR 005 cron polling): `escalateDueRequests()`
+  claims due active requests with a guarded update (concurrency-safe),
+  widens by step to max, matches new-only donors, resets or clears the
+  timer. `GET /api/cron/escalate` (bearer `CRON_SECRET`), every 10 min via
+  `vercel.json`.
 
 ## Core Loop (Prototype Spec)
 

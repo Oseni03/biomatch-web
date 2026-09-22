@@ -6,5 +6,11 @@
 		}
 	],
 	"buildCommand": "npm run vercel-build",
-	"installCommand": "npm install"
+	"installCommand": "npm install",
+	"crons": [
+		{
+			"path": "/api/cron/escalate",
+			"schedule": "*/10 * * * *"
+		}
+	]
 }
