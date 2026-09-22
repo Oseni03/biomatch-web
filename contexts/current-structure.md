@@ -416,6 +416,7 @@ src/
 │   ├── use-emergency-mission-tracker.ts
 │   ├── use-emergency-requests.ts
 │   ├── use-hospital-dashboard.ts        # Issue 26: metrics (30s refetch), org profile read/update
+│   ├── use-walkthrough.ts              # Issue 27: walkthrough state + complete/reset
 │   ├── use-last-known-location.ts        # Issue 06: push geolocation when permission granted
 │   └── use-mobile.ts
 

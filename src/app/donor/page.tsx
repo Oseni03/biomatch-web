@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/get-session";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { WalkthroughGate } from "@/components/walkthrough/walkthrough-gate";
 
 export default async function DonorDashboardPage() {
 	const session = await getServerSession();
@@ -10,6 +11,7 @@ export default async function DonorDashboardPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-2xl p-6">
+			<WalkthroughGate audience="donor" />
 			<Card>
 				<CardHeader>
 					<CardTitle>Welcome, {session.user.name ?? "donor"}</CardTitle>

@@ -9,6 +9,7 @@ import {
 	useUpdateOrganizationProfile,
 } from "@/hooks/use-hospital-dashboard";
 import { NotificationPreferencesCard } from "@/components/donor/notification-preferences-card";
+import { ReplayWalkthroughButton } from "@/components/walkthrough/walkthrough-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,15 @@ export function HospitalSettingsClient({
 				canEditProfile={canEditProfile}
 			/>
 			<NotificationPreferencesCard />
+			<section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+				<h2 className="text-base font-bold text-foreground">Walkthrough</h2>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Replay the first-time tour of the hospital workspace.
+				</p>
+				<div className="mt-3">
+					<ReplayWalkthroughButton audience="hospital" />
+				</div>
+			</section>
 			<PasswordCard />
 			<SessionsCard />
 		</div>

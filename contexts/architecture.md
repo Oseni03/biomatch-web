@@ -269,6 +269,7 @@
 4. **Onboarding** → `/auth/onboarding` collects donor blood group / phone OR confirms hospital org name
 3. **Login** → `authClient.signIn.email()` authenticates, client redirects to role dashboard
 4. **Client** → `authClient.useSession()` provides session to client components
+5. **First-time walkthrough (issue 27)** → `WalkthroughGate` on `/donor` and the hospital dashboard shows a skippable donor/hospital tour when `User.onboardedAt` is null (`servers/walkthrough.ts`, audience via `getSessionRole`); completion sets `onboardedAt`, replay buttons on `/donor/profile` and `/hospital/settings` reset it
 
 ## Location & Proximity
 

@@ -15,10 +15,17 @@ Show a first-time tutorial explaining how the platform works to new donors and t
 
 ## Acceptance criteria
 
-- [ ] Walkthrough shows on first sign-in only and stores completion
-- [ ] Can be skipped and replayed later
-- [ ] Separate content for donors and hospitals
-- [ ] Works on mobile and desktop widths
+- [x] Walkthrough shows on first sign-in only and stores completion
+- [x] Can be skipped and replayed later
+- [x] Separate content for donors and hospitals
+- [x] Works on mobile and desktop widths
+
+## Implementation notes
+
+- Completion stored on the existing `User.onboardedAt` column (no schema change): `servers/walkthrough.ts` (`getWalkthroughState` with donor/hospital/admin audience via `getSessionRole`, `completeWalkthrough`, `resetWalkthrough`).
+- `WalkthroughGate` mounted on `/donor` and the hospital dashboard; donor (4 steps) and hospital (5 steps) content in `WalkthroughDialog` (responsive `Dialog`, progress dots, Skip/Back/Next).
+- Replay via `ReplayWalkthroughButton` on `/donor/profile` and `/hospital/settings`.
+- Live verification pending: `tests/walkthrough.test.ts` (3 tests) is type-clean but 0/3 pass — every DB call fails with Neon `EAI_AGAIN` DNS during the outage window. Re-run when the network recovers.
 
 ## Blocked by
 

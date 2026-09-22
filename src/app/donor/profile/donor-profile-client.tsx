@@ -21,6 +21,7 @@ import { saveDonorProfile } from "@/servers/user";
 import { geocodeAddressAction } from "@/servers/location";
 import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
 import { PhoneVerification } from "@/components/profile/phone-verification";
+import { ReplayWalkthroughButton } from "@/components/walkthrough/walkthrough-gate";
 import {
 	BLOOD_GROUP_ENUMS,
 } from "@/lib/donor-profile-validation";
@@ -741,6 +742,13 @@ export function DonorProfileClient() {
 				description="Choose which optional messages you receive from BioMatch."
 			>
 				<MarketingConsentToggle />
+			</Section>
+
+			<Section
+				title="Walkthrough"
+				description="Replay the first-time tour of the donor app."
+			>
+				<ReplayWalkthroughButton audience="donor" />
 			</Section>
 
 			<PhoneVerification />

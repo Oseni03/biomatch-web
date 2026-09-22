@@ -7,6 +7,7 @@ import { LiveStatusPanel } from "@/components/hospital/live-status-panel";
 import { RecentActivitySection } from "@/components/hospital/recent-activity-section";
 import { DashboardMetricsStrip } from "@/components/hospital/dashboard-metrics-strip";
 import { RecentDonationsSection } from "@/components/hospital/recent-donations-section";
+import { WalkthroughGate } from "@/components/walkthrough/walkthrough-gate";
 import {
 	usePendingEmergencyRequests,
 } from "@/hooks/use-emergency-requests";
@@ -36,6 +37,7 @@ export function HospitalBroadcastsClient({
 
 	return (
 		<div className="space-y-8">
+			<WalkthroughGate audience="hospital" />
 			<DashboardGreeting
 				title={`${getGreeting()}, ${hospitalName}`}
 				subtitle="Connect with nearby screened blood donors during emergencies."
