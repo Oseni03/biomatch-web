@@ -270,6 +270,7 @@
 3. **Login** → `authClient.signIn.email()` authenticates, client redirects to role dashboard
 4. **Client** → `authClient.useSession()` provides session to client components
 5. **First-time walkthrough (issue 27)** → `WalkthroughGate` on `/donor` and the hospital dashboard shows a skippable donor/hospital tour when `User.onboardedAt` is null (`servers/walkthrough.ts`, audience via `getSessionRole`); completion sets `onboardedAt`, replay buttons on `/donor/profile` and `/hospital/settings` reset it
+6. **NDPR erasure (issue 28)** → `DeleteAccountSection` on `/donor/profile` and `/hospital/settings` (type DELETE + current password) calls `requestAccountDeletion` (`servers/erasure.ts`: session-derived id, password verified via sign-in attempt, sole org owners blocked with transfer guidance); the wipe is the `anonymise_user()` SQL function (user row anonymised + banned, sessions/accounts/memberships/notifications deleted, profile location/DOB and screening notes cleared, consents revoked) with donations/requests/ledger kept de-identified, plus a `user.erasure` audit row
 
 ## Location & Proximity
 

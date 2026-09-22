@@ -369,6 +369,7 @@ src/
 │   │   └── request-funnel-card.tsx
 │   ├── profile/                        # Shared profile settings UI
 │   │   └── phone-verification.tsx      # Issue 07: add/change number, OTP entry, verified state (donor + hospital)
+│   │   └── delete-account-section.tsx  # Issue 28: type-DELETE + password erasure (donor profile + hospital settings)
 │   ├── landing/                        # Landing page sections
 │   │   ├── navbar.tsx                   # Sticky nav (EASE_SMOOTH, real section anchors)
 │   │   ├── hero.tsx                     # Live dispatch radar simulation

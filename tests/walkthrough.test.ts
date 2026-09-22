@@ -37,7 +37,7 @@ describe("Issue 27 first-time walkthroughs", () => {
 		await prisma.donorProfile.create({
 			data: {
 				userId: donorId,
-				donorCode: `WK27${String(stamp).slice(-6)}`,
+				donorCode: `BM-${String(stamp).slice(-6)}`,
 				bloodGroup: "O_POS",
 				state: "Lagos",
 				verificationStatus: "verified",

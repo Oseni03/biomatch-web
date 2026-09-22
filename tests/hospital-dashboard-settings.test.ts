@@ -89,7 +89,7 @@ describe("Issue 26 hospital dashboard and account settings", () => {
 		await prisma.donorProfile.create({
 			data: {
 				userId: donorId,
-				donorCode: `DH26${String(stamp).slice(-6)}`,
+				donorCode: `BM-${String(stamp).slice(-6)}`,
 				bloodGroup: "O_POS",
 				state: "Lagos",
 				homeLatitude: 6.5344,
@@ -151,6 +151,9 @@ describe("Issue 26 hospital dashboard and account settings", () => {
 				donorId,
 				organizationId,
 				status: "completed",
+				donorConfirmedAt: new Date(),
+				hospitalConfirmedAt: new Date(),
+				hospitalConfirmedBy: ownerId,
 				completedAt: new Date(),
 			},
 		});

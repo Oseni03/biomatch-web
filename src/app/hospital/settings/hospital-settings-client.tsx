@@ -9,6 +9,7 @@ import {
 	useUpdateOrganizationProfile,
 } from "@/hooks/use-hospital-dashboard";
 import { NotificationPreferencesCard } from "@/components/donor/notification-preferences-card";
+import { DeleteAccountSection } from "@/components/profile/delete-account-section";
 import { ReplayWalkthroughButton } from "@/components/walkthrough/walkthrough-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ export function HospitalSettingsClient({
 			</section>
 			<PasswordCard />
 			<SessionsCard />
+			<DeleteAccountSection />
 		</div>
 	);
 }

@@ -21,6 +21,7 @@ import { saveDonorProfile } from "@/servers/user";
 import { geocodeAddressAction } from "@/servers/location";
 import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
 import { PhoneVerification } from "@/components/profile/phone-verification";
+import { DeleteAccountSection } from "@/components/profile/delete-account-section";
 import { ReplayWalkthroughButton } from "@/components/walkthrough/walkthrough-gate";
 import {
 	BLOOD_GROUP_ENUMS,
@@ -752,6 +753,8 @@ export function DonorProfileClient() {
 			</Section>
 
 			<PhoneVerification />
+
+			<DeleteAccountSection />
 		</div>
 	);
 }
