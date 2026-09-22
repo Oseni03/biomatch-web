@@ -82,16 +82,33 @@ export async function getAdminOverviewCounts(callerUserId: string): Promise<{
 	pendingApplications: number;
 	approvedHospitals: number;
 	totalDonors: number;
+	activeRequests: number;
+	completedDonations: number;
 }> {
 	await requireAdmin(callerUserId);
-	const [totalHospitals, pendingApplications, approvedHospitals, totalDonors] =
-		await Promise.all([
-			prisma.organization.count(),
-			prisma.hospitalVerification.count({ where: { decision: "pending" } }),
-			prisma.organization.count({ where: { verificationStatus: "approved" } }),
-			prisma.donorProfile.count(),
-		]);
-	return { totalHospitals, pendingApplications, approvedHospitals, totalDonors };
+	const [
+		totalHospitals,
+		pendingApplications,
+		approvedHospitals,
+		totalDonors,
+		activeRequests,
+		completedDonations,
+	] = await Promise.all([
+		prisma.organization.count(),
+		prisma.hospitalVerification.count({ where: { decision: "pending" } }),
+		prisma.organization.count({ where: { verificationStatus: "approved" } }),
+		prisma.donorProfile.count(),
+		prisma.bloodRequest.count({ where: { status: "active" } }),
+		prisma.donation.count({ where: { status: "completed" } }),
+	]);
+	return {
+		totalHospitals,
+		pendingApplications,
+		approvedHospitals,
+		totalDonors,
+		activeRequests,
+		completedDonations,
+	};
 }
 
 export async function listHospitals(
@@ -503,7 +520,7 @@ export async function setScreeningPartner(
 	};
 }
 
-export async function reapplyForVerification(	organizationId: string,
+export async function reapplyForVerification(organizationId: string,
 	callerUserId: string,
 ): Promise<{ applicationId: string }> {
 	await requireConsentsForUser(callerUserId);
@@ -703,11 +720,11 @@ export async function getDonorDetail(
 	});
 	const restrictedByName = profile.restrictedBy
 		? (
-				await prisma.user.findUnique({
-					where: { id: profile.restrictedBy },
-					select: { name: true },
-				})
-			)?.name ?? null
+			await prisma.user.findUnique({
+				where: { id: profile.restrictedBy },
+				select: { name: true },
+			})
+		)?.name ?? null
 		: null;
 	return {
 		userId: profile.userId,

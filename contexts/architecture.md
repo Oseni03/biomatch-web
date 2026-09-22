@@ -112,7 +112,7 @@
 | `/api/auth/[...all]` | `app/api/auth/[...all]/route.ts` | BetterAuth catch-all |
 
 ### Protected — Admin (`role=admin`)
-- `/admin` — Platform overview (counts + review-queue state; full metrics arrive in issue 25)
+- `/admin` — Platform overview: hospitals (total/approved/pending), donors, active requests, completed donations from one round of parallel counts (`getAdminOverviewCounts`, issue 25) + review-queue state + delivery failures
 - `/admin/hospitals` — Hospital list (status/search/pagination) + pending review queue
 - `/admin/hospitals/[id]` — Hospital detail (registration, team, application history) + approve/reject/suspend/reinstate (issue 09)
 - `/admin/donors` — Donor list (name/email/code search + blood group / verification / state / account-status filters, pagination) (issue 24)

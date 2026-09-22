@@ -9,6 +9,11 @@
 > `servers/admin.ts`, `/admin/donors` + `/admin/donors/[id]`, sidebar Donors
 > item, `tests/admin-donor-management.test.ts` (7 passing).
 >
+> Last updated: 2026-09-22 — Issue 25 (platform overview metrics):
+> `getAdminOverviewCounts()` gains active requests + completed donations,
+> `/admin` six cards + Emergency Activity panel,
+> `tests/admin-platform-overview.test.ts` (3 passing, 100-donor volume).
+>
 > Last updated: 2026-09-22 — Issue 22 (merchant portal) implemented: redeem
 > functions in `servers/merchants.ts` (preview, guarded-update redeem,
 > history), `/merchant` minimal portal, proxy + login wiring,

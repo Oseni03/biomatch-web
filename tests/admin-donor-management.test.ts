@@ -216,9 +216,9 @@ describe("Issue 24 admin donor management", () => {
 	});
 
 	after(async () => {
-		await deleteUsersCompletely([adminId, ownerId, donorId, otherDonorId]);
 		if (organizationId) {
 			await deleteOrganizationCompletely(organizationId);
 		}
+		await deleteUsersCompletely([adminId, ownerId, donorId, otherDonorId]);
 	});
 });

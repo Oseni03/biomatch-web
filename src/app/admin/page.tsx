@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, Clock, HeartHandshake, ShieldCheck } from "lucide-react";
+import { Activity, Building2, Clock, Droplets, HeartHandshake, ShieldCheck } from "lucide-react";
 import { getServerSession } from "@/lib/get-session";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -22,7 +22,7 @@ export default async function AdminOverviewPage() {
 				subtitle="Hospitals awaiting review, verified partners and registered donors."
 			/>
 
-			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 				<StatCard
 					label="Pending applications"
 					value={String(counts.pendingApplications)}
@@ -43,6 +43,17 @@ export default async function AdminOverviewPage() {
 					label="Registered donors"
 					value={String(counts.totalDonors)}
 					icon={HeartHandshake}
+				/>
+				<StatCard
+					label="Active requests"
+					value={String(counts.activeRequests)}
+					icon={Activity}
+					tone={counts.activeRequests > 0 ? "warning" : "default"}
+				/>
+				<StatCard
+					label="Completed donations"
+					value={String(counts.completedDonations)}
+					icon={Droplets}
 				/>
 			</div>
 
@@ -67,6 +78,28 @@ export default async function AdminOverviewPage() {
 				<Button asChild className="mt-4 rounded-2xl">
 					<Link href="/admin/hospitals">Open hospital management</Link>
 				</Button>
+			</div>
+
+			<div className="rounded-2xl border border-border bg-card p-6">
+				<h2 className="text-base font-bold text-foreground">Emergency activity</h2>
+				{counts.activeRequests > 0 ? (
+					<p className="mt-1 text-sm text-muted-foreground">
+						{counts.activeRequests} emergency request{counts.activeRequests === 1 ? " is" : "s are"} live
+						right now.
+						{counts.completedDonations > 0 &&
+							` ${counts.completedDonations} donation${counts.completedDonations === 1 ? " has" : "s have"} been completed so far.`}
+					</p>
+				) : counts.completedDonations > 0 ? (
+					<p className="mt-1 text-sm text-muted-foreground">
+						No emergency requests are live right now. {counts.completedDonations} donation
+						{counts.completedDonations === 1 ? " has" : "s have"} been completed so far.
+					</p>
+				) : (
+					<p className="mt-1 text-sm text-muted-foreground">
+						No emergency activity yet. Live requests and completed donations will
+						appear here once hospitals start requesting blood.
+					</p>
+				)}
 			</div>
 
 			<DeliveryFailuresCard />
