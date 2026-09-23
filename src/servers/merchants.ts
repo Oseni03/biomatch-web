@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { Prisma } from "@generated/prisma/client";
 import { auth } from "@/lib/auth";
+import { VOUCHER_REDEEM_FAILED_MESSAGE } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/servers/admin";
 import { requireConsentsForUser } from "@/servers/consent";
@@ -336,9 +337,6 @@ export async function getMerchantPortalContext(
 	if (!link) return null;
 	return { merchantId: link.merchantId, merchantName: link.merchant.name };
 }
-
-export const VOUCHER_REDEEM_FAILED_MESSAGE =
-	"This code cannot be redeemed. Check the code and try again.";
 
 const voucherCodeSchema = z
 	.string()

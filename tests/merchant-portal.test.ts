@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateUniqueDonorCode } from "@/lib/donor-code";
 import { recordConsentsForUser } from "@/servers/consent";
+import { VOUCHER_REDEEM_FAILED_MESSAGE } from "@/lib/constants";
 import {
-	VOUCHER_REDEEM_FAILED_MESSAGE,
 	addMerchantStaff,
 	createMerchant,
 	listMerchantRedemptions,

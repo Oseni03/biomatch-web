@@ -5,14 +5,13 @@ import { z } from "zod";
 import { Prisma } from "@generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { VOUCHER_VALIDITY_DAYS } from "@/lib/config";
+import {
+	INSUFFICIENT_BALANCE_MESSAGE,
+	MERCHANT_UNAVAILABLE_MESSAGE,
+} from "@/lib/constants";
 import { requireConsentsForUser } from "@/servers/consent";
 import { requireAdmin } from "@/servers/admin";
 import { writeAuditLog } from "@/servers/audit";
-
-export const INSUFFICIENT_BALANCE_MESSAGE =
-	"Insufficient wallet balance for this voucher amount.";
-export const MERCHANT_UNAVAILABLE_MESSAGE =
-	"This merchant is no longer accepting vouchers.";
 
 const issueSchema = z.object({
 	merchantId: z.string().uuid("Choose a merchant"),
@@ -21,8 +20,6 @@ const issueSchema = z.object({
 });
 
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-
-export const VOUCHER_CODE_PATTERN = /^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/;
 
 function generateVoucherCode(): string {
 	const bytes = randomBytes(12);

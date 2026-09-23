@@ -16,13 +16,6 @@ const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const appUrl =
 	process.env.APP_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
-export const permissionCatalog: Record<string, string[]> = Object.fromEntries(
-	Object.entries(domainPermissions).map(([resource, actions]) => [
-		resource,
-		[...(actions as readonly string[])],
-	]),
-);
-
 export interface TeamMember {
 	userId: string;
 	name: string;

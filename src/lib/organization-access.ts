@@ -29,6 +29,13 @@ export const domainPermissions = {
 
 export type DomainResource = keyof typeof domainPermissions;
 
+export const permissionCatalog: Record<string, string[]> = Object.fromEntries(
+	Object.entries(domainPermissions).map(([resource, actions]) => [
+		resource,
+		[...(actions as readonly string[])],
+	]),
+);
+
 export const ac = createAccessControl(statement);
 
 const domainAll = {

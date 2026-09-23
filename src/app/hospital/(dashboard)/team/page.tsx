@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/get-session";
+import { permissionCatalog } from "@/lib/organization-access";
 import { getActiveOrganizationId } from "@/servers/organization";
 import {
 	listCustomRoles,
 	listMembers,
 	listPendingInvitations,
-	permissionCatalog,
 	requireOrgManager,
 } from "@/servers/team";
 import { TeamClient } from "./team-client";
