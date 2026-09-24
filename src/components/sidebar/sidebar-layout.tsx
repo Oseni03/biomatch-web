@@ -119,7 +119,7 @@ export function SidebarLayout({
                 />
             )}
             <SidebarInset>
-                <div className="flex flex-1 flex-col gap-4 p-4">
+                <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 p-4">
                     <header className="on-ink flex h-14 shrink-0 items-center gap-2 rounded-2xl border border-sidebar-border bg-sidebar px-4 shadow-card">
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />

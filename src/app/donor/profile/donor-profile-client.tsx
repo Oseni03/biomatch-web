@@ -20,6 +20,7 @@ import { useLastKnownLocation } from "@/hooks/use-last-known-location";
 import { saveDonorProfile } from "@/servers/user";
 import { geocodeAddressAction } from "@/servers/location";
 import { MarketingConsentToggle } from "@/components/consent/marketing-consent-toggle";
+import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { PhoneVerification } from "@/components/profile/phone-verification";
 import { DeleteAccountSection } from "@/components/profile/delete-account-section";
 import { ReplayWalkthroughButton } from "@/components/walkthrough/walkthrough-gate";
@@ -399,7 +400,7 @@ export function DonorProfileClient() {
 			form.dateOfBirth !== "",
 			form.state.trim() !== "",
 			form.homeLatitude.trim() !== "" &&
-				form.homeLongitude.trim() !== "",
+			form.homeLongitude.trim() !== "",
 		];
 		const done = sections.filter(Boolean).length;
 		return { done, total: sections.length };
@@ -524,7 +525,7 @@ export function DonorProfileClient() {
 
 	return (
 		<div className="mx-auto w-full max-w-4xl space-y-8">
-			<div className="space-y-1.5">
+			<div className="space-y-3">
 				<Link
 					href="/donor"
 					className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -532,13 +533,10 @@ export function DonorProfileClient() {
 					<ArrowLeft className="h-3.5 w-3.5" />
 					Back to dashboard
 				</Link>
-				<h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-					Donor Profile
-				</h1>
-				<p className="text-sm text-muted-foreground">
-					Keep your details up to date so hospitals can match you with nearby
-					emergencies.
-				</p>
+				<DashboardGreeting
+					title="Donor Profile"
+					subtitle="Keep your details up to date so hospitals can match you with nearby emergencies."
+				/>
 			</div>
 
 			<DonorCodeCard
@@ -707,7 +705,7 @@ export function DonorProfileClient() {
 						</Button>
 					</div>
 					{form.homeLatitude.trim() !== "" &&
-					form.homeLongitude.trim() !== "" ? (
+						form.homeLongitude.trim() !== "" ? (
 						<p className="flex items-center gap-1.5 text-xs text-muted-foreground">
 							<MapPin className="h-3.5 w-3.5" />
 							Home pin set at {form.homeLatitude}, {form.homeLongitude}

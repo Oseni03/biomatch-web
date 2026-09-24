@@ -1,5 +1,15 @@
 # BioMatch — Current File Structure
 
+> Last updated: 2026-09-23 — Donor dashboard (action-first minimal):
+> `app/donor/page.tsx` renders new `donor-dashboard-client.tsx` (greeting +
+> profile-incomplete banner + eligibility + accepted missions with
+> confirm/withdraw + top-3 urgent requests with accept/decline, deferral-gated).
+>
+> Last updated: 2026-09-23 — Unified portal width + mission theme: `SidebarLayout`
+> content now centers in a shared `max-w-6xl` container (narrow forms keep
+> their inner caps); brand `DashboardGreeting` added to `/donor` and
+> `/donor/profile`; merchant portal header carries the life-saving voice +
+> wordmark.
 > Last updated: 2026-09-22 — Issue 23 (expiry forfeit + sweep) implemented:
 > `sweepExpiredVouchers()`, `GET /api/cron/expire-vouchers` (daily),
 > forfeit copy on Rewards, `tests/voucher-expiry.test.ts` (4 passing).

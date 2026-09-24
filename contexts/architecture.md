@@ -280,7 +280,10 @@
 
 ## Key Patterns
 
-- **Layout**: Each role section wraps children in `<SidebarLayout role="...">`
+- **Layout**: Each role section wraps children in `<SidebarLayout role="...">`,
+  whose content centers in a shared `max-w-6xl` container (narrow forms keep
+  their own inner cap); page headers use the brand `DashboardGreeting` with
+  life-saving mission voice
 - **Server Actions**: All DB logic in `servers/*.ts` with `"use server"`
 - **Data Fetching**: React Query hooks in `hooks/` wrap server actions
 - **Styling**: Tailwind utility classes with brand color `#C1121F`

@@ -11,6 +11,7 @@ import {
 	useRedeemVoucher,
 } from "@/hooks/use-merchant-portal";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Wordmark } from "@/components/brand/wordmark";
 
 export function MerchantPortalClient({ hasAccess }: { hasAccess: boolean }) {
 	const { data: session, isPending: sessionLoading } = authClient.useSession();
@@ -76,7 +77,7 @@ export function MerchantPortalClient({ hasAccess }: { hasAccess: boolean }) {
 				<Store className="h-6 w-6 text-foreground" />
 				<div>
 					<h1 className="text-lg font-bold text-foreground">{context.merchantName}</h1>
-					<p className="text-sm text-muted-foreground">Voucher redemption portal</p>
+					<p className="text-sm text-muted-foreground">Donor reward redemptions — honoring life-saving donations, powered by <Wordmark size="sm" className="inline" /></p>
 				</div>
 			</div>
 
