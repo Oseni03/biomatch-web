@@ -88,7 +88,7 @@ export function DonorNearbyClient() {
 		<div className="space-y-8">
 			<DashboardGreeting
 				title="Requests nearby"
-				subtitle="Hospitals near you that need your blood type right now."
+				subtitle="Hospitals near you need your blood type right now — your donation saves lives today."
 			/>
 
 			{error && (

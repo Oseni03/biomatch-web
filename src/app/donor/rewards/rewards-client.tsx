@@ -13,7 +13,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const ENTRY_LABELS: Record<string, string> = {
-	donation_reward: "Donation reward",
+	donation_reward: "Donation thank-you",
 	redemption: "Voucher redemption",
 	adjustment: "Balance adjustment",
 	reversal: "Refund",
@@ -56,7 +56,7 @@ export function RewardsClient() {
 	if (!session?.user) {
 		return (
 			<p className="text-sm text-muted-foreground">
-				Sign in to view your rewards.
+				Sign in to view your thank-you rewards.
 			</p>
 		);
 	}
@@ -99,8 +99,8 @@ export function RewardsClient() {
 	return (
 		<div className="space-y-8">
 			<DashboardGreeting
-				title="Rewards Wallet"
-				subtitle="Your balance and reward history from completed donations"
+				title="Thank-You Rewards"
+				subtitle="A small thank-you for the lives you've helped save — every reward here started as a donation."
 			/>
 
 			<div className="grid gap-4 sm:grid-cols-2">
@@ -110,7 +110,7 @@ export function RewardsClient() {
 					icon={Wallet}
 				/>
 				<StatCard
-					label="Rewards earned"
+					label="Thank-yous earned"
 					value={String(ledger?.total ?? 0)}
 					icon={Gift}
 				/>
@@ -120,7 +120,8 @@ export function RewardsClient() {
 				<h2 className="text-base font-bold text-foreground">Redeem a voucher</h2>
 				<p className="mt-1 text-sm text-muted-foreground">
 					Available balance: {formatKoboToNaira(balanceKobo)}. Show the code at
-					the merchant to pay.
+					the merchant to pay — a thank-you for donations already given, never
+					a reason to donate.
 				</p>
 				{issued ? (
 					<div className="mt-4 rounded-xl border border-emerald-600/30 bg-emerald-50 p-4 dark:bg-emerald-950/40">
@@ -244,11 +245,11 @@ export function RewardsClient() {
 				{entries.length === 0 ? (
 					<div className="mt-4 flex flex-col items-center gap-2 py-10 text-center">
 						<Gift className="h-8 w-8 text-muted-foreground" />
-						<p className="text-sm font-semibold text-foreground">No rewards earned yet</p>
+						<p className="text-sm font-semibold text-foreground">No thank-yous yet</p>
 						<p className="max-w-sm text-sm text-muted-foreground">
 							Complete a blood donation and have it confirmed by both sides to
-							earn your first reward. It will appear here with its date and
-							description.
+							earn your first thank-you. The life you helped save is the real
+							reward — this is just a bonus.
 						</p>
 					</div>
 				) : (

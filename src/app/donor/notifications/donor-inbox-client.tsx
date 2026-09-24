@@ -43,7 +43,7 @@ export function DonorInboxClient() {
 				title="Notifications"
 				subtitle={
 					unreadCount > 0
-						? `You have ${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}.`
+						? `You have ${unreadCount} unread notification${unreadCount === 1 ? "" : "s"} — a hospital may need you right now.`
 						: "Blood request alerts and donation updates land here."
 				}
 				action={

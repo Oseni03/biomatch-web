@@ -97,7 +97,7 @@ export function DonorHistoryClient() {
 				/>
 				<StatCard
 					icon={Activity}
-					label="Points"
+					label="Bonus points"
 					value={String(points)}
 				/>
 			</div>
@@ -109,7 +109,8 @@ export function DonorHistoryClient() {
 				<div className="divide-y divide-border">
 					{(donationsData?.donations ?? []).length === 0 ? (
 						<p className="p-8 text-center text-sm text-muted-foreground">
-							No donations yet. Your completed donations will appear here.
+							No donations yet — every donation here represents lives saved.
+							Your completed donations will appear here.
 						</p>
 					) : (
 						(donationsData?.donations ?? []).map((record) => (
@@ -121,8 +122,8 @@ export function DonorHistoryClient() {
 										{record.bloodGroup} &middot; {record.locationName}
 									</p>
 								</div>
-								<span className="text-xs font-mono text-muted-foreground">
-									+{(record.rewardKobo / 100).toFixed(0)} NGN
+								<span className="text-xs font-mono text-muted-foreground" title="Thank-you bonus for this donation">
+									+{(record.rewardKobo / 100).toFixed(0)} NGN thank-you
 								</span>
 							</div>
 						))
