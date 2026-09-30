@@ -116,12 +116,18 @@ export const auth = betterAuth({
 			expiresIn: 60 * 5,
 			allowedAttempts: 3,
 			phoneNumberValidator: (number) => E164_REGEX.test(number),
-			sendOTP: async ({ phoneNumber, code }) => {
+		sendOTP: async ({ phoneNumber, code }) => {
+			// SMS is best-effort: a provider failure must never surface as an
+			// internal error on the OTP endpoint. The code is still issued.
+			try {
 				await sendSms({
 					to: phoneNumber,
 					message: `Your BioMatch verification code is ${code}. It expires in 5 minutes.`,
 				});
-			},
+			} catch (error) {
+				console.error("[sms:suppressed] OTP SMS failed:", error);
+			}
+		},
 		}),
 
 		organization({
