@@ -162,11 +162,9 @@ function SignupContent() {
 		}
 
 		const callbackUrl = searchParams.get("callbackUrl");
-		if (callbackUrl && callbackUrl.startsWith("/")) {
-			router.push(callbackUrl);
-		} else {
-			router.push("/donor");
-		}
+		const next =
+			callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/donor";
+		router.push(`/auth/verify-phone?next=${encodeURIComponent(next)}`);
 	};
 
 	return (
@@ -527,6 +525,7 @@ function HospitalSignupForm({
 					onChange={(e) => setPhone(e.target.value)}
 					placeholder="e.g. +2348012345678"
 					autoComplete="tel"
+					hint="Staff verify their personal number later in profile settings to receive SMS alerts."
 				/>
 				<AuthInput
 					id="signup-hospital-address"

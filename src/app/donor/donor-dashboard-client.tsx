@@ -24,6 +24,7 @@ import type { LegacyDonorSnapshot } from "@/lib/donor-types";
 import { BloodTypeBadge } from "@/components/brand/blood-type-badge";
 import { DashboardGreeting } from "@/components/brand/dashboard-greeting";
 import { EligibilitySection } from "@/components/donor/dashboard-eligibility";
+import { PhoneUnverifiedBanner } from "@/components/donor/phone-unverified-banner";
 import { ProfileIncompleteBanner } from "@/components/donor/profile-incomplete-banner";
 import { WalkthroughGate } from "@/components/walkthrough/walkthrough-gate";
 import { Button } from "@/components/ui/button";
@@ -114,6 +115,7 @@ export function DonorDashboardClient() {
 			)}
 
 			{incomplete && <ProfileIncompleteBanner />}
+			<PhoneUnverifiedBanner />
 
 			<EligibilitySection
 				eligibility={eligibility}
