@@ -65,6 +65,7 @@ export function HospitalSidebar({
 }: HospitalSidebarProps) {
     const { setOpenMobile } = useSidebar();
     const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const isHomeActive = activeUrl === "/hospital";
 
     const closeMobile = () => setOpenMobile(false);
 
@@ -81,7 +82,9 @@ export function HospitalSidebar({
                                     </div>
                                     <div className="grid flex-1 text-left text-sm leading-tight">
                                         <Wordmark size="sm" className="truncate" />
-                                        <span className="truncate text-[11px] text-sidebar-foreground/60">
+                                        <span
+                                            className={`truncate text-[11px] ${isHomeActive ? "font-medium text-sidebar-foreground" : "text-sidebar-foreground/60"}`}
+                                        >
                                             Blood Management
                                         </span>
                                     </div>

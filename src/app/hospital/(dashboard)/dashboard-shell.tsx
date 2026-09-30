@@ -15,6 +15,7 @@ import {
 	usePendingEmergencyRequests,
 } from "@/hooks/use-emergency-requests";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { EmergencyRequestForm } from "@/components/hospital/emergency-request-form";
 
 const TABS = [
 	{ href: "/hospital", label: "Active Match Broadcasts", icon: Bell },
@@ -83,8 +84,9 @@ export function HospitalDashboardShell({
 				/>
 			</div>
 
-			<div className="flex border-b border-border pb-px gap-6 overflow-x-auto">
-				{TABS.map((tab) => {
+		<div className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-px">
+			<div className="flex gap-6 overflow-x-auto">
+			{TABS.map((tab) => {
 					const Icon = tab.icon;
 					const isActive = pathname === tab.href;
 					return (
@@ -103,6 +105,10 @@ export function HospitalDashboardShell({
 					);
 				})}
 			</div>
+			<div className="pb-2">
+				<EmergencyRequestForm organizationId={organizationId} />
+			</div>
+		</div>
 
 			{children}
 		</div>
