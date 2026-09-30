@@ -371,13 +371,17 @@ function HospitalSignupForm({
 			return;
 		}
 
-		if (!pinSet) {
+		// Testing accommodation: outside production the pin is optional and
+		// falls back to Lagos test coordinates so signup can be exercised
+		// without geolocation. Production still requires a real pin.
+		const skippingPin = !pinSet && process.env.NODE_ENV !== "production";
+		if (!pinSet && !skippingPin) {
 			setError("Set your hospital's location");
 			return;
 		}
-		const lat = Number(latitude);
-		const lng = Number(longitude);
-		if (!Number.isFinite(lat) || !Number.isFinite(lng) || !isInNigeria(lat, lng)) {
+		const lat = pinSet ? Number(latitude) : 6.5244;
+		const lng = pinSet ? Number(longitude) : 3.3792;
+		if (pinSet && (!Number.isFinite(lat) || !Number.isFinite(lng) || !isInNigeria(lat, lng))) {
 			setError(
 				"Hospital location must be within Nigeria — use your current location or enter valid coordinates",
 			);
@@ -596,7 +600,8 @@ function HospitalSignupForm({
 						</p>
 						<p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
 							Use your current location, or enter coordinates
-							manually. Dispatch matching needs a pin.
+							manually. You can skip this while testing — a Lagos
+							test pin will be used.
 						</p>
 					</div>
 				)}
