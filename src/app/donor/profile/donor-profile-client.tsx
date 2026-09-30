@@ -524,20 +524,11 @@ export function DonorProfileClient() {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-4xl space-y-8">
-			<div className="space-y-3">
-				<Link
-					href="/donor"
-					className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-				>
-					<ArrowLeft className="h-3.5 w-3.5" />
-					Back to dashboard
-				</Link>
-				<DashboardGreeting
-					title="Donor Profile"
-					subtitle="Keep your details up to date so hospitals can match you with nearby emergencies."
-				/>
-			</div>
+		<div className="space-y-8">
+			<DashboardGreeting
+				title="Donor Profile"
+				subtitle="Keep your details up to date so hospitals can match you with nearby emergencies."
+			/>
 
 			<DonorCodeCard
 				donorCode={donorCode}

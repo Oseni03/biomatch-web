@@ -20,7 +20,30 @@ import {
 	type ConsentChoices,
 } from "@/components/consent/consent-choices";
 import { acceptConsents } from "@/servers/consent";
-import { geocodeAddressAction } from "@/servers/location";
+
+function isInNigeria(lat: number, lng: number): boolean {
+	return lat >= 3.5 && lat <= 14.5 && lng >= 2.5 && lng <= 15.0;
+}
+
+function getCurrentPosition(options?: PositionOptions) {
+	return new Promise<GeolocationPosition>((resolve, reject) => {
+		navigator.geolocation.getCurrentPosition(resolve, reject, options);
+	});
+}
+
+function getLocationErrorMessage(err: unknown): string {
+	if (err && typeof err === "object" && "code" in err) {
+		switch ((err as GeolocationPositionError).code) {
+			case 1:
+				return "Location access was denied. Enable location permission in your browser settings and try again.";
+			case 2:
+				return "Your location couldn't be determined. Check your connection or GPS and try again.";
+			case 3:
+				return "Getting your location timed out. Please try again.";
+		}
+	}
+	return "Something went wrong while getting your location.";
+}
 
 function slugifyHospital(name: string): string {
 	const base =
@@ -295,27 +318,32 @@ function HospitalSignupForm({
 	isLoading,
 	setIsLoading,
 }: HospitalFormProps) {
-	const [isGeocoding, setIsGeocoding] = useState(false);
+	const [isLocating, setIsLocating] = useState(false);
 	const pinSet = latitude.trim() !== "" && longitude.trim() !== "";
 
-	const handleFindPin = async () => {
+	const handleUseMyLocation = async () => {
 		setError("");
-		if (!address.trim() || !state.trim()) {
-			setError("Enter the hospital address and state first");
+
+		if (!("geolocation" in navigator)) {
+			setError("Geolocation is not supported by this browser");
 			return;
 		}
-		setIsGeocoding(true);
-		const query = [address.trim(), lga.trim(), state.trim(), "Nigeria"]
-			.filter(Boolean)
-			.join(", ");
-		const geocoded = await geocodeAddressAction(query);
-		setIsGeocoding(false);
-		if (!geocoded.ok) {
-			setError(geocoded.error);
-			return;
+
+		setIsLocating(true);
+		try {
+			const position = await getCurrentPosition({
+				enableHighAccuracy: true,
+				timeout: 10000,
+				maximumAge: 0,
+			});
+
+			setLatitude(position.coords.latitude.toFixed(6));
+			setLongitude(position.coords.longitude.toFixed(6));
+		} catch (err) {
+			setError(getLocationErrorMessage(err));
+		} finally {
+			setIsLocating(false);
 		}
-		setLatitude(String(geocoded.result.latitude));
-		setLongitude(String(geocoded.result.longitude));
 	};
 
 	const handleHospitalSubmit = async (e: React.FormEvent) => {
@@ -345,28 +373,20 @@ function HospitalSignupForm({
 			return;
 		}
 
-		setIsLoading(true);
-
-		let lat = Number(latitude);
-		let lng = Number(longitude);
 		if (!pinSet) {
-			const query = [address.trim(), lga.trim(), state.trim(), "Nigeria"]
-				.filter(Boolean)
-				.join(", ");
-			const geocoded = await geocodeAddressAction(query);
-			if (!geocoded.ok) {
-				setError(geocoded.error);
-				setIsLoading(false);
-				return;
-			}
-			lat = geocoded.result.latitude;
-			lng = geocoded.result.longitude;
-		}
-		if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
-			setError("The location pin is invalid — find the pin from the address again");
-			setIsLoading(false);
+			setError("Set your hospital's location");
 			return;
 		}
+		const lat = Number(latitude);
+		const lng = Number(longitude);
+		if (!Number.isFinite(lat) || !Number.isFinite(lng) || !isInNigeria(lat, lng)) {
+			setError(
+				"Hospital location must be within Nigeria — use your current location or enter valid coordinates",
+			);
+			return;
+		}
+
+		setIsLoading(true);
 
 		const { error: signUpError } = await authClient.signUp.email({
 			email: email.trim(),
@@ -390,16 +410,10 @@ function HospitalSignupForm({
 			latitude: lat,
 			longitude: lng,
 		};
-		let created = await authClient.organization.create({
+		const created = await authClient.organization.create({
 			...organizationDetails,
 			slug: slugifyHospital(hospitalName),
 		});
-		if (created.error && /slug/i.test(errorMessage(created.error, ""))) {
-			created = await authClient.organization.create({
-				...organizationDetails,
-				slug: slugifyHospital(hospitalName),
-			});
-		}
 		if (created.error) {
 			setError(
 				`${errorMessage(created.error, "Hospital registration failed")} Your account was created — please sign in and try registering the hospital again.`,
@@ -564,12 +578,12 @@ function HospitalSignupForm({
 				<Button
 					type="button"
 					variant="outline"
-					onClick={handleFindPin}
-					disabled={isGeocoding}
+					onClick={handleUseMyLocation}
+					disabled={isLocating}
 					className="w-full rounded-2xl"
 				>
 					<MapPin className="h-4 w-4" />
-					{isGeocoding ? "Finding pin..." : "Find location pin from address"}
+					{isLocating ? "Locating..." : "Use my current location"}
 				</Button>
 				{pinSet ? (
 					<p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -582,8 +596,8 @@ function HospitalSignupForm({
 							No location pin yet
 						</p>
 						<p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
-							Find the pin from your address above, or enter
-							coordinates manually. Dispatch matching needs a pin.
+							Use your current location, or enter coordinates
+							manually. Dispatch matching needs a pin.
 						</p>
 					</div>
 				)}

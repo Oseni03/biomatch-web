@@ -28,7 +28,7 @@ export function AuthShell({
 	children,
 }: AuthShellProps) {
 	return (
-		<div className="grid min-h-screen w-full bg-paper lg:grid-cols-2">
+		<div className="grid min-h-screen w-full bg-paper lg:h-dvh lg:min-h-0 lg:grid-cols-2 lg:grid-rows-1 lg:overflow-hidden">
 			<div className="relative hidden overflow-hidden bg-ink lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10">
 				<motion.div
 					aria-hidden
@@ -101,7 +101,7 @@ export function AuthShell({
 				</motion.div>
 			</div>
 
-			<div className="flex flex-col px-6 py-8 lg:px-16 lg:py-10">
+			<div className="flex flex-col px-6 py-8 lg:min-h-0 lg:overflow-y-auto lg:px-16 lg:py-10">
 				<div className="flex items-center justify-between lg:hidden">
 					<Link
 						href="/"
