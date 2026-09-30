@@ -20,6 +20,7 @@ import {
 	type ConsentChoices,
 } from "@/components/consent/consent-choices";
 import { acceptConsents } from "@/servers/consent";
+import { notifyAdminsOfPendingHospital } from "@/servers/hospital";
 
 function isInNigeria(lat: number, lng: number): boolean {
 	return lat >= 3.5 && lat <= 14.5 && lng >= 2.5 && lng <= 15.0;
@@ -428,6 +429,15 @@ function HospitalSignupForm({
 			await acceptConsents({ marketing: consents.marketing });
 		} catch {
 			// No session yet: the consent gate redirects to re-consent on next visit.
+		}
+
+		try {
+			const organizationId = created.data?.id;
+			if (organizationId) {
+				await notifyAdminsOfPendingHospital(organizationId);
+			}
+		} catch {
+			// Admin notification is best-effort and must never block registration.
 		}
 
 		routerPush("/hospital");

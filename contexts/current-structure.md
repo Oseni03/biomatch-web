@@ -148,8 +148,10 @@
 > (request creation itself still arrives in slice 12);
 > `src/servers/hospital.ts` now reads the real organization row
 > (`getHospitalSidebarContext` status-mapped, new
-> `getHospitalVerificationState`) and the dead `createHospitalBank` stub was
-> removed; new `src/components/hospital/awaiting-approval.tsx`
+> `getHospitalVerificationState`, new `notifyAdminsOfPendingHospital` emailing
+> all platform admins on hospital registration) and the dead `createHospitalBank` stub was
+> removed; new `src/emails/hospital-pending-review.tsx` (admin review email);
+> new `src/components/hospital/awaiting-approval.tsx`
 > (pending/rejected/suspended/no-org states with next-steps + empty states)
 > rendered by `/hospital` dashboard and `/hospital/emergency` for unapproved
 > workspaces; `/auth/signup?role=hospital` collects required registration

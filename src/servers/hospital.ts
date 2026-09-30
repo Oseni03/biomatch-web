@@ -2,7 +2,9 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
 import { requireOrgPermission } from "@/servers/organization";
+import HospitalPendingReviewEmail from "@/emails/hospital-pending-review";
 
 type HospitalSidebarContext = {
 	hospitalName: string;
@@ -252,4 +254,75 @@ export async function getHospitalSidebarContext(
 				bloodBankMessage: "Account suspended — contact support",
 			};
 	}
+}
+
+const organizationIdSchema = z.string().min(1);
+
+// Alerts every platform admin that a newly registered hospital is waiting
+// for verification. Called once right after hospital signup; it never throws
+// so a mail failure cannot break registration. Deliberately unauthenticated:
+// the caller is the brand-new hospital owner, not an admin yet.
+export async function notifyAdminsOfPendingHospital(
+	rawOrganizationId: unknown,
+): Promise<{ notified: number }> {
+	const parsed = organizationIdSchema.safeParse(rawOrganizationId);
+	if (!parsed.success) return { notified: 0 };
+	const organizationId = parsed.data;
+
+	const organization = await prisma.organization
+		.findUnique({
+			where: { id: organizationId },
+			select: {
+				name: true,
+				officialEmail: true,
+				registrationNumber: true,
+				address: true,
+				state: true,
+				verificationStatus: true,
+				createdAt: true,
+			},
+		})
+		.catch(() => null);
+	if (!organization || organization.verificationStatus !== "pending") {
+		return { notified: 0 };
+	}
+
+	const admins = await prisma.user
+		.findMany({
+			where: { role: "admin", banned: false },
+			select: { email: true },
+		})
+		.catch(() => []);
+	const recipients = admins
+		.map((admin) => admin.email)
+		.filter((email): email is string => !!email);
+	if (recipients.length === 0) return { notified: 0 };
+
+	const appUrl = (process.env.APP_URL ?? "https://biomatchlimited.org").replace(/\/$/, "");
+	let notified = 0;
+	await Promise.all(
+		recipients.map(async (to) => {
+			try {
+				await sendEmail({
+					to,
+					subject: `New hospital awaiting verification: ${organization.name}`,
+					react: HospitalPendingReviewEmail({
+						hospitalName: organization.name,
+						registrationNumber: organization.registrationNumber,
+						officialEmail: organization.officialEmail,
+						address: organization.address,
+						state: organization.state,
+						submittedAt: organization.createdAt.toLocaleString("en-NG", {
+							timeZone: "Africa/Lagos",
+						}),
+						reviewUrl: `${appUrl}/admin/hospitals/${organizationId}`,
+					}),
+				});
+				notified += 1;
+			} catch (error) {
+				console.error("[hospital:notify-admins] email failed for", to, error);
+			}
+		}),
+	);
+	return { notified };
 }
