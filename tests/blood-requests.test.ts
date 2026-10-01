@@ -245,7 +245,7 @@ describe("Issue 12 create request and match donors", () => {
 		assert.equal(nearby.total, 1);
 		const item = nearby.requests[0];
 		assert.ok(item);
-		assert.deepEqual(Object.keys(item as Record<string, unknown>).sort(), [
+		assert.deepEqual(Object.keys(item as unknown as Record<string, unknown>).sort(), [
 			"bloodGroup",
 			"distanceKm",
 			"hospitalName",

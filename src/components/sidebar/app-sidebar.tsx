@@ -46,11 +46,21 @@ type DonorEligibilityUser = {
     lastDonationDate?: Date | string | null;
     deferredUntil?: Date | string | null;
     blacklistedAt?: Date | string | null;
+    donorProfile?: {
+        lastDonatedAt?: Date | string | null;
+        cooldownUntil?: Date | string | null;
+        donorStatus?: string | null;
+    } | null;
 };
 
 /** Map a donor's screening/cooldown state onto the sidebar eligibility card. */
 function buildEligibilityView(user?: DonorEligibilityUser | null): EligibilityView | undefined {
     if (!user) return undefined;
+
+    const profile = user.donorProfile ?? null;
+    const restricted =
+        profile?.donorStatus != null &&
+        String(profile.donorStatus) !== "active";
 
     if (user.blacklistedAt) {
         return {
@@ -60,8 +70,17 @@ function buildEligibilityView(user?: DonorEligibilityUser | null): EligibilityVi
         };
     }
 
-    if (user.deferredUntil) {
-        const until = new Date(user.deferredUntil);
+    if (restricted) {
+        return {
+            tone: "ineligible",
+            headline: "Account restricted",
+            detail: "Contact support to restore your donor account.",
+        };
+    }
+
+    const deferredRaw = profile?.cooldownUntil ?? user.deferredUntil ?? null;
+    if (deferredRaw) {
+        const until = new Date(deferredRaw);
         if (until > new Date()) {
             const dateLabel = until.toLocaleDateString("en-NG", {
                 month: "short",
@@ -75,8 +94,10 @@ function buildEligibilityView(user?: DonorEligibilityUser | null): EligibilityVi
         }
     }
 
-    const lastDonation = user.lastDonationDate
-        ? new Date(user.lastDonationDate).toISOString().slice(0, 10)
+    const lastDonatedRaw =
+        profile?.lastDonatedAt ?? user.lastDonationDate ?? null;
+    const lastDonation = lastDonatedRaw
+        ? new Date(lastDonatedRaw).toISOString().slice(0, 10)
         : null;
     const eligibility = getEligibility(lastDonation);
 

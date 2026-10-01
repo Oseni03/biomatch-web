@@ -21,6 +21,10 @@ export function useEmergencyMissionTracker() {
 
 	const handleRespond = useCallback(
 		async (reqId: string, donorId?: string) => {
+			if (!donorId) {
+				toast.error("You must be signed in to respond to this alert");
+				return;
+			}
 			setActiveTrackingId(reqId);
 			setTrackingStatus("accepted");
 			try {
@@ -38,6 +42,10 @@ export function useEmergencyMissionTracker() {
 
 	const handleDecline = useCallback(
 		async (reqId: string, donorId?: string) => {
+			if (!donorId) {
+				toast.error("You must be signed in to decline this alert");
+				return;
+			}
 			try {
 				await respondToAlert(reqId, "declined", donorId);
 				queryClient.invalidateQueries({ queryKey: ["donor-alerts"] });
@@ -70,6 +78,10 @@ export function useEmergencyMissionTracker() {
 
 	const handleMarkEnRoute = useCallback(
 		async (reqId: string, donorId?: string) => {
+			if (!donorId) {
+				toast.error("You must be signed in to update this alert");
+				return;
+			}
 			try {
 				await updateAlertStatus(reqId, "en_route", donorId);
 				setTrackingStatus("en_route");
@@ -84,6 +96,10 @@ export function useEmergencyMissionTracker() {
 
 	const handleMarkArrived = useCallback(
 		async (reqId: string, donorId?: string) => {
+			if (!donorId) {
+				toast.error("You must be signed in to update this alert");
+				return;
+			}
 			try {
 				await updateAlertStatus(reqId, "arrived", donorId);
 				setTrackingStatus("arrived");
